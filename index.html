@@ -74,8 +74,17 @@
 
 <script>
 // ================== API BACKEND ==================
-const API_URL =
-  "https://careervr-backend.onrender.com/run-riasec";
+// Detect API URL based on environment
+const API_URL = (() => {
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8000/run-riasec';
+  }
+  // Production: use same host or custom backend URL
+  const backendUrl = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8000'
+    : window.location.origin;
+  return backendUrl + '/run-riasec';
+})();
 
 // ================== DANH SÁCH 50 CÂU HỎI ==================
 const questions = [
@@ -170,11 +179,17 @@ document.getElementById("quiz").onsubmit = async (e) => {
   }
 
   const payload = {
-    name: document.getElementById("name").value,
-    class: document.getElementById("class").value,
-    school: document.getElementById("school").value,
+    name: document.getElementById("name").value.trim(),
+    "class": document.getElementById("class").value.trim(),
+    school: document.getElementById("school").value.trim(),
     answers_json: answers
   };
+  
+  // Validate form data
+  if (!payload.name || !payload["class"] || !payload.school) {
+    alert("Vui lòng điền đầy đủ thông tin (Họ tên, Lớp, Trường).");
+    return;
+  }
 
   const resultBox = document.getElementById("result");
   resultBox.innerText = "⏳ Hệ thống đang phân tích kết quả hướng nghiệp...";
@@ -198,7 +213,8 @@ document.getElementById("quiz").onsubmit = async (e) => {
 
   } catch (err) {
     resultBox.innerText =
-      "❌ Không kết nối được tới hệ thống.\n" + err.message;
+      "❌ Không kết nối được tới hệ thống.\n" + 
+      (err.message || "Vui lòng kiểm tra kết nối Internet và thử lại.");
   }
 };
 </script>

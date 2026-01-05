@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import List
 import requests
 import json
+import os
 
 # ================== APP ==================
 app = FastAPI()
@@ -18,17 +19,36 @@ app.add_middleware(
 )
 
 # ================== DIFY CONFIG ==================
-DIFY_API_KEY = "app-y8WYwZs8NhFNlrW7MdPrzZx1"   # 👉 thay bằng API key thật khi deploy
+DIFY_API_KEY = os.getenv("DIFY_API_KEY", "app-y8WYwZs8NhFNlrW7MdPrzZx1")
 DIFY_CHAT_URL = "https://api.dify.ai/v1/chat-messages"
 
 # ================== SCHEMA ==================
 class RIASECRequest(BaseModel):
     name: str
-    class_: str = Field(alias="class")   # alias tránh keyword Python
+    class_: str = Field(alias="class")
     school: str
     answers_json: List[int]
+    
+    @validator("name", "class_", "school")
+    def check_not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Tên, lớp, trường không được để trống")
+        return v.strip()
+    
+    @validator("answers_json")
+    def validate_answers(cls, v):
+        if len(v) != 50:
+            raise ValueError("Phải trả lời đủ 50 câu")
+        if not all(1 <= ans <= 5 for ans in v):
+            raise ValueError("Các câu trả lời phải từ 1 đến 5")
+        return v
 
 # ================== API ==================
+@app.get("/health")
+def health_check():
+    """Health check endpoint"""
+    return {"status": "ok", "message": "CareerVR backend is running"}
+
 @app.post("/run-riasec")
 def run_riasec(data: RIASECRequest):
 
@@ -37,6 +57,13 @@ def run_riasec(data: RIASECRequest):
         raise HTTPException(
             status_code=400,
             detail="answers_json phải có đúng 50 phần tử"
+        )
+    
+    # Validate answer values
+    if not all(1 <= ans <= 5 for ans in data.answers_json):
+        raise HTTPException(
+            status_code=400,
+            detail="Mỗi câu trả lời phải là số từ 1 đến 5"
         )
 
     # ===== PAYLOAD GỬI DIFY (CHATBOT) =====

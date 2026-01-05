@@ -117,7 +117,7 @@
       <button type="submit">Hoàn thành & Xem kết quả</button>
       <button type="button" class="ghost" onclick="resetRiasec()">Làm lại</button>
     </div>
-    <div class="muted" style="margin-top:10px;font-size:13px">Không bắt buộc làm đủ 50 câu. Tuy nhiên, để kết quả chính xác hơn, nên trả lời càng nhiều càng tốt.</div>
+    <div class="muted" style="margin-top:10px;font-size:13px">Vui lòng trả lời tất cả 50 câu để có kết quả hướng nghiệp chính xác nhất.</div>
   </form>
 
   <div class="card" id="riasecResult" style="display:none">
@@ -602,8 +602,7 @@ localStorage.setItem(
   // ===== Chatbot =====
   function showChat(){
     const ctx = $('chatContext');
-    const list = $('chatSuggest');
-    if(!ctx || !list) return;
+    if(!ctx) return;
 
     const db = readDB();
     if(!db.length){
@@ -620,25 +619,6 @@ localStorage.setItem(
       </div>
       <div class='muted' style='margin-top:8px;font-size:13px'>AI sẽ ưu tiên tư vấn theo tổ hợp 3 chữ RIASEC và gợi ý ngành/lộ trình tương ứng.</div>
     `;
-
-    const majors = last.suggestedMajors || [];
-    const backup = last.backupMajor;
-
-    const items = majors.map(m=>`
-      <li>
-        <strong>${m.name}</strong> <span class='pill'>${m.code}</span><br>
-        <span class='muted'>Lộ trình: ${m.path}</span>
-      </li>
-    `).join('');
-
-    const bk = backup ? `
-      <li>
-        <strong>Dự phòng:</strong> ${backup.name} <span class='pill'>${backup.code}</span><br>
-        <span class='muted'>Lộ trình: ${backup.path}</span>
-      </li>
-    ` : '';
-
-    list.innerHTML = items + bk;
   }
   window.showChat = showChat;
 
