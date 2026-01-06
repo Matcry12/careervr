@@ -2,10 +2,12 @@
 
 ## 📌 Important: Two Different HTML Files
 
-- **`index1.html`** - Works **standalone** (no backend needed, uses browser LocalStorage)
+- **`index1.html`** - Works **standalone** (no backend needed, uses browser LocalStorage) ✅ RECOMMENDED
 - **`index.html`** - Requires **backend API** (makes API calls to `/run-riasec`)
 
 **Recommendation**: Use `index1.html` - it's more complete and doesn't require the backend.
+
+**Getting errors?** See [SETUP_GUIDE.md](SETUP_GUIDE.md) for troubleshooting.
 
 ---
 
