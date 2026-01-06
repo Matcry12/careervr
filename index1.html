@@ -44,14 +44,15 @@
 </head>
 <body>
 <header>
-  <h1>CareerVR</h1>
-  <nav>
-    <a href="#home" data-page="home" class="nav active">Trang chủ</a>
-    <a href="#riasec" data-page="riasec" class="nav">RIASEC Test</a>
-    <a href="#experience" data-page="experience" class="nav">Trải nghiệm nghề</a>
-    <a href="#chatbot" data-page="chatbot" class="nav">Chatbot AI</a>
-    <a href="#dashboard" data-page="dashboard" class="nav">Dashboard</a>
-  </nav>
+   <h1>CareerVR</h1>
+   <nav>
+     <a href="#home" data-page="home" class="nav active">Trang chủ</a>
+     <a href="#riasec" data-page="riasec" class="nav">RIASEC Test</a>
+     <a href="#experience" data-page="experience" class="nav">Trải nghiệm nghề</a>
+     <a href="#chatbot" data-page="chatbot" class="nav">Chatbot AI</a>
+     <a href="#dashboard" data-page="dashboard" class="nav">Dashboard</a>
+     <button id="devModeBtn" style="margin-left:auto;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold">🧪 Dev Mode OFF</button>
+   </nav>
 </header>
 
 <div class="container">
@@ -116,6 +117,7 @@
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
       <button type="submit">Hoàn thành & Xem kết quả</button>
       <button type="button" class="ghost" onclick="resetRiasec()">Làm lại</button>
+      <button type="button" class="ghost" id="devAutoFill" style="background:#ff6b6b;color:#fff;border:none;display:none" onclick="fillRandomAnswers(); setTimeout(() => document.getElementById('riasecForm').dispatchEvent(new Event('submit')), 300)">🧪 Auto Fill & Submit</button>
     </div>
     <div class="muted" style="margin-top:10px;font-size:13px">Vui lòng trả lời tất cả 50 câu để có kết quả hướng nghiệp chính xác nhất.</div>
   </form>
@@ -188,13 +190,81 @@
 <script>
 (() => {
   // ===== Helpers =====
-  const $ = (id) => document.getElementById(id);
-  const DB_KEY = 'careerVR';
-  const readDB = () => {
-    try { return JSON.parse(localStorage.getItem(DB_KEY) || '[]'); }
-    catch { return []; }
-  };
-  const writeDB = (arr) => localStorage.setItem(DB_KEY, JSON.stringify(arr));
+   const $ = (id) => document.getElementById(id);
+   const DB_KEY = 'careerVR';
+   const DEV_MODE_KEY = 'devMode';
+   let devModeEnabled = localStorage.getItem(DEV_MODE_KEY) === 'true';
+   
+   const readDB = () => {
+     try { return JSON.parse(localStorage.getItem(DB_KEY) || '[]'); }
+     catch { return []; }
+   };
+   const writeDB = (arr) => localStorage.setItem(DB_KEY, JSON.stringify(arr));
+   
+   // ===== DEV MODE: Random Fill & Auto-Submit =====
+   const randomAnswer = () => Math.floor(Math.random() * 5) + 1; // 1-5
+   
+   window.fillRandomAnswers = function fillRandomAnswers() {
+     const formInputs = document.querySelectorAll('input[type="radio"]');
+     const toFill = [];
+     
+     // Collect all radio buttons by name
+     const groups = {};
+     formInputs.forEach(inp => {
+       if (!groups[inp.name]) groups[inp.name] = [];
+       groups[inp.name].push(inp);
+     });
+     
+     // Randomly select one from each group
+     Object.values(groups).forEach(radios => {
+       const randomVal = randomAnswer();
+       const selected = radios.find(r => r.value == randomVal);
+       if (selected) {
+         selected.checked = true;
+         selected.dispatchEvent(new Event('change', { bubbles: true }));
+       }
+     });
+     
+     console.log('✅ Dev Mode: Filled all 50 answers randomly');
+   };
+   
+   // ===== Toggle Dev Mode =====
+   const devModeBtn = $('devModeBtn');
+   const devAutoFillBtn = $('devAutoFill');
+   
+   const updateDevModeUI = () => {
+     if (devModeBtn) {
+       devModeBtn.textContent = devModeEnabled ? '🧪 Dev Mode ON' : '🧪 Dev Mode OFF';
+       devModeBtn.style.background = devModeEnabled ? '#51cf66' : '#ff6b6b';
+     }
+     if (devAutoFillBtn) {
+       devAutoFillBtn.style.display = devModeEnabled ? 'block' : 'none';
+     }
+   };
+   
+   if (devModeBtn) {
+     devModeBtn.addEventListener('click', () => {
+       devModeEnabled = !devModeEnabled;
+       localStorage.setItem(DEV_MODE_KEY, devModeEnabled);
+       updateDevModeUI();
+       
+       if (devModeEnabled) {
+         console.log('🧪 Dev Mode ENABLED - Auto fill button visible on RIASEC tab');
+       } else {
+         console.log('🧪 Dev Mode DISABLED');
+       }
+     });
+     
+     // Set initial state
+     updateDevModeUI();
+   }
+   
+   // Keyboard shortcut: Shift+D to toggle dev mode
+   document.addEventListener('keydown', (e) => {
+     if (e.shiftKey && e.key === 'D') {
+       devModeBtn?.click();
+     }
+   });
 
   // ===== SPA navigation =====
   const pages = Array.from(document.querySelectorAll('.page'));

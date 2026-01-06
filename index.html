@@ -47,7 +47,10 @@
 </head>
 <body>
 
-<h2>TRẮC NGHIỆM HƯỚNG NGHIỆP RIASEC (50 CÂU)</h2>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+  <h2 style="margin:0">TRẮC NGHIỆM HƯỚNG NGHIỆP RIASEC (50 CÂU)</h2>
+  <button id="devModeBtn" style="padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold">🧪 Dev Mode OFF</button>
+</div>
 
 <p>
 <b>Thang đo:</b><br>
@@ -65,14 +68,69 @@
 </div>
 
 <form id="quiz">
-  <div id="questions"></div>
-  <button type="submit">Xem kết quả hướng nghiệp</button>
+   <div id="questions"></div>
+   <div style="display:flex;gap:10px;flex-wrap:wrap">
+     <button type="submit">Xem kết quả hướng nghiệp</button>
+     <button type="button" id="devAutoFill" style="background:#ff6b6b;color:#fff;padding:12px 24px;font-size:18px;border:none;border-radius:6px;cursor:pointer;display:none" onclick="fillRandomAnswers(); setTimeout(() => document.getElementById('quiz').dispatchEvent(new Event('submit')), 300)">🧪 Auto Fill & Submit</button>
+   </div>
 </form>
 
 <h3>KẾT QUẢ TƯ VẤN</h3>
 <pre id="result">Vui lòng hoàn thành trắc nghiệm để xem kết quả.</pre>
 
 <script>
+// ================== DEV MODE ==================
+const DEV_MODE_KEY = 'devMode';
+let devModeEnabled = localStorage.getItem(DEV_MODE_KEY) === 'true';
+const randomAnswer = () => Math.floor(Math.random() * 5) + 1; // 1-5
+
+window.fillRandomAnswers = function fillRandomAnswers() {
+  const formInputs = document.querySelectorAll('input[type="radio"]');
+  const groups = {};
+  
+  formInputs.forEach(inp => {
+    if (!groups[inp.name]) groups[inp.name] = [];
+    groups[inp.name].push(inp);
+  });
+  
+  Object.values(groups).forEach(radios => {
+    const randomVal = randomAnswer();
+    const selected = radios.find(r => r.value == randomVal);
+    if (selected) selected.checked = true;
+  });
+  
+  console.log('✅ Dev Mode: Filled all 50 answers randomly');
+};
+
+const devModeBtn = document.getElementById('devModeBtn');
+const devAutoFillBtn = document.getElementById('devAutoFill');
+
+const updateDevModeUI = () => {
+  if (devModeBtn) {
+    devModeBtn.textContent = devModeEnabled ? '🧪 Dev Mode ON' : '🧪 Dev Mode OFF';
+    devModeBtn.style.background = devModeEnabled ? '#51cf66' : '#ff6b6b';
+  }
+  if (devAutoFillBtn) {
+    devAutoFillBtn.style.display = devModeEnabled ? 'block' : 'none';
+  }
+};
+
+if (devModeBtn) {
+  devModeBtn.addEventListener('click', () => {
+    devModeEnabled = !devModeEnabled;
+    localStorage.setItem(DEV_MODE_KEY, devModeEnabled);
+    updateDevModeUI();
+    console.log(devModeEnabled ? '🧪 Dev Mode ENABLED' : '🧪 Dev Mode DISABLED');
+  });
+  updateDevModeUI();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.shiftKey && e.key === 'D') {
+    devModeBtn?.click();
+  }
+});
+
 // ================== API BACKEND ==================
 // Detect API URL based on environment
 const API_URL = (() => {
