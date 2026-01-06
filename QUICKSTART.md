@@ -23,20 +23,28 @@ docker-compose up
 ### Option 2: Local Python Setup
 
 ```bash
-# 1. Install dependencies
+# 1. Create virtual environment (if not already done)
+python3 -m venv venv
+source venv/bin/activate
+
+# 2. Install dependencies
 cd backend
 pip install -r requirements.txt
 
-# 2. Set environment variable
-export DIFY_API_KEY="your-key-here"
+# 3. Create .env file
+cp .env.example ../.env
+# Edit ../.env and add your DIFY_API_KEY
 
-# 3. Start backend
-uvicorn main:app --reload
+# 4. Start backend
+cd ..
+source venv/bin/activate
+uvicorn backend/main:app --reload --host 0.0.0.0 --port 8000
 
-# 4. Open frontend
-# Open index1.html in browser (or serve with Python)
+# 5. Open frontend (in another terminal)
+# Terminal 2:
+source venv/bin/activate
 python -m http.server 8001
-# Visit http://localhost:8001
+# Visit http://localhost:8001/index1.html
 ```
 
 ### Option 3: One-Line Deploy Script
@@ -64,11 +72,18 @@ DIFY_API_KEY=app-xxxxxxxxxxxxx
 ## ✅ Verify Setup
 
 ```bash
+# Activate virtual environment first
+source venv/bin/activate
+
 # Test backend is running
 curl http://localhost:8000/health
 
 # Should return:
 # {"status":"ok","message":"CareerVR backend is running"}
+
+# If port 8000 is not accessible, check if server is running in another terminal
+# If needed, use a different port:
+# uvicorn backend/main:app --reload --port 8001
 ```
 
 ---
@@ -88,11 +103,14 @@ curl http://localhost:8000/health
 
 | Problem | Solution |
 |---------|----------|
-| `ModuleNotFoundError: No module named 'fastapi'` | Run `pip install -r requirements.txt` |
+| `ModuleNotFoundError: No module named 'fastapi'` | Activate venv first: `source venv/bin/activate` then `pip install -r requirements.txt` |
+| `command not found: pip` | Activate venv: `source venv/bin/activate` |
 | `CORS Error` | Make sure backend is running on `http://localhost:8000` |
 | `404 Not Found` | Check API_URL in index.html matches backend location |
-| `500 Server Error` | Check DIFY_API_KEY is set correctly |
-| Port 8000 already in use | Change in docker-compose.yml or use different port |
+| `500 Server Error` | Check DIFY_API_KEY is set in .env file |
+| Port 8000 already in use | Use different port: `uvicorn backend/main:app --port 8001` |
+| Backend won't start | Check for syntax errors: `python3 -c "from main import app"` in backend/ |
+| Python 3.13 issues | Make sure all dependencies installed: `pip install -r requirements.txt` |
 
 ---
 
