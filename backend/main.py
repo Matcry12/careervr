@@ -1,10 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List
 import requests
 import json
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ================== APP ==================
 app = FastAPI()
@@ -29,13 +33,15 @@ class RIASECRequest(BaseModel):
     school: str
     answers_json: List[int]
     
-    @validator("name", "class_", "school")
+    @field_validator("name", "class_", "school")
+    @classmethod
     def check_not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError("Tên, lớp, trường không được để trống")
         return v.strip()
     
-    @validator("answers_json")
+    @field_validator("answers_json")
+    @classmethod
     def validate_answers(cls, v):
         if len(v) != 50:
             raise ValueError("Phải trả lời đủ 50 câu")
