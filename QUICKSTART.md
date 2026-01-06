@@ -1,5 +1,14 @@
 # Quick Start Guide
 
+## 📌 Important: Two Different HTML Files
+
+- **`index1.html`** - Works **standalone** (no backend needed, uses browser LocalStorage)
+- **`index.html`** - Requires **backend API** (makes API calls to `/run-riasec`)
+
+**Recommendation**: Use `index1.html` - it's more complete and doesn't require the backend.
+
+---
+
 ## 🚀 Start in 5 Minutes
 
 ### Option 1: Docker (Recommended)
@@ -16,8 +25,14 @@ cp backend/.env.example .env
 docker-compose up
 
 # 4. Open browser
-# Frontend: http://localhost
-# Backend: http://localhost:8000/health
+# Option A: index1.html (recommended - no backend needed)
+#    http://localhost/index1.html
+
+# Option B: index.html (requires backend)
+#    http://localhost/index.html
+
+# Backend health check:
+#    curl http://localhost:8000/health
 ```
 
 ### Option 2: Local Python Setup
@@ -40,11 +55,14 @@ cd ..
 source venv/bin/activate
 uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 
-# 5. Open frontend (in another terminal)
-# Terminal 2:
+# 5. Open frontend in browser (in another terminal if using index.html)
+# Terminal 2 (Optional - only needed if using index.html):
 source venv/bin/activate
 python -m http.server 8001
-# Visit http://localhost:8001/index1.html
+
+# Then open one of these:
+# Option A: http://localhost:8001/index1.html (no backend needed, recommended)
+# Option B: http://localhost:8001/index.html (requires backend on port 8000)
 ```
 
 ### Option 3: One-Line Deploy Script
@@ -75,16 +93,47 @@ DIFY_API_KEY=app-xxxxxxxxxxxxx
 # Activate virtual environment first
 source venv/bin/activate
 
-# Test backend is running
-curl http://localhost:8000/health
+# Test backend API is running
+curl http://localhost:7000/health  # or 8000/8001 depending on your port
 
 # Should return:
 # {"status":"ok","message":"CareerVR backend is running"}
-
-# If port 8000 is not accessible, check if server is running in another terminal
-# If needed, use a different port (use dot notation, not slash):
-# uvicorn backend.main:app --reload --port 8001
 ```
+
+### ⚠️ Getting 404 "Not Found"?
+
+**This is normal!** The backend only serves API endpoints, not HTML pages.
+
+**What you did wrong**:
+```
+❌ Opened http://localhost:7000/          (root path - no endpoint)
+❌ Opened http://localhost:7000/index1    (HTML not served by backend)
+```
+
+**What to do instead**:
+
+1. **Simplest**: Just use `index1.html` - it needs NO backend
+   ```bash
+   python -m http.server 8001
+   # Then: http://localhost:8001/index1.html ✅
+   ```
+
+2. **If you want the backend**: Test the API endpoint
+   ```bash
+   curl http://localhost:7000/health ✅
+   curl http://localhost:7000/run-riasec (POST endpoint)
+   ```
+
+3. **For index.html**: Need both frontend server AND backend
+   ```bash
+   # Terminal 1: Backend API
+   uvicorn backend.main:app --reload --port 7000
+   
+   # Terminal 2: Frontend HTTP server
+   python -m http.server 8001
+   
+   # Then: http://localhost:8001/index.html ✅
+   ```
 
 ---
 
