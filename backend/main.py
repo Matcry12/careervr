@@ -126,13 +126,17 @@ def run_riasec(data: RIASECRequest):
             headers=headers,
             timeout=90
         )
+        print(f"Dify response status: {response.status_code}")
+        print(f"Dify response: {response.text}")
     except Exception as e:
+        print(f"Dify request error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi kết nối Dify: {str(e)}"
         )
 
     if response.status_code != 200:
+        print(f"Dify error {response.status_code}: {response.text}")
         raise HTTPException(
             status_code=response.status_code,
             detail=response.text
