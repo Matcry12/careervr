@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerVR – Khám phá con đường sự nghiệp của bạn</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #0b1220 0%, #0f1a33 100%);
+      color: #e6f0ff;
+      line-height: 1.6;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 18, 32, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(30, 42, 68, 0.5);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #1a3cff, #4d7cff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    nav {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #9fb7ff;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+
+    nav a.active {
+      color: #fff;
+      font-weight: 600;
+      border-bottom: 2px solid #1a3cff;
+      padding-bottom: 0.25rem;
+    }
+
+    nav a:hover {
+      color: #cfe0ff;
+    }
+
+    /* ===== MAIN CONTAINER ===== */
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ===== LANDING PAGE ===== */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      min-height: calc(100vh - 80px);
+      padding: 4rem 0;
+    }
+
+    .hero-content h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff, #cfe0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-content p {
+      font-size: 1.2rem;
+      color: #9fb7ff;
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+
+    .cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 400px;
+    }
+
+    .btn {
+      padding: 0.85rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1a3cff, #1a3cff);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(26, 60, 255, 0.3);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid #2a3b66;
+      color: #9fb7ff;
+    }
+
+    .btn-secondary:hover {
+      border-color: #1a3cff;
+      color: #cfe0ff;
+    }
+
+    .hero-visual {
+      background: radial-gradient(circle at top right, rgba(26, 60, 255, 0.2), transparent);
+      border-radius: 16px;
+      border: 1px solid rgba(30, 42, 68, 0.5);
+      padding: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+
+    .icon-large {
+      font-size: 6rem;
+      opacity: 0.7;
+    }
+
+    /* ===== FEATURES SECTION ===== */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin: 6rem 0;
+    }
+
+    .feature-card {
+      background: rgba(15, 31, 58, 0.5);
+      border: 1px solid rgba(30, 42, 68, 0.5);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      background: rgba(15, 31, 58, 0.8);
+      border-color: rgba(26, 60, 255, 0.5);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .feature-card p {
+      color: #9fb7ff;
+      font-size: 0.95rem;
+    }
+
+    /* ===== RIASEC TEST PAGE ===== */
+    .test-container {
+      max-width: 900px;
+      margin: 3rem auto;
+      padding-bottom: 4rem;
+    }
+
+    .progress-section {
+      margin-bottom: 3rem;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(30, 42, 68, 0.5);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1a3cff, #4d7cff);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .progress-text {
+      font-size: 0.9rem;
+      color: #9fb7ff;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .test-section {
+      background: rgba(15, 31, 58, 0.6);
+      border: 1px solid rgba(30, 42, 68, 0.5);
+      border-radius: 12px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .test-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      color: #fff;
+    }
+
+    .question-item {
+      margin-bottom: 2.5rem;
+    }
+
+    .question-item label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      color: #cfe0ff;
+    }
+
+    .answer-options {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+    }
+
+    .answer-option {
+      position: relative;
+    }
+
+    .answer-option input[type="radio"] {
+      display: none;
+    }
+
+    .answer-option label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      border: 2px solid rgba(30, 42, 68, 0.5);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      background: transparent;
+      margin: 0;
+    }
+
+    .answer-option input[type="radio"]:checked + label {
+      background: linear-gradient(135deg, #1a3cff, #1a3cff);
+      border-color: #1a3cff;
+      color: #fff;
+    }
+
+    .answer-option label:hover {
+      border-color: #2a3b66;
+      background: rgba(26, 60, 255, 0.1);
+    }
+
+    .scale-explanation {
+      background: rgba(26, 60, 255, 0.1);
+      border-left: 3px solid #1a3cff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .scale-legend {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .scale-item {
+      text-align: center;
+      padding: 0.75rem;
+      background: rgba(15, 31, 58, 0.8);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #9fb7ff;
+    }
+
+    /* ===== RESULTS PAGE ===== */
+    .results-container {
+      max-width: 900px;
+      margin: 3rem auto;
+    }
+
+    .result-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .result-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .riasec-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #1a3cff, #4d7cff);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    .major-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .major-card {
+      background: rgba(15, 31, 58, 0.6);
+      border: 2px solid rgba(30, 42, 68, 0.5);
+      border-radius: 12px;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+
+    .major-card:hover {
+      border-color: #1a3cff;
+      background: rgba(15, 31, 58, 0.9);
+    }
+
+    .major-card.rank-1 {
+      border-color: #ffd700;
+    }
+
+    .major-card.rank-2 {
+      border-color: #c0c0c0;
+    }
+
+    .major-card.rank-3 {
+      border-color: #cd7f32;
+    }
+
+    .major-badge {
+      display: inline-block;
+      background: rgba(26, 60, 255, 0.2);
+      border: 1px solid #1a3cff;
+      color: #4d7cff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .major-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .major-code {
+      color: #9fb7ff;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .major-card p {
+      color: #9fb7ff;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .match-badge {
+      display: inline-block;
+      background: #081225;
+      border: 1px solid #2a3b66;
+      color: #cfe0ff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* ===== DASHBOARD ===== */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      margin: 3rem 0;
+    }
+
+    .dashboard-card {
+      background: rgba(15, 31, 58, 0.6);
+      border: 1px solid rgba(30, 42, 68, 0.5);
+      border-radius: 12px;
+      padding: 2rem;
+    }
+
+    .dashboard-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem;
+      background: rgba(8, 18, 37, 0.5);
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid #1a3cff;
+    }
+
+    .stat-value {
+      font-weight: 700;
+      color: #1a3cff;
+      font-size: 1.1rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 2rem 0;
+      }
+
+      .hero-content h1 {
+        font-size: 2.5rem;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .answer-options {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .scale-legend {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        gap: 1rem;
+      }
+
+      nav a {
+        font-size: 0.85rem;
+      }
+    }
+
+    /* ===== UTILITY ===== */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #9fb7ff;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(26, 60, 255, 0.2);
+      border: 1px solid #1a3cff;
+      color: #4d7cff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">CareerVR</div>
+  <nav>
+    <a href="#" data-page="landing" class="nav-link active">Trang chủ</a>
+    <a href="#" data-page="test" class="nav-link">RIASEC Test</a>
+    <a href="#" data-page="results" class="nav-link">Kết quả</a>
+    <a href="#" data-page="chatbot" class="nav-link">💬 AI Chatbot</a>
+    <a href="#" data-page="dashboard" class="nav-link">Thống kê</a>
+  </nav>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="wrapper">
+
+  <!-- LANDING PAGE -->
+  <section class="page active" id="landing">
+    <div class="hero">
+      <div class="hero-content">
+        <h1>Khám phá con đường sự nghiệp của bạn</h1>
+        <p>Sử dụng trắc nghiệm RIASEC được cá nhân hóa để tìm hiểu về những ngành nghề phù hợp nhất với bạn. Trải nghiệm VR và nhận lời khuyên từ AI.</p>
+        <div class="cta-group">
+          <button class="btn btn-primary" onclick="goPage('test')">Bắt đầu trắc nghiệm</button>
+          <button class="btn btn-secondary" onclick="goPage('dashboard')">Xem thống kê</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="icon-large">🎯</div>
+      </div>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>RIASEC Test</h3>
+        <p>50 câu hỏi khoa học để đánh giá sở thích, kỹ năng, và tính cách của bạn</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🥽</div>
+        <h3>Trải nghiệm VR</h3>
+        <p>Khám phá các ngành nghề qua trực quan hóa VR tương tác</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>Tư vấn AI</h3>
+        <p>Chatbot thông minh giúp bạn trả lời mọi câu hỏi về hộ sự nghiệp</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEST PAGE -->
+  <section class="page" id="test">
+    <div class="test-container">
+      <h1 style="text-align: center; margin-bottom: 3rem;">Trắc nghiệm RIASEC</h1>
+
+      <!-- Info input -->
+      <div class="test-section" style="background: rgba(26, 60, 255, 0.1); border-color: rgba(26, 60, 255, 0.3);">
+        <h2 style="font-size: 1.25rem;">Thông tin cá nhân</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+          <div>
+            <label for="name">Họ và tên</label>
+            <input type="text" id="name" placeholder="Nguyễn Văn A" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+          </div>
+          <div>
+            <label for="class">Lớp</label>
+            <input type="text" id="class" placeholder="10A1" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+          </div>
+          <div>
+            <label for="school">Trường</label>
+            <input type="text" id="school" placeholder="THPT ..." style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-section">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
+        <div class="progress-text">
+          <span id="progressText">0 / 50 câu</span>
+          <span id="estimatedTime">~10 phút</span>
+        </div>
+      </div>
+
+      <!-- Scale explanation -->
+      <div class="scale-explanation">
+        <strong>Hướng dẫn trả lời:</strong> Với mỗi câu hỏi, hãy đánh giá từ 1 (Rất không đúng) đến 5 (Rất đúng)
+        <div class="scale-legend">
+          <div class="scale-item">1️⃣ Rất không đúng</div>
+          <div class="scale-item">2️⃣ Không đúng</div>
+          <div class="scale-item">3️⃣ Phân vân</div>
+          <div class="scale-item">4️⃣ Đúng</div>
+          <div class="scale-item">5️⃣ Rất đúng</div>
+        </div>
+      </div>
+
+      <!-- Questions form -->
+      <form id="testForm">
+        <div id="questionsContainer"></div>
+        <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
+          <button type="submit" class="btn btn-primary">Nộp bài</button>
+          <button type="button" class="btn btn-secondary" onclick="resetTest()">Làm lại</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- RESULTS PAGE -->
+  <section class="page" id="results">
+    <div class="results-container">
+      <div class="result-header">
+        <h1>Kết quả của bạn</h1>
+        <div class="riasec-badge" id="riasecDisplay">RAI</div>
+        <p id="resultTime" style="color: #9fb7ff; margin-top: 1rem;">-</p>
+      </div>
+
+      <h2 style="margin: 2rem 0 1.5rem 0;">Các ngành gợi ý</h2>
+      <div class="major-grid" id="majorContainer"></div>
+
+      <div style="text-align: center; margin-top: 3rem;">
+        <button class="btn btn-primary" onclick="goPage('test')">Làm lại trắc nghiệm</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHATBOT PAGE -->
+  <section class="page" id="chatbot">
+    <div style="max-width: 900px; margin: 2rem auto; padding-bottom: 4rem;">
+      <h1 style="text-align: center; margin-bottom: 2rem;">💬 Tư vấn AI hướng nghiệp</h1>
+
+      <!-- Context card -->
+      <div class="test-section" style="background: rgba(26, 60, 255, 0.1); border-color: rgba(26, 60, 255, 0.3); margin-bottom: 2rem;">
+        <h3 style="margin-top: 0;">📋 Hồ sơ của bạn</h3>
+        <div id="chatContext" style="color: #9fb7ff;">Chưa có dữ liệu. Vui lòng làm trắc nghiệm trước.</div>
+      </div>
+
+      <!-- Chat UI -->
+      <div id="chatContainer" style="border: 1px solid rgba(30, 42, 68, 0.5); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 700px; background: rgba(8, 18, 37, 0.8);">
+        <!-- Messages -->
+        <div id="messagesBox" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+          <div style="color: #9fb7ff; font-size: 0.9rem;">
+            <strong>🤖 AI:</strong> Xin chào! Tôi sẵn sàng tư vấn cho bạn dựa trên kết quả RIASEC. Nhấn nút "Yêu cầu tư vấn" bên dưới để bắt đầu.
+          </div>
+        </div>
+
+        <!-- Input area -->
+        <div style="border-top: 1px solid rgba(30, 42, 68, 0.5); padding: 1rem; display: flex; gap: 0.75rem;">
+          <input type="text" id="chatInput" placeholder="Hỏi AI về hướng nghiệp của bạn..." style="flex: 1; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+          <button class="btn btn-primary" onclick="sendChatMessage()" style="padding: 0.75rem 1.5rem;">Gửi</button>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center;">
+        <button class="btn btn-primary" id="consultBtn" onclick="requestCounsel()">✨ Yêu cầu tư vấn</button>
+        <button class="btn btn-secondary" onclick="goPage('results')">← Quay lại kết quả</button>
+      </div>
+
+      <div id="loadingIndicator" style="text-align: center; color: #9fb7ff; margin-top: 1rem; display: none;">
+        <span>⏳ Đang chờ AI phản hồi...</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="page" id="dashboard">
+    <h1 style="margin-top: 3rem; margin-bottom: 2rem;">Thống kê & Quản lý dữ liệu</h1>
+    <div id="dashboardContent"></div>
+    <div style="text-align: center; margin-top: 3rem; margin-bottom: 3rem;">
+      <button class="btn btn-secondary" onclick="clearAllData()">Xoá tất cả dữ liệu</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // ===== CONFIG & CONSTANTS =====
+  const DB_KEY = 'careerVR_records';
+  const RIASEC_KEY = 'careerVR_current';
+
+  // Dummy RIASEC questions (50 total)
+  const RIASEC_QUESTIONS = [
+    { q: "Tôi thích làm việc với các công cụ thủ công", r: "R" },
+    { q: "Tôi thích giải quyết các bài toán phức tạp", r: "I" },
+    { q: "Tôi thích sáng tạo và biểu đạt bản thân", r: "A" },
+    { q: "Tôi thích giúp đỡ người khác", r: "S" },
+    { q: "Tôi thích lãnh đạo và có ảnh hưởng", r: "E" },
+    { q: "Tôi thích công việc có quy tắc rõ ràng", r: "C" },
+    { q: "Tôi cảm thấy thoải mái khi làm công việc thực tế", r: "R" },
+    { q: "Tôi hứng thú với khoa học và nghiên cứu", r: "I" },
+    { q: "Tôi thích tham gia các hoạt động sáng tạo", r: "A" },
+    { q: "Tôi thích học hỏi từ người khác", r: "S" },
+    { q: "Tôi có khả năng thuyết phục người khác", r: "E" },
+    { q: "Tôi luôn cẩn thận với chi tiết", r: "C" },
+    { q: "Tôi thích công việc ngoài trời", r: "R" },
+    { q: "Tôi thích tìm hiểu cách mọi thứ hoạt động", r: "I" },
+    { q: "Tôi yêu thích âm nhạc, nghệ thuật hoặc văn học", r: "A" },
+    { q: "Tôi thích làm việc nhóm", r: "S" },
+    { q: "Tôi thích đề ra kế hoạch và tổ chức", r: "E" },
+    { q: "Tôi thích công việc cần sự chính xác", r: "C" },
+    { q: "Tôi thích sửa chữa các vật dụng", r: "R" },
+    { q: "Tôi thích sử dụng máy tính hoặc công nghệ", r: "I" },
+    { q: "Tôi thích thiết kế hoặc trang trí", r: "A" },
+    { q: "Tôi thích chăm sóc người khác", r: "S" },
+    { q: "Tôi thích công việc về giao dịch thương mại", r: "E" },
+    { q: "Tôi thích sắp xếp và quản lý tài liệu", r: "C" },
+    { q: "Tôi thích các hoạt động khám phá", r: "R" },
+    { q: "Tôi thích phân tích dữ liệu", r: "I" },
+    { q: "Tôi thích viết hoặc kể chuyện", r: "A" },
+    { q: "Tôi thích giáo dục những người khác", r: "S" },
+    { q: "Tôi thích khởi động các dự án mới", r: "E" },
+    { q: "Tôi thích tuân theo quy trình tiêu chuẩn", r: "C" },
+    { q: "Tôi có kỹ năng cơ khí tốt", r: "R" },
+    { q: "Tôi thích học tập liên tục", r: "I" },
+    { q: "Tôi thích diễn đạt ý tưởng của mình", r: "A" },
+    { q: "Tôi quan tâm đến phúc lợi của người khác", r: "S" },
+    { q: "Tôi thích buôn bán hoặc kinh doanh", r: "E" },
+    { q: "Tôi thích công việc có cấu trúc", r: "C" },
+    { q: "Tôi thích làm việc trực tiếp trên các dự án", r: "R" },
+    { q: "Tôi có sở thích mạnh về tự nhiên", r: "I" },
+    { q: "Tôi thích thử nghiệm những cách tiếp cận mới", r: "A" },
+    { q: "Tôi thích lắng nghe những người khác", r: "S" },
+    { q: "Tôi thích quản lý một nhóm người", r: "E" },
+    { q: "Tôi thích công việc yêu cầu chuyên môn cao", r: "C" },
+    { q: "Tôi yêu thích các đồ vật có hình dáng và kết cấu", r: "R" },
+    { q: "Tôi thích sử dụng toán học trong công việc", r: "I" },
+    { q: "Tôi thích biểu diễn cảm xúc qua nghệ thuật", r: "A" },
+    { q: "Tôi thích hỗ trợ những người gặp khó khăn", r: "S" },
+    { q: "Tôi thích nắm quyền kiểm soát", r: "E" },
+    { q: "Tôi thích công việc lặp đi lặp lại nhưng quan trọng", r: "C" },
+    { q: "Tôi thích lao động chân tay", r: "R" },
+    { q: "Tôi thích khám phá các ý tưởng trừu tượng", r: "I" },
+    { q: "Tôi thích các hoạt động hoạt động giải trí hoặc vui vẻ", r: "A" }
+  ];
+
+  // Dummy major recommendations
+  const MAJORS_DB = {
+    "R-I-A": [
+      { name: "Kiến trúc", code: "7310", path: "ĐH Kiến trúc (4 năm)" },
+      { name: "Thiết kế nội thất", code: "7220", path: "ĐH Mỹ thuật ứng dụng (4 năm)" }
+    ],
+    "I-R-A": [
+      { name: "Khoa học máy tính", code: "7480", path: "ĐH Công nghệ thông tin (4 năm)" },
+      { name: "Kỹ thuật phần mềm", code: "7310", path: "ĐH Kỹ thuật (4 năm)" }
+    ],
+    "S-E-C": [
+      { name: "Quản trị kinh doanh", code: "7340", path: "ĐH Kinh tế (4 năm)" },
+      { name: "Tâm lý học", code: "7320", path: "ĐH Sư phạm (4 năm)" }
+    ],
+    "E-C-S": [
+      { name: "Marketing & Bán hàng", code: "7360", path: "ĐH Ngoại thương (4 năm)" },
+      { name: "Quản lý nhân sự", code: "7340", path: "ĐH Kinh tế (4 năm)" }
+    ]
+  };
+
+  // ===== UTILS =====
+  const $ = (id) => document.getElementById(id);
+  const readDB = () => JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+  const writeDB = (arr) => localStorage.setItem(DB_KEY, JSON.stringify(arr));
+  const readCurrent = () => JSON.parse(localStorage.getItem(RIASEC_KEY) || 'null');
+  const writeCurrent = (obj) => localStorage.setItem(RIASEC_KEY, JSON.stringify(obj));
+
+  // ===== PAGE NAVIGATION =====
+  function goPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    $(page).classList.add('active');
+
+    document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+    document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+    if (page === 'results') showResults();
+    if (page === 'dashboard') showDashboard();
+  }
+
+  // ===== INIT TEST PAGE =====
+  function initTest() {
+    const container = $('questionsContainer');
+    container.innerHTML = '';
+
+    RIASEC_QUESTIONS.forEach((q, idx) => {
+      const html = `
+        <div class="question-item">
+          <label>Câu ${idx + 1}. ${q.q}</label>
+          <div class="answer-options">
+            ${[1, 2, 3, 4, 5].map(v => `
+              <div class="answer-option">
+                <input type="radio" name="q${idx}" value="${v}" id="q${idx}_${v}" onchange="updateProgress()">
+                <label for="q${idx}_${v}">${v}</label>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      container.innerHTML += html;
+    });
+  }
+
+  // ===== PROGRESS TRACKING =====
+  function updateProgress() {
+    const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+    const total = 50;
+    const percent = (answered / total) * 100;
+
+    $('progressFill').style.width = percent + '%';
+    $('progressText').textContent = `${answered} / ${total} câu`;
+
+    if (answered === total) {
+      $('estimatedTime').textContent = '✅ Sẵn sàng nộp';
+    }
+  }
+
+  // ===== CALCULATE RIASEC SCORES =====
+  function calculateRIASEC() {
+    const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+    let answered = 0;
+
+    RIASEC_QUESTIONS.forEach((q, idx) => {
+      const value = parseInt(document.querySelector(`input[name="q${idx}"]:checked`)?.value) || 0;
+      if (value) {
+        scores[q.r] += value;
+        answered++;
+      }
+    });
+
+    if (answered !== 50) {
+      alert('Vui lòng trả lời hết 50 câu!');
+      return null;
+    }
+
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    const top3 = sorted.slice(0, 3).map(x => x[0]);
+
+    return { scores, top3, answered };
+  }
+
+  // ===== SUBMIT TEST =====
+  $('testForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const result = calculateRIASEC();
+    if (!result) return;
+
+    const record = {
+      name: $('name').value || 'Ẩn danh',
+      class: $('class').value || '-',
+      school: $('school').value || '-',
+      riasec: result.top3,
+      scores: result.scores,
+      time: new Date().toISOString()
+    };
+
+    const db = readDB();
+    db.push(record);
+    writeDB(db);
+    writeCurrent(record);
+
+    goPage('results');
+  });
+
+  // ===== SHOW RESULTS =====
+  function showResults() {
+    const current = readCurrent();
+    if (!current) {
+      $('majorContainer').innerHTML = '<div class="empty-state">Vui lòng làm trắc nghiệm trước</div>';
+      return;
+    }
+
+    $('riasecDisplay').textContent = current.riasec.join('-');
+    $('resultTime').textContent = `Ngày: ${new Date(current.time).toLocaleDateString('vi-VN')}`;
+
+    const key = current.riasec.join('-');
+    const majors = MAJORS_DB[key] || MAJORS_DB['S-E-C'];
+
+    const html = majors.map((m, idx) => `
+      <div class="major-card rank-${idx + 1}">
+        <div class="major-badge">Gợi ý #${idx + 1}</div>
+        <h3>${m.name}</h3>
+        <div class="major-code">Mã ngành: <strong>${m.code}</strong></div>
+        <p>${m.path}</p>
+      </div>
+    `).join('');
+
+    $('majorContainer').innerHTML = html;
+  }
+
+  // ===== SHOW DASHBOARD =====
+  function showDashboard() {
+    const db = readDB();
+    if (!db.length) {
+      $('dashboardContent').innerHTML = '<div class="empty-state">Chưa có dữ liệu. Hãy làm trắc nghiệm trước.</div>';
+      return;
+    }
+
+    const stats = {};
+    db.forEach(r => {
+      const key = r.school || 'Không rõ';
+      stats[key] = (stats[key] || 0) + 1;
+    });
+
+    const html = `
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <h3>📊 Tổng số bài làm</h3>
+          <div class="stat-item">
+            <span>Tất cả bài trắc nghiệm</span>
+            <span class="stat-value">${db.length}</span>
+          </div>
+        </div>
+        <div class="dashboard-card">
+          <h3>🏫 Theo trường</h3>
+          ${Object.entries(stats).map(([k, v]) => `
+            <div class="stat-item">
+              <span>${k}</span>
+              <span class="stat-value">${v}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    $('dashboardContent').innerHTML = html;
+  }
+
+  // ===== RESET TEST =====
+  function resetTest() {
+    if (!confirm('Xoá hết dữ liệu nhập liệu?')) return;
+    document.getElementById('testForm').reset();
+    $('progressFill').style.width = '0%';
+    $('progressText').textContent = '0 / 50 câu';
+    $('estimatedTime').textContent = '~10 phút';
+  }
+
+  // ===== CLEAR ALL DATA =====
+  function clearAllData() {
+    if (!confirm('Xoá tất cả dữ liệu lưu trữ? Hành động này không thể hoàn tác.')) return;
+    writeDB([]);
+    writeCurrent(null);
+    showDashboard();
+    alert('Đã xoá tất cả dữ liệu');
+  }
+
+  // ===== CHATBOT =====
+  // Use relative URL - works on localhost and production
+  const API_BASE = window.location.origin;
+
+  function updateChatContext() {
+    const current = readCurrent();
+    const ctx = $('chatContext');
+    if (!ctx) return;
+
+    if (!current) {
+      ctx.innerHTML = '❌ Chưa có dữ liệu. Vui lòng <strong onclick="goPage(\'test\')">làm trắc nghiệm</strong> trước.';
+      $('consultBtn').disabled = true;
+      return;
+    }
+
+    ctx.innerHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <strong>👤 Học sinh:</strong> ${current.name || 'Ẩn danh'}
+        </div>
+        <div>
+          <strong>📚 Lớp / Trường:</strong> ${current.class || '-'} / ${current.school || '-'}
+        </div>
+        <div>
+          <strong>🎯 RIASEC:</strong> <span style="background: rgba(26, 60, 255, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">${current.riasec.join('-')}</span>
+        </div>
+        <div>
+          <strong>⏱️ Ngày:</strong> ${new Date(current.time).toLocaleDateString('vi-VN')}
+        </div>
+      </div>
+    `;
+    $('consultBtn').disabled = false;
+  }
+
+  function formatMarkdownText(text) {
+    // Convert markdown-style formatting to HTML
+    let html = text
+      // Bold: **text** → <strong>text</strong>
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Line breaks: preserve them
+      .replace(/\n/g, '<br>')
+      // Headers: Roman numerals + ALL CAPS
+      .replace(/^(I+\..*?)$/gm, '<h4 style="margin: 1rem 0 0.5rem 0; color: #cfe0ff; font-size: 1rem;">$1</h4>')
+      // Numbered lists: 1. → formatted list
+      .replace(/^(\d+\.\s)/gm, '<div style="margin-left: 1rem; margin-bottom: 0.5rem;">$1')
+      // Close numbered list items
+      .replace(/(<div style="margin-left: 1rem;.*?)<br>/g, '$1</div><br>')
+      // Dashes to bullet points: - → •
+      .replace(/^- /gm, '&nbsp;&nbsp;• ');
+    
+    return html;
+  }
+
+  function addChatMessage(sender, text, isLoading = false) {
+    const messagesBox = $('messagesBox');
+    const msg = document.createElement('div');
+    msg.style.cssText = 'color: #9fb7ff; font-size: 0.95rem; line-height: 1.8; margin-bottom: 1rem; white-space: pre-wrap; word-wrap: break-word;';
+
+    if (sender === 'user') {
+      msg.innerHTML = `<strong style="color: #cfe0ff;">👤 Bạn:</strong> ${text}`;
+    } else {
+      const formattedText = formatMarkdownText(text);
+      msg.innerHTML = `<div style="color: #4d7cff;"><strong>🤖 AI:</strong></div><div style="margin-top: 0.5rem; color: #9fb7ff;">${isLoading ? '<em>Đang suy nghĩ...</em>' : formattedText}</div>`;
+    }
+
+    messagesBox.appendChild(msg);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+
+  async function requestCounsel() {
+    const current = readCurrent();
+    if (!current) {
+      alert('Vui lòng làm trắc nghiệm trước');
+      return;
+    }
+
+    const $consultBtn = $('consultBtn');
+    const $loadingIndicator = $('loadingIndicator');
+
+    $consultBtn.disabled = true;
+    $loadingIndicator.style.display = 'block';
+
+    try {
+      // Build answer array: reconstruct from RIASEC scores proportionally
+      const answerArray = [];
+      const scores = current.scores;
+      const letters = ['R', 'I', 'A', 'S', 'E', 'C'];
+      let answerIdx = 0;
+
+      // Distribute answers based on original RIASEC allocation (50 questions total)
+      for (let i = 0; i < 50; i++) {
+        const letterIdx = i % 6;
+        const letter = letters[letterIdx];
+        const baseScore = Math.round(scores[letter] / 6);
+        const variance = Math.floor(Math.random() * 2) - 1;
+        answerArray.push(Math.max(1, Math.min(5, baseScore + variance)));
+      }
+
+      console.log('📤 Sending to API:', {
+        name: current.name,
+        class: current.class,
+        school: current.school,
+        answers_json: answerArray
+      });
+
+      const response = await fetch(`${API_BASE}/run-riasec`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: current.name || 'Ẩn danh',
+          class: current.class || '-',
+          school: current.school || '-',
+          answers_json: answerArray
+        })
+      });
+
+      if (!response.ok) {
+        let errorMsg = `HTTP ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.detail || errorMsg;
+        } catch (e) {}
+        throw new Error(errorMsg);
+      }
+
+      const data = await response.json();
+      const aiResponse = data.data.outputs.text || 'Không có phản hồi từ AI';
+
+      addChatMessage('ai', aiResponse);
+    } catch (err) {
+      console.error('❌ Fetch error:', err);
+      const errorMsg = err.message;
+      
+      if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
+        addChatMessage('ai', `
+          ❌ <strong>Lỗi kết nối:</strong> Không thể kết nối tới backend API (${API_BASE}).<br><br>
+          <strong>Cách khắc phục:</strong><br>
+          1. Mở terminal và chạy:<br>
+          <code style="background: #081225; padding: 0.25rem 0.5rem; border-radius: 4px;">uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000</code><br>
+          2. Sau đó tải lại trang web này
+        `);
+      } else {
+        addChatMessage('ai', `❌ <strong>Lỗi API:</strong> ${errorMsg}`);
+      }
+    } finally {
+      $consultBtn.disabled = false;
+      $loadingIndicator.style.display = 'none';
+    }
+  }
+
+  function sendChatMessage() {
+    const input = $('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    addChatMessage('user', text);
+    input.value = '';
+
+    // Placeholder: AI echo response
+    setTimeout(() => {
+      addChatMessage('ai', `Bạn hỏi: "${text}". Tôi đang học cách trả lời câu hỏi này. Vui lòng nhấn "Yêu cầu tư vấn" để nhận phân tích chi tiết.`);
+    }, 500);
+  }
+
+  // Enter to send
+  $('chatInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendChatMessage();
+  });
+
+  // ===== INIT =====
+  document.querySelectorAll('.nav-link').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = a.dataset.page;
+      if (page === 'chatbot') updateChatContext();
+      goPage(page);
+    });
+  });
+
+  // Init test page when landing is loaded
+  window.addEventListener('load', () => {
+    initTest();
+  });
+</script>
+
+</body>
+</html>

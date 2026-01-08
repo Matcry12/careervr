@@ -1,17 +1,24 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, field_validator
 from typing import List
 import requests
 import json
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
 # ================== APP ==================
-app = FastAPI()
+app = FastAPI(title="CareerVR", version="1.0.0")
+
+# ================== STATIC FILES ==================
+STATIC_DIR = Path(__file__).parent / "static"
+STATIC_DIR.mkdir(exist_ok=True)
 
 # ================== CORS ==================
 app.add_middleware(
@@ -23,7 +30,9 @@ app.add_middleware(
 )
 
 # ================== DIFY CONFIG ==================
-DIFY_API_KEY = os.getenv("DIFY_API_KEY", "app-y8WYwZs8NhFNlrW7MdPrzZx1")
+DIFY_API_KEY = os.getenv("DIFY_API_KEY")
+if not DIFY_API_KEY:
+    raise ValueError("❌ ERROR: DIFY_API_KEY not set. Set it in .env file or environment variables.")
 DIFY_CHAT_URL = "https://api.dify.ai/v1/chat-messages"
 
 # ================== SCHEMA ==================
@@ -55,6 +64,17 @@ def health_check():
     """Health check endpoint"""
     return {"status": "ok", "message": "CareerVR backend is running"}
 
+@app.get("/")
+def serve_index():
+    """Serve main app (index_redesigned_v2.html)"""
+    index_file = STATIC_DIR / "index_redesigned_v2.html"
+    if index_file.exists():
+        return FileResponse(index_file, media_type="text/html")
+    return {"error": "Main app not found. Place index_redesigned_v2.html in backend/static/"}
+
+# ================== MOUNT STATIC FILES (after routes) ==================
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 @app.post("/run-riasec")
 def run_riasec(data: RIASECRequest):
 
@@ -78,7 +98,7 @@ def run_riasec(data: RIASECRequest):
             "name": data.name,
             "class": data.class_,
             "school": data.school,
-            "answers_json": json.dumps(
+            "answer": json.dumps(
                 data.answers_json,
                 ensure_ascii=False
             )
