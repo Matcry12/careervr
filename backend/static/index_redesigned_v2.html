@@ -631,6 +631,11 @@
       <a href="#" data-page="chatbot" class="nav-link">💬 AI Chatbot</a>
       <a href="#" data-page="vr-mode" class="nav-link">Trải nghiệm VR</a>
       <a href="#" data-page="dashboard" class="nav-link">Thống kê</a>
+      <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 0.5rem;"></div>
+      <button id="navDevToggle" onclick="toggleGlobalDevMode()" class="btn btn-secondary"
+        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: rgba(255,215,0,0.5); color: #ffd700;">
+        🛠️ Dev
+      </button>
     </nav>
   </header>
 
@@ -729,8 +734,8 @@
           <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
             <button type="submit" class="btn btn-primary">Nộp bài</button>
             <button type="button" class="btn btn-secondary" onclick="resetTest()">Làm lại</button>
-            <button type="button" class="btn btn-secondary" style="border-color: #ffd700; color: #ffd700;"
-              onclick="devAutoFill()">⚡ Dev Fill</button>
+            <button type="button" id="btnDevFill" class="btn btn-secondary"
+              style="border-color: #ffd700; color: #ffd700; display: none;" onclick="devAutoFill()">⚡ Dev Fill</button>
           </div>
         </form>
       </div>
@@ -810,60 +815,85 @@
     <section class="page" id="vr-mode">
       <h1 style="text-align: center; margin-bottom: 2rem;">Trải nghiệm Nghề nghiệp VR/360</h1>
       <p
-        style="text-align: center; margin-bottom: 3rem; color: #9fb7ff; max-width: 700px; margin-left: auto; margin-right: auto;">
+        style="text-align: center; margin-bottom: 2rem; color: #9fb7ff; max-width: 700px; margin-left: auto; margin-right: auto;">
         Khám phá môi trường làm việc thực tế qua các video 360 độ và trải nghiệm thực tế ảo.
-        Đeo kính VR hoặc xoay màn hình để quan sát!
+        Chọn một nghề để trải nghiệm!
       </p>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
-
-        <!-- Video 1: Nghề Báo -->
-        <div
-          style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 1.5rem; border-radius: 12px;">
-          <h3 style="margin-bottom: 1rem; color: #4d7cff;">🎥 Nghề Báo chí - Truyền thông</h3>
-          <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
-            <iframe src="https://www.youtube.com/embed/BZgv0k_0IQs"
-              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen>
-            </iframe>
-          </div>
-          <p style="margin-top: 1rem; font-size: 0.9rem; color: #9fb7ff;">Theo chân phóng viên hiện trường và biên tập
-            viên để hiểu về áp lực và vinh quang của nghề báo.</p>
+      <!-- VR Controls (Admin/Dev) -->
+      <div id="vrControls" style="text-align: center; margin-bottom: 2rem; display: none;">
+        <div id="devTools" style="display: none; margin-top: 1rem; gap: 1rem; justify-content: center;">
+          <button class="btn btn-primary" onclick="addNewVRJob()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">+
+            Thêm nghề mới</button>
+          <button class="btn btn-secondary" onclick="resetVRData()"
+            style="padding: 0.5rem 1rem; font-size: 0.9rem; border-color: #ffd700; color: #ffd700;">⚡ Dev Fill
+            (Reset)</button></a>
         </div>
+      </div>
 
-        <!-- Video 2: Hướng dẫn viên du lịch -->
-        <div
-          style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 1.5rem; border-radius: 12px;">
-          <h3 style="margin-bottom: 1rem; color: #4d7cff;">🎥 Hướng dẫn viên du lịch</h3>
-          <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
-            <iframe src="https://www.youtube.com/embed/OXIxyXcia4M"
-              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen>
-            </iframe>
-          </div>
-          <p style="margin-top: 1rem; font-size: 0.9rem; color: #9fb7ff;">Trải nghiệm một ngày dẫn đoàn, thuyết minh và
-            xử lý tình huống du lịch thực tế.</p>
-        </div>
-
-        <!-- Video 3: Nghề Luật -->
-        <div
-          style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 1.5rem; border-radius: 12px;">
-          <h3 style="margin-bottom: 1rem; color: #4d7cff;">🎥 Nghề Luật sư</h3>
-          <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
-            <iframe src="https://www.youtube.com/embed/itq_QL6q23g"
-              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen>
-            </iframe>
-          </div>
-          <p style="margin-top: 1rem; font-size: 0.9rem; color: #9fb7ff;">Tham gia phiên tòa giả định và tìm hiểu quy
-            trình tranh tụng, tư vấn pháp lý.</p>
-        </div>
-
+      <!-- VR Grid Container -->
+      <div id="vrGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <!-- Dynamic content will be loaded here -->
       </div>
     </section>
+
+    <!-- VIDEO MODAL -->
+    <div id="videoModal" class="loading-overlay" onclick="closeVideoModal(event)">
+      <div class="loading-modal" style="width: 90%; max-width: 900px; padding: 1rem; background: #0b1220;">
+        <div style="text-align: right; margin-bottom: 0.5rem;">
+          <button onclick="closeVideoModal()"
+            style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+          <iframe id="videoFrame" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+        </div>
+        <h3 id="videoTitle" style="margin-top: 1rem; color: #4d7cff;"></h3>
+      </div>
+    </div>
+
+    <!-- DEV EDITOR MODAL -->
+    <div id="devJobModal" class="loading-overlay">
+      <div class="loading-modal"
+        style="width: 90%; max-width: 500px; padding: 2rem; background: #0b1220; text-align: left;">
+        <h2 style="margin-bottom: 1.5rem; text-align: center; color: #ffd700;">🛠️ Chỉnh sửa Video VR</h2>
+
+        <input type="hidden" id="devJobId">
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Tiêu đề:</label>
+          <input type="text" id="devJobTitle"
+            style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">YouTube Video ID:</label>
+          <input type="text" id="devJobVideoId" placeholder="VD: BZgv0k_0IQs"
+            style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Mô tả:</label>
+          <textarea id="devJobDesc" rows="3"
+            style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;"></textarea>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Icon (Emoji):</label>
+          <input type="text" id="devJobIcon" placeholder="🎥"
+            style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <button onclick="closeDevModal()" class="btn btn-secondary"
+            style="border-color: #ff4d4f; color: #ff4d4f;">Hủy</button>
+          <button onclick="saveDevJob()" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
 
     <!-- DASHBOARD -->
     <section class="page" id="dashboard">
@@ -1633,6 +1663,7 @@
         e.preventDefault();
         const page = a.dataset.page;
         if (page === 'chatbot') updateChatContext();
+        if (page === 'vr-mode') renderVRJobs();
         goPage(page);
       });
     });
@@ -1641,6 +1672,246 @@
     window.addEventListener('load', () => {
       initTest();
     });
+
+    // ===== VR EXPERIENCE LOGIC =====
+    const VR_JOBS_KEY = 'careervr_jobs_v1';
+
+    // Default data
+    const DEFAULT_VR_JOBS = [
+      {
+        id: 'job_1',
+        title: 'Nghề Báo chí - Truyền thông',
+        videoId: 'BZgv0k_0IQs',
+        description: 'Theo chân phóng viên hiện trường và biên tập viên để hiểu về áp lực và vinh quang của nghề báo.',
+        icon: '🎥'
+      },
+      {
+        id: 'job_2',
+        title: 'Hướng dẫn viên du lịch',
+        videoId: 'OXIxyXcia4M',
+        description: 'Trải nghiệm một ngày dẫn đoàn, thuyết minh và xử lý tình huống du lịch thực tế.',
+        icon: '🗺️'
+      },
+      {
+        id: 'job_3',
+        title: 'Nghề Luật sư',
+        videoId: 'itq_QL6q23g',
+        description: 'Tham gia phiên tòa giả định và tìm hiểu quy trình tranh tụng, tư vấn pháp lý.',
+        icon: '⚖️'
+      }
+    ];
+
+    // Load jobs
+    function getVRJobs() {
+      return JSON.parse(localStorage.getItem(VR_JOBS_KEY)) || DEFAULT_VR_JOBS;
+    }
+
+    // Save jobs
+    function saveVRJobs(jobs) {
+      localStorage.setItem(VR_JOBS_KEY, JSON.stringify(jobs));
+      renderVRJobs();
+    }
+
+    // Render Grid
+    function renderVRJobs() {
+      const jobs = getVRJobs();
+      const container = $('vrGrid');
+      const isDev = localStorage.getItem('careervr_dev_mode') === 'true';
+
+      container.innerHTML = jobs.map(job => `
+            <div style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 1.5rem; border-radius: 12px; transition: transform 0.2s; position: relative;" class="vr-card">
+              ${isDev ? `
+                <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 0.5rem;">
+                    <button onclick="editVRJob('${job.id}')" style="background: rgba(0,0,0,0.5); border: 1px solid #4d7cff; color: #fff; border-radius: 4px; cursor: pointer; padding: 2px 6px;">✏️</button>
+                    <button onclick="deleteVRJob('${job.id}')" style="background: rgba(0,0,0,0.5); border: 1px solid #ff4d4f; color: #fff; border-radius: 4px; cursor: pointer; padding: 2px 6px;">🗑️</button>
+                </div>
+              ` : ''}
+              
+              <div style="cursor: pointer;" onclick="openVideoModal('${job.videoId}', '${escapeHtml(job.title)}')">
+                  <div style="font-size: 2.5rem; margin-bottom: 1rem;">${job.icon || '🎬'}</div>
+                  <h3 style="margin-bottom: 1rem; color: #4d7cff;">${job.title}</h3>
+                  
+                  <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; margin-bottom: 1rem;">
+                    <img src="https://img.youtube.com/vi/${job.videoId}/mqdefault.jpg" style="position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(26,60,255,0.8); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">▶</div>
+                  </div>
+
+                  <p style="font-size: 0.9rem; color: #9fb7ff;">${job.description}</p>
+              </div>
+            </div>
+        `).join('');
+
+
+      // Update control visibility
+      const controls = $('vrControls');
+      const devTools = $('devTools');
+
+
+      controls.style.display = 'block';
+      if (isDev) {
+        devTools.style.display = "flex";
+      } else {
+        devTools.style.display = "none";
+      }
+    }
+
+    // Modal Logic
+    function openVideoModal(videoId, title) {
+      const modal = $('videoModal');
+      const iframe = $('videoFrame');
+      const titleEl = $('videoTitle');
+
+      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      titleEl.textContent = title;
+      modal.classList.add('active');
+    }
+
+    function closeVideoModal(e) {
+      if (e && e.target !== $('videoModal') && !e.target.classList.contains('loading-modal')) return; // Allow clicking X
+      if (e && e.target.closest && e.target.closest('.loading-modal') && e.target !== $('videoModal')) return; // Click inside modal logic fix
+
+      // Simple close logic: if e is present check target, else force close
+      if (e && e.target !== $('videoModal')) {
+        // check if clicked button
+        if (e.target.innerText !== '×' && !e.target.closest('button')) return;
+      }
+
+      const modal = $('videoModal');
+      const iframe = $('videoFrame');
+
+      iframe.src = ""; // Stop video
+      modal.classList.remove('active');
+    }
+
+    // Make global for onclick
+    window.closeVideoModal = () => {
+      const modal = $('videoModal');
+      const iframe = $('videoFrame');
+      iframe.src = "";
+      modal.classList.remove('active');
+    }
+
+    // Global Dev Mode Logic
+    function toggleGlobalDevMode() {
+      const current = localStorage.getItem('careervr_dev_mode') === 'true';
+      localStorage.setItem('careervr_dev_mode', !current);
+      updateDevModeUI();
+    }
+
+    function updateDevModeUI() {
+      const isDev = localStorage.getItem('careervr_dev_mode') === 'true';
+      const navBtn = $('navDevToggle');
+
+      // 1. Update Nav Button style
+      if (isDev) {
+        navBtn.textContent = "🛠️ ON";
+        navBtn.style.background = "rgba(255, 215, 0, 0.2)";
+        navBtn.style.color = "#ffd700";
+        navBtn.style.borderColor = "#ffd700";
+      } else {
+        navBtn.textContent = "🛠️ Dev";
+        navBtn.style.background = "transparent";
+        navBtn.style.color = "#9fb7ff";
+        navBtn.style.borderColor = "#2a3b66";
+      }
+
+      // 2. Update RIASEC Page (Dev Fill Button)
+      const btnFill = $('btnDevFill');
+      if (btnFill) btnFill.style.display = isDev ? 'inline-block' : 'none';
+
+      // 3. Update VR Page (render to show/hide edit buttons)
+      if (document.querySelector('#vrGrid')) {
+        renderVRJobs();
+      }
+    }
+
+    // Call on load
+    window.addEventListener('load', updateDevModeUI);
+
+    function resetVRData() {
+      if (confirm('Bạn có chắc chắn muốn Reset dữ liệu VR về mặc định không?')) {
+        localStorage.removeItem(VR_JOBS_KEY);
+        renderVRJobs();
+      }
+    }
+
+    // Dev Modal Handlers
+    function openDevModal() {
+      $('devJobModal').classList.add('active');
+    }
+
+    function closeDevModal() {
+      $('devJobModal').classList.remove('active');
+      // Clear form
+      $('devJobId').value = '';
+      $('devJobTitle').value = '';
+      $('devJobVideoId').value = '';
+      $('devJobDesc').value = '';
+      $('devJobIcon').value = '';
+    }
+
+    function addNewVRJob() {
+      // Open empty modal
+      $('devJobId').value = 'new';
+      $('devJobTitle').value = '';
+      $('devJobVideoId').value = '';
+      $('devJobDesc').value = '';
+      $('devJobIcon').value = '🎥';
+      openDevModal();
+    }
+
+    function editVRJob(id) {
+      const jobs = getVRJobs();
+      const job = jobs.find(j => j.id === id);
+      if (!job) return;
+
+      $('devJobId').value = job.id;
+      $('devJobTitle').value = job.title;
+      $('devJobVideoId').value = job.videoId;
+      $('devJobDesc').value = job.description;
+      $('devJobIcon').value = job.icon;
+
+      openDevModal();
+    }
+
+    function saveDevJob() {
+      const id = $('devJobId').value;
+      const title = $('devJobTitle').value;
+      const videoId = $('devJobVideoId').value;
+      const description = $('devJobDesc').value;
+      const icon = $('devJobIcon').value;
+
+      if (!title || !videoId) {
+        alert("Vui lòng nhập Tiêu đề và Video ID!");
+        return;
+      }
+
+      const jobs = getVRJobs();
+
+      if (id === 'new') {
+        // Create
+        jobs.push({
+          id: 'job_' + Date.now(),
+          title, videoId, description, icon
+        });
+      } else {
+        // Update
+        const idx = jobs.findIndex(j => j.id === id);
+        if (idx !== -1) {
+          jobs[idx] = { ...jobs[idx], title, videoId, description, icon };
+        }
+      }
+
+      saveVRJobs(jobs);
+      closeDevModal();
+    }
+
+    function deleteVRJob(id) {
+      if (!confirm('Xoá nghề này?')) return;
+      const jobs = getVRJobs().filter(j => j.id !== id);
+      saveVRJobs(jobs);
+    }
+
 
     // ===== DEV UTILS =====
     function devAutoFill() {
