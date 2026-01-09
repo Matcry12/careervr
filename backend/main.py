@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -10,7 +10,7 @@ import os
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
-from riasec_calculator import calculate_riasec
+from riasec_calculator import calculate_riasec, recommend_jobs
 
 # Load environment variables from .env file
 load_dotenv()
@@ -72,6 +72,33 @@ def call_dify_api(payload: Dict[str, Any]) -> Dict[str, Any]:
         
     return response.json()
 
+def send_log_to_sheet(data: Dict[str, Any]):
+    """Background task to send data to Google Sheet"""
+    # Google Script URL provided by user
+    GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzclNQP90TSF7MuQ_Y6a4TUAmSJjeiu_wLw-DvfamwnB51Rk8JUMDYo_xm9jgsZuflG/exec"
+    
+    try:
+        # Construct payload matching the Google Apps Script expectation
+        payload = {
+            "name": data.get("name"),
+            "class": data.get("class"),
+            "school": data.get("school"),
+            "R": data.get("riasec_scores", {}).get("R"),
+            "I": data.get("riasec_scores", {}).get("I"),
+            "A": data.get("riasec_scores", {}).get("A"),
+            "S": data.get("riasec_scores", {}).get("S"),
+            "E": data.get("riasec_scores", {}).get("E"),
+            "C": data.get("riasec_scores", {}).get("C"),
+            "top_riasec": ",".join(data.get("top_3_types", [])),
+            "nganh_de_xuat": data.get("nganh_de_xuat"),
+            "khoi_thi": "A00, A01" # Placeholder or logic for khoi_thi could be added later
+        }
+        
+        requests.post(GOOGLE_SCRIPT_URL, json=payload, timeout=10)
+        print(f"✅ Logged to Google Sheet: {data.get('name')}")
+    except Exception as e:
+        print(f"❌ Failed to log to Google Sheet: {str(e)}")
+
 # ================== SCHEMA ==================
 class RIASECRequest(BaseModel):
     name: str
@@ -120,12 +147,14 @@ def serve_index():
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 @app.post("/start-conversation")
-def start_conversation(data: StartConversationRequest):
+def start_conversation(data: StartConversationRequest, background_tasks: BackgroundTasks):
     """Start a new conversation session"""
     
     # Calculate RIASEC scores
     try:
         riasec_result = calculate_riasec(json.dumps(data.answers_json))
+        # Calculate recommended job locally
+        recommended_job = recommend_jobs(riasec_result["top_3_list"])
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Lỗi tính toán RIASEC: {str(e)}")
     
@@ -135,7 +164,7 @@ def start_conversation(data: StartConversationRequest):
             "name": data.name,
             "class": data.class_,
             "school": data.school,
-            "answer": json.dumps(data.answers_json, ensure_ascii=False),
+            "answer": json.dumps(riasec_result["full_scores"], ensure_ascii=False),
             "riasec_scores": json.dumps(riasec_result["full_scores"], ensure_ascii=False),
             "top_3_types": ",".join(riasec_result["top_3_list"])
         },
@@ -143,6 +172,17 @@ def start_conversation(data: StartConversationRequest):
         "response_mode": "blocking",
         "user": data.name.strip() or "student"
     }
+    
+    # Trigger Background Logging
+    log_data = {
+        "name": data.name,
+        "class": data.class_,
+        "school": data.school,
+        "riasec_scores": riasec_result["full_scores"],
+        "top_3_types": riasec_result["top_3_list"],
+        "nganh_de_xuat": recommended_job
+    }
+    background_tasks.add_task(send_log_to_sheet, log_data)
     
     try:
         dify_result = call_dify_api(payload)
@@ -196,9 +236,8 @@ def chat(data: ChatMessage):
             "class": conv["class"],
             "school": conv["school"],
             "riasec_scores": json.dumps(conv["riasec_scores"], ensure_ascii=False),
-            "riasec_scores": json.dumps(conv["riasec_scores"], ensure_ascii=False),
             "top_3_types": ",".join(conv["top_3_types"]),
-            "answer": json.dumps(conv["answers_json"], ensure_ascii=False)
+            "answer": json.dumps(conv["riasec_scores"], ensure_ascii=False)
         },
         "query": data.message,
         "response_mode": "blocking",
@@ -238,7 +277,7 @@ def run_riasec(data: RIASECRequest):
             "name": data.name,
             "class": data.class_,
             "school": data.school,
-            "answer": json.dumps(data.answers_json, ensure_ascii=False),
+            "answer": json.dumps(riasec_result["full_scores"], ensure_ascii=False),
             "riasec_scores": json.dumps(riasec_result["full_scores"], ensure_ascii=False),
             "top_3_types": ",".join(riasec_result["top_3_list"])
         },

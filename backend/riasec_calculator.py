@@ -79,6 +79,51 @@ def calculate_riasec(answers_json):
         "top_3_list": top_3_riasec
     }
 
+def recommend_jobs(top_3_riasec):
+    """
+    Recommend jobs based on user's Top 3 RIASEC types.
+    Logic:
+    1. Filter jobs with >= 2 matching letters.
+    2. Score: 10 pts per match. +20 if 3 matches. +5 if 1st letter matches.
+    3. Return top 3 recommendations (names) joined by comma.
+    """
+    from job_data import MAJORS_DB # Import inside function to avoid circular dep if any
+    
+    user_codes = top_3_riasec # e.g. ["R", "I", "C"]
+    
+    recommendations = []
+    
+    for job in MAJORS_DB:
+        job_codes = job["code"].split("-") # "R-I-C" -> ["R", "I", "C"]
+        
+        # Count matches
+        intersection = [c for c in job_codes if c in user_codes]
+        match_count = len(intersection)
+        
+        if match_count < 2:
+            continue
+            
+        # Score
+        score = match_count * 10
+        if match_count == 3:
+            score += 20
+        if job_codes[0] == user_codes[0]:
+            score += 5
+            
+        recommendations.append({
+            "name": job["name"],
+            "score": score
+        })
+        
+    # Sort descending
+    recommendations.sort(key=lambda x: x["score"], reverse=True)
+    
+    if not recommendations:
+        return "Chưa xác định"
+        
+    # Return top 3 recommendations joined by comma
+    top_recs = [rec["name"] for rec in recommendations[:3]]
+    return ", ".join(top_recs)
 
 # Example usage
 if __name__ == "__main__":
@@ -86,3 +131,7 @@ if __name__ == "__main__":
     sample_answers = [3] * 50
     result = calculate_riasec(json.dumps(sample_answers))
     print(json.dumps(result, indent=2))
+    
+    # Test recommendation
+    rec = recommend_jobs(result["top_3_list"])
+    print(f"Recommended: {rec}")

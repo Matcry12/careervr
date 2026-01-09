@@ -629,6 +629,7 @@
       <a href="#" data-page="test" class="nav-link">RIASEC Test</a>
       <a href="#" data-page="results" class="nav-link">Kết quả</a>
       <a href="#" data-page="chatbot" class="nav-link">💬 AI Chatbot</a>
+      <a href="#" data-page="vr-mode" class="nav-link">Trải nghiệm VR</a>
       <a href="#" data-page="dashboard" class="nav-link">Thống kê</a>
     </nav>
   </header>
@@ -741,6 +742,13 @@
         <div class="result-header">
           <h1>Kết quả của bạn</h1>
           <div class="riasec-badge" id="riasecDisplay">RAI</div>
+
+          <!-- New Score Display -->
+          <div id="scoreDetails"
+            style="max-width: 600px; margin: 0 auto 2rem auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <!-- Scores will be injected here -->
+          </div>
+
           <p id="resultTime" style="color: #9fb7ff; margin-top: 1rem;">-</p>
         </div>
 
@@ -794,6 +802,66 @@
         <div id="loadingIndicator" style="text-align: center; color: #9fb7ff; margin-top: 1rem; display: none;">
           <span>⏳ Đang chờ AI phản hồi...</span>
         </div>
+      </div>
+    </section>
+
+
+    <!-- VR EXPERIENCE PAGE -->
+    <section class="page" id="vr-mode">
+      <h1 style="text-align: center; margin-bottom: 2rem;">Trải nghiệm Nghề nghiệp VR/360</h1>
+      <p
+        style="text-align: center; margin-bottom: 3rem; color: #9fb7ff; max-width: 700px; margin-left: auto; margin-right: auto;">
+        Khám phá môi trường làm việc thực tế qua các video 360 độ và trải nghiệm thực tế ảo.
+        Đeo kính VR hoặc xoay màn hình để quan sát!
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+
+        <!-- Video 1: Nghề Báo -->
+        <div
+          style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 1.5rem; border-radius: 12px;">
+          <h3 style="margin-bottom: 1rem; color: #4d7cff;">🎥 Nghề Báo chí - Truyền thông</h3>
+          <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+            <iframe src="https://www.youtube.com/embed/BZgv0k_0IQs"
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: #9fb7ff;">Theo chân phóng viên hiện trường và biên tập
+            viên để hiểu về áp lực và vinh quang của nghề báo.</p>
+        </div>
+
+        <!-- Video 2: Hướng dẫn viên du lịch -->
+        <div
+          style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 1.5rem; border-radius: 12px;">
+          <h3 style="margin-bottom: 1rem; color: #4d7cff;">🎥 Hướng dẫn viên du lịch</h3>
+          <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+            <iframe src="https://www.youtube.com/embed/OXIxyXcia4M"
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: #9fb7ff;">Trải nghiệm một ngày dẫn đoàn, thuyết minh và
+            xử lý tình huống du lịch thực tế.</p>
+        </div>
+
+        <!-- Video 3: Nghề Luật -->
+        <div
+          style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 1.5rem; border-radius: 12px;">
+          <h3 style="margin-bottom: 1rem; color: #4d7cff;">🎥 Nghề Luật sư</h3>
+          <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+            <iframe src="https://www.youtube.com/embed/itq_QL6q23g"
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: #9fb7ff;">Tham gia phiên tòa giả định và tìm hiểu quy
+            trình tranh tụng, tư vấn pháp lý.</p>
+        </div>
+
       </div>
     </section>
 
@@ -876,25 +944,128 @@
       { q: "Tôi sẵn sàng lập kế hoạch cụ thể để theo đuổi nghề đã chọn.", r: "E" }
     ];
 
-    // Dummy major recommendations
-    const MAJORS_DB = {
-      "R-I-A": [
-        { name: "Kiến trúc", code: "7310", path: "ĐH Kiến trúc (4 năm)" },
-        { name: "Thiết kế nội thất", code: "7220", path: "ĐH Mỹ thuật ứng dụng (4 năm)" }
-      ],
-      "I-R-A": [
-        { name: "Khoa học máy tính", code: "7480", path: "ĐH Công nghệ thông tin (4 năm)" },
-        { name: "Kỹ thuật phần mềm", code: "7310", path: "ĐH Kỹ thuật (4 năm)" }
-      ],
-      "S-E-C": [
-        { name: "Quản trị kinh doanh", code: "7340", path: "ĐH Kinh tế (4 năm)" },
-        { name: "Tâm lý học", code: "7320", path: "ĐH Sư phạm (4 năm)" }
-      ],
-      "E-C-S": [
-        { name: "Marketing & Bán hàng", code: "7360", path: "ĐH Ngoại thương (4 năm)" },
-        { name: "Quản lý nhân sự", code: "7340", path: "ĐH Kinh tế (4 năm)" }
-      ]
-    };
+    // FULL 100-JOB MATRIX
+    const MAJORS_DB = [
+      // KỸ THUẬT – CÔNG NGHIỆP – CÔNG NGHỆ
+      { name: "Kỹ sư Cơ khí", code: "R-I-C", group: "Kỹ thuật" },
+      { name: "Kỹ sư Điện – Điện tử", code: "R-I-C", group: "Kỹ thuật" },
+      { name: "Kỹ sư Tự động hóa", code: "R-I-C", group: "Kỹ thuật" },
+      { name: "Kỹ sư Xây dựng", code: "R-I-C", group: "Kỹ thuật" },
+      { name: "Kỹ sư Giao thông", code: "R-I-C", group: "Kỹ thuật" },
+      { name: "Kỹ sư Môi trường", code: "I-R-S", group: "Kỹ thuật" },
+      { name: "Kỹ thuật viên Cơ điện", code: "R-C-I", group: "Kỹ thuật" },
+      { name: "Công nghệ vật liệu", code: "I-R-C", group: "Kỹ thuật" },
+      { name: "Công nghệ ô tô", code: "R-I-C", group: "Kỹ thuật" },
+      { name: "Công nghệ kỹ thuật nhiệt", code: "R-I-C", group: "Kỹ thuật" },
+
+      // CNTT – CHUYỂN ĐỔI SỐ
+      { name: "Công nghệ thông tin", code: "I-R-C", group: "CNTT" },
+      { name: "Khoa học máy tính", code: "I-R-C", group: "CNTT" },
+      { name: "Kỹ thuật phần mềm", code: "I-R-C", group: "CNTT" },
+      { name: "An toàn thông tin", code: "I-R-C", group: "CNTT" },
+      { name: "Trí tuệ nhân tạo", code: "I-R-C", group: "CNTT" },
+      { name: "Khoa học dữ liệu", code: "I-R-C", group: "CNTT" },
+      { name: "Lập trình viên", code: "I-R-C", group: "CNTT" },
+      { name: "Quản trị mạng", code: "R-I-C", group: "CNTT" },
+      { name: "Phân tích dữ liệu", code: "I-C-R", group: "CNTT" },
+      { name: "Thiết kế UI/UX", code: "A-I-C", group: "CNTT" },
+
+      // KHOA HỌC – Y SINH – MÔI TRƯỜNG
+      { name: "Y đa khoa", code: "I-S-R", group: "Y Sinh" },
+      { name: "Điều dưỡng", code: "S-I-R", group: "Y Sinh" },
+      { name: "Dược học", code: "I-C-R", group: "Y Sinh" },
+      { name: "Xét nghiệm y học", code: "I-R-C", group: "Y Sinh" },
+      { name: "Công nghệ sinh học", code: "I-R-C", group: "Y Sinh" },
+      { name: "Khoa học môi trường", code: "I-R-S", group: "Y Sinh" },
+      { name: "Kỹ thuật y sinh", code: "I-R-C", group: "Y Sinh" },
+      { name: "Thú y", code: "I-R-S", group: "Y Sinh" },
+      { name: "Dinh dưỡng", code: "I-S-C", group: "Y Sinh" },
+      { name: "Y tế công cộng", code: "S-I-C", group: "Y Sinh" },
+
+      // GIÁO DỤC – XÃ HỘI
+      { name: "Sư phạm Toán", code: "S-I-C", group: "Giáo dục" },
+      { name: "Sư phạm Ngữ văn", code: "S-A-C", group: "Giáo dục" },
+      { name: "Sư phạm Tiếng Anh", code: "S-A-C", group: "Giáo dục" },
+      { name: "Giáo dục mầm non", code: "S-A-C", group: "Giáo dục" },
+      { name: "Công tác xã hội", code: "S-I-A", group: "Xã hội" },
+      { name: "Tâm lý học", code: "I-S-A", group: "Xã hội" },
+      { name: "Xã hội học", code: "I-S-C", group: "Xã hội" },
+      { name: "Quản lý giáo dục", code: "S-E-C", group: "Giáo dục" },
+      { name: "Giáo dục đặc biệt", code: "S-I-A", group: "Giáo dục" },
+      { name: "Hướng nghiệp – tham vấn", code: "S-I-A", group: "Giáo dục" },
+
+      // NGHỆ THUẬT – TRUYỀN THÔNG
+      { name: "Thiết kế đồ họa", code: "A-C-I", group: "Nghệ thuật" },
+      { name: "Truyền thông đa phương tiện", code: "A-E-S", group: "Truyền thông" },
+      { name: "Báo chí", code: "A-S-E", group: "Truyền thông" },
+      { name: "Quan hệ công chúng", code: "E-S-A", group: "Truyền thông" },
+      { name: "Marketing", code: "E-A-C", group: "Kinh tế" },
+      { name: "Quảng cáo", code: "A-E-S", group: "Truyền thông" },
+      { name: "Sản xuất phim", code: "A-E-S", group: "Nghệ thuật" },
+      { name: "Nhiếp ảnh", code: "A-R-C", group: "Nghệ thuật" },
+      { name: "Âm nhạc", code: "A-R-S", group: "Nghệ thuật" },
+      { name: "Mỹ thuật ứng dụng", code: "A-C-R", group: "Nghệ thuật" },
+
+      // KINH TẾ – QUẢN LÝ
+      { name: "Quản trị kinh doanh", code: "E-C-S", group: "Kinh tế" },
+      { name: "Tài chính – Ngân hàng", code: "C-E-I", group: "Kinh tế" },
+      { name: "Kế toán", code: "C-I-E", group: "Kinh tế" },
+      { name: "Kiểm toán", code: "C-I-E", group: "Kinh tế" },
+      { name: "Thương mại điện tử", code: "E-I-C", group: "Kinh tế" },
+      { name: "Logistics", code: "E-C-R", group: "Kinh tế" },
+      { name: "Quản trị nhân sự", code: "S-E-C", group: "Quản lý" },
+      { name: "Kinh doanh quốc tế", code: "E-S-C", group: "Kinh tế" },
+      { name: "Quản trị khách sạn", code: "E-S-C", group: "Dịch vụ" },
+      { name: "Quản trị du lịch", code: "E-S-A", group: "Dịch vụ" },
+
+      // PHÁP LUẬT – HÀNH CHÍNH
+      { name: "Luật", code: "I-E-C", group: "Pháp luật" },
+      { name: "Luật kinh tế", code: "I-E-C", group: "Pháp luật" },
+      { name: "Hành chính công", code: "C-S-E", group: "Hành chính" },
+      { name: "Quản lý nhà nước", code: "E-C-S", group: "Hành chính" },
+      { name: "Văn thư – lưu trữ", code: "C-R-S", group: "Hành chính" },
+      { name: "Thanh tra", code: "I-E-C", group: "Pháp luật" },
+      { name: "Quản lý đất đai", code: "C-R-I", group: "Quản lý" },
+      { name: "Quản lý đô thị", code: "E-R-C", group: "Quản lý" },
+      { name: "Công an", code: "R-S-E", group: "An ninh" },
+      { name: "Quân đội", code: "R-S-E", group: "An ninh" },
+
+      // NÔNG NGHIỆP – KINH TẾ XANH
+      { name: "Nông học", code: "R-I-C", group: "Nông nghiệp" },
+      { name: "Công nghệ thực phẩm", code: "I-R-C", group: "Công nghệ" },
+      { name: "Lâm nghiệp", code: "R-I-C", group: "Nông nghiệp" },
+      { name: "Nuôi trồng thủy sản", code: "R-I-C", group: "Nông nghiệp" },
+      { name: "Kinh tế nông nghiệp", code: "E-I-C", group: "Kinh tế" },
+      { name: "Quản lý tài nguyên", code: "I-R-C", group: "Quản lý" },
+      { name: "Nông nghiệp công nghệ cao", code: "I-R-C", group: "Nông nghiệp" },
+      { name: "Bảo vệ thực vật", code: "I-R-C", group: "Nông nghiệp" },
+      { name: "Chăn nuôi", code: "R-I-C", group: "Nông nghiệp" },
+      { name: "Phát triển nông thôn", code: "S-E-I", group: "Xã hội" },
+
+      // ỨNG DỤNG – DỊCH VỤ
+      { name: "Kỹ thuật viên điện", code: "R-C-I", group: "Kỹ thuật" },
+      { name: "Kỹ thuật viên CNTT", code: "R-I-C", group: "CNTT" },
+      { name: "Thiết kế nội thất", code: "A-R-C", group: "Nghệ thuật" },
+      { name: "Thiết kế thời trang", code: "A-E-C", group: "Nghệ thuật" },
+      { name: "Đầu bếp", code: "R-A-C", group: "Dịch vụ" },
+      { name: "Chăm sóc sắc đẹp", code: "A-S-R", group: "Dịch vụ" },
+      { name: "Hướng dẫn viên du lịch", code: "S-A-E", group: "Dịch vụ" },
+      { name: "Quản lý bán lẻ", code: "E-C-S", group: "Kinh tế" },
+      { name: "Sales kỹ thuật", code: "E-R-C", group: "Kinh tế" },
+      { name: "Digital marketing", code: "E-A-C", group: "Truyền thông" },
+
+      // NGÀNH MỚI – XU HƯỚNG
+      { name: "Trí tuệ nhân tạo ứng dụng", code: "I-R-C", group: "CNTT" },
+      { name: "Phân tích kinh doanh", code: "I-E-C", group: "Kinh tế" },
+      { name: "Kinh tế số", code: "E-I-C", group: "Kinh tế" },
+      { name: "Fintech", code: "I-E-C", group: "Kinh tế" },
+      { name: "Edtech", code: "I-S-C", group: "Giáo dục" },
+      { name: "Công nghệ giáo dục", code: "I-S-C", group: "Giáo dục" },
+      { name: "Quản lý dự án", code: "E-C-S", group: "Quản lý" },
+      { name: "Khởi nghiệp đổi mới sáng tạo", code: "E-A-I", group: "Kinh tế" },
+      { name: "Kinh tế xanh", code: "I-E-R", group: "Kinh tế" },
+      { name: "Phát triển bền vững", code: "I-S-R", group: "Xã hội" }
+    ];
 
     // ===== UTILS =====
     const $ = (id) => document.getElementById(id);
@@ -1018,21 +1189,99 @@
       const current = readCurrent();
       if (!current) {
         $('majorContainer').innerHTML = '<div class="empty-state">Vui lòng làm trắc nghiệm trước</div>';
+        $('scoreDetails').innerHTML = ''; // Clear scores if empty
         return;
       }
 
       $('riasecDisplay').textContent = current.riasec.join('-');
       $('resultTime').textContent = `Ngày: ${new Date(current.time).toLocaleDateString('vi-VN')}`;
 
-      const key = current.riasec.join('-');
-      const majors = MAJORS_DB[key] || MAJORS_DB['S-E-C'];
+      // Render Scores
+      if (current.scores) {
+        const scoreHtml = Object.entries(current.scores)
+          .sort((a, b) => b[1] - a[1]) // Sort descending
+          .map(([type, score]) => {
+            const maxScore = 50;
+            const percent = Math.min((score / 45) * 100, 100);
+            const colors = {
+              'R': '#ff4d4f', 'I': '#ffa940', 'A': '#ffec3d',
+              'S': '#73d13d', 'E': '#4096ff', 'C': '#9254de'
+            };
+            const names = {
+              'R': 'Realistic (Thực tế)', 'I': 'Investigative (Nghiên cứu)', 'A': 'Artistic (Nghệ thuật)',
+              'S': 'Social (Xã hội)', 'E': 'Enterprising (Quản lý)', 'C': 'Conventional (Nghiệp vụ)'
+            };
 
-      const html = majors.map((m, idx) => `
-      <div class="major-card rank-${idx + 1}">
-        <div class="major-badge">Gợi ý #${idx + 1}</div>
+            return `
+            <div style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 0.75rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                <span style="font-weight: 600; color: ${colors[type]};">${names[type]}</span>
+                <span style="color: #fff;">${score} điểm</span>
+              </div>
+              <div style="height: 6px; background: rgba(30, 42, 68, 0.5); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: ${percent}%; background: ${colors[type]}; transition: width 0.5s;"></div>
+              </div>
+            </div>
+            `;
+          }).join('');
+
+        $('scoreDetails').innerHTML = scoreHtml;
+      }
+
+      // RECOMMENDATION LOGIC
+      // 1. Get Top 3 types from user result
+      const userCodes = current.riasec; // e.g. ["R", "I", "A"]
+
+      // 2. Score and Filter majors
+      // Criteria:
+      // - Match >= 2 letters (intersection size >= 2)
+      // - Bonus for exact position? (Optional, but user said "Ưu tiên: Ngành trùng đủ 3 ký tự")
+
+      let recommendations = MAJORS_DB.map(job => {
+        const jobCodes = job.code.split('-'); // e.g. ["R", "I", "C"]
+
+        // Count matches (order independent)
+        const intersection = jobCodes.filter(c => userCodes.includes(c));
+        const matchCount = intersection.length; // 0, 1, 2, or 3
+
+        // Calculate a score for sorting
+        // Base score = matchCount * 10
+        // Exact 3 match = +20 bonus
+        let score = matchCount * 10;
+        if (matchCount === 3) score += 20;
+
+        // Position bonus (optional fine-tuning)
+        // If 1st letter matches 1st letter of user code: +5
+        if (jobCodes[0] === userCodes[0]) score += 5;
+
+        return { ...job, matchCount, score };
+      });
+
+      // Filter: matchCount >= 2
+      recommendations = recommendations.filter(r => r.matchCount >= 2);
+
+      // Sort by score desc
+      recommendations.sort((a, b) => b.score - a.score);
+
+      // Pick Top 3-4 diverse results? 
+      // User said: "Trả về 2–3 ngành + 1 ngành dự phòng"
+      // Let's take top 4
+      const finalRecs = recommendations.slice(0, 4);
+
+      // Render
+      if (finalRecs.length === 0) {
+        $('majorContainer').innerHTML = '<div class="empty-state">Không tìm thấy ngành phù hợp sát với tiêu chí (trùng >= 2 nhóm). Hãy thử tham khảo các ngành chung của nhóm cao nhất!</div>';
+        return;
+      }
+
+      const html = finalRecs.map((m, idx) => `
+      <div class="major-card rank-${idx + 1}" style="${idx === 3 ? 'opacity: 0.8; border: 1px dashed rgba(30,42,68,0.5);' : ''}">
+        <div class="major-badge" style="${idx === 3 ? 'background: rgba(100,100,100,0.2); border-color: #aaa; color: #aaa;' : ''}">
+          ${idx < 3 ? `Gợi ý #${idx + 1}` : 'Dự phòng'}
+        </div>
         <h3>${m.name}</h3>
-        <div class="major-code">Mã ngành: <strong>${m.code}</strong></div>
-        <p>${m.path}</p>
+        <div class="major-code">Mã: <strong>${m.code}</strong> <span style="font-size: 0.8rem; color: #666;">(${m.group})</span></div>
+        <p>Phù hợp với hồ sơ: ${m.code.split('-').map(c => userCodes.includes(c) ? `<b style="color: #4d7cff;">${c}</b>` : c).join('-')}</p>
       </div>
     `).join('');
 
@@ -1042,39 +1291,71 @@
     // ===== SHOW DASHBOARD =====
     function showDashboard() {
       const db = readDB();
+      const $content = $('dashboardContent');
+
       if (!db.length) {
-        $('dashboardContent').innerHTML = '<div class="empty-state">Chưa có dữ liệu. Hãy làm trắc nghiệm trước.</div>';
+        $content.innerHTML = '<div class="empty-state">Chưa có dữ liệu. Hãy làm trắc nghiệm trước.</div>';
         return;
       }
 
-      const stats = {};
-      db.forEach(r => {
-        const key = r.school || 'Không rõ';
-        stats[key] = (stats[key] || 0) + 1;
-      });
+      // Reverse to show latest first
+      const rows = [...db].reverse();
 
       const html = `
-      <div class="dashboard-grid">
-        <div class="dashboard-card">
-          <h3>📊 Tổng số bài làm</h3>
-          <div class="stat-item">
-            <span>Tất cả bài trắc nghiệm</span>
-            <span class="stat-value">${db.length}</span>
+        <div style="overflow-x: auto; background: rgba(15, 31, 58, 0.8); border: 1px solid rgba(30, 42, 68, 0.5); border-radius: 12px; padding: 1rem;">
+          <h3 style="margin-bottom: 1rem; color: #4d7cff;">📋 Danh sách kết quả chi tiết</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 800px;">
+            <thead style="background: rgba(26, 60, 255, 0.2); color: #fff;">
+              <tr>
+                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">STT</th>
+                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">Ngày</th>
+                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">Họ tên</th>
+                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">Lớp</th>
+                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">Trường</th>
+                <th style="padding: 0.75rem; text-align: center; border: 1px solid rgba(30, 42, 68, 0.5); color: #ff4d4f;">R</th>
+                <th style="padding: 0.75rem; text-align: center; border: 1px solid rgba(30, 42, 68, 0.5); color: #ffa940;">I</th>
+                <th style="padding: 0.75rem; text-align: center; border: 1px solid rgba(30, 42, 68, 0.5); color: #ffec3d;">A</th>
+                <th style="padding: 0.75rem; text-align: center; border: 1px solid rgba(30, 42, 68, 0.5); color: #73d13d;">S</th>
+                <th style="padding: 0.75rem; text-align: center; border: 1px solid rgba(30, 42, 68, 0.5); color: #4096ff;">E</th>
+                <th style="padding: 0.75rem; text-align: center; border: 1px solid rgba(30, 42, 68, 0.5); color: #9254de;">C</th>
+                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">Top 3 RIASEC</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((row, index) => {
+        const s = row.scores || {};
+        return `
+                <tr style="border-bottom: 1px solid rgba(30, 42, 68, 0.3);">
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${index + 1}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5);">${new Date(row.time).toLocaleDateString('vi-VN')}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); font-weight: 500;">${row.name || 'Ẩn danh'}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5);">${row.class || '-'}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5);">${row.school || '-'}</td>
+                  
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${s.R || 0}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${s.I || 0}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${s.A || 0}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${s.S || 0}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${s.E || 0}</td>
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${s.C || 0}</td>
+                  
+                  <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5);">
+                    <span class="badge" style="background: rgba(26, 60, 255, 0.1); border-color: rgba(77, 124, 255, 0.5);">
+                      ${(row.riasec || []).join('-')}
+                    </span>
+                  </td>
+                </tr>
+                `;
+      }).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top: 1rem; text-align: right;">
+            <span style="font-size: 0.85rem; color: #9fb7ff;">Tổng số bản ghi: <strong>${db.length}</strong></span>
           </div>
         </div>
-        <div class="dashboard-card">
-          <h3>🏫 Theo trường</h3>
-          ${Object.entries(stats).map(([k, v]) => `
-            <div class="stat-item">
-              <span>${k}</span>
-              <span class="stat-value">${v}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
+      `;
 
-      $('dashboardContent').innerHTML = html;
+      $content.innerHTML = html;
     }
 
     // ===== RESET TEST =====

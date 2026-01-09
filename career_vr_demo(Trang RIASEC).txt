@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>CareerVR – Nền tảng Hướng nghiệp AI & VR</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0b1220;color:#e6f0ff}
+    header{display:flex;gap:16px;align-items:center;padding:16px 20px;background:#0e1a33;border-bottom:1px solid #1e2a44;position:sticky;top:0;z-index:20}
+    header h1{font-size:18px;margin:0}
+    nav a{color:#9fb7ff;text-decoration:none;margin-right:14px}
+    nav a.active{color:#fff;font-weight:bold}
+
+    .container{max-width:1100px;margin:0 auto;padding:20px}
+    .page{display:none}
+
+    .card{background:#0f1f3a;border:1px solid #1e2a44;border-radius:12px;padding:16px;margin-bottom:16px}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;background:#081225;border:1px solid #2a3b66;color:#cfe0ff}
+    .muted{color:#9fb7ff}
+
+    .major{padding:10px 12px;border-radius:10px;background:#081225;border:1px solid #1e2a44;margin-bottom:10px}
+    .major h4{margin:0 0 6px 0;font-size:15px}
+    .major p{margin:0;color:#cfe0ff;font-size:13px;line-height:1.45}
+
+    button{padding:10px 14px;border-radius:8px;border:none;background:#1a3cff;color:#fff;cursor:pointer}
+    button.ghost{background:#0f1f3a;border:1px solid #2a3b66}
+
+    input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid #2a3b66;background:#081225;color:#fff}
+
+    .scale{display:flex;justify-content:space-between;font-size:12px;color:#9fb7ff;margin-top:6px;gap:8px;flex-wrap:wrap}
+
+    .tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+    .tab{flex:1;min-width:220px;padding:8px;border-radius:8px;text-align:center;cursor:pointer;background:#081225;border:1px solid #1e2a44}
+    .tab.active{background:#1a3cff}
+
+    .question{margin-bottom:12px}
+    .options{display:flex;gap:10px;flex-wrap:wrap}
+
+    .progress{height:10px;background:#081225;border-radius:6px;overflow:hidden;margin-bottom:6px}
+    .bar{height:100%;width:0;background:#1a3cff}
+
+    ul{margin:8px 0 0 18px}
+  </style>
+</head>
+<body>
+<header>
+  <h1>CareerVR</h1>
+  <nav>
+    <a href="#home" data-page="home" class="nav active">Trang chủ</a>
+    <a href="#riasec" data-page="riasec" class="nav">RIASEC Test</a>
+    <a href="#experience" data-page="experience" class="nav">Trải nghiệm nghề</a>
+    <a href="#chatbot" data-page="chatbot" class="nav">Chatbot AI</a>
+    <a href="#dashboard" data-page="dashboard" class="nav">Dashboard</a>
+  </nav>
+</header>
+
+<div class="container">
+
+<!-- HOME -->
+<section class="page" id="home" style="padding:0">
+  <div style="position:relative;height:80vh;width:100%;overflow:hidden;border-radius:12px;border:1px solid #1e2a44">
+    <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover">
+      <source src="assets/intro.mp4" type="video/mp4">
+    </video>
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(11,18,32,.9));display:flex;align-items:center;justify-content:center">
+      <div style="text-align:center;max-width:760px;padding:20px">
+        <h2 style="font-size:32px;margin:0 0 12px 0">CareerVR – Nền tảng Hướng nghiệp AI & VR</h2>
+        <p style="color:#cfe0ff;font-size:16px;margin:0 0 20px 0">Khám phá bản thân – Trải nghiệm nghề nghiệp – Định hướng tương lai bằng công nghệ AI và VR.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button onclick="go('riasec')">Trắc nghiệm RIASEC</button>
+          <button class="ghost" onclick="go('experience')">Trải nghiệm nghề nghiệp</button>
+        </div>
+        <p class="muted" style="margin-top:14px;font-size:13px">Lưu ý: video giới thiệu đặt tại <span class="pill">assets/intro.mp4</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RIASEC -->
+<section class="page" id="riasec">
+  <div class="card">
+    <h3 style="margin-top:0">Thông tin học sinh</h3>
+    <label>Họ và tên</label><input id="name" type="text" placeholder="Nguyễn Văn A" />
+    <label style="margin-top:10px">Lớp</label><input id="cls" type="text" placeholder="10A1" />
+    <label style="margin-top:10px">Trường</label><input id="school" type="text" placeholder="THPT ..." />
+  </div>
+
+  <div class="card">
+    <strong>Tiến trình trả lời</strong>
+    <div class="progress" style="margin-top:8px"><div class="bar" id="bar"></div></div>
+    <div id="progressText" class="muted">0 / 50 câu</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab(0)">PHẦN 1 – Sở thích & Tính cách (1–24)</div>
+    <div class="tab" onclick="showTab(1)">PHẦN 2 – Năng lực & Kỹ năng (25–38)</div>
+    <div class="tab" onclick="showTab(2)">PHẦN 3 – Giá trị & Mong muốn (39–46)</div>
+    <div class="tab" onclick="showTab(3)">PHẦN 4 – Điều kiện thực tế (47–50)</div>
+  </div>
+
+  <!-- Thang đo dùng chung -->
+  <div class="card" id="scaleHint">
+    <strong>Thang đo dùng chung</strong>
+    <div class="scale">
+      <span>1. Rất không đúng</span>
+      <span>2. Không đúng</span>
+      <span>3. Phân vân</span>
+      <span>4. Đúng</span>
+      <span>5. Rất đúng</span>
+    </div>
+    <div class="muted" style="margin-top:8px;font-size:13px">Thang đo áp dụng cho tất cả câu hỏi (1–50).</div>
+  </div>
+
+  <form id="riasecForm" class="card">
+    <div id="questions"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+      <button type="submit">Hoàn thành & Xem kết quả</button>
+      <button type="button" class="ghost" onclick="resetRiasec()">Làm lại</button>
+    </div>
+    <div class="muted" style="margin-top:10px;font-size:13px">Không bắt buộc làm đủ 50 câu. Tuy nhiên, để kết quả chính xác hơn, nên trả lời càng nhiều càng tốt.</div>
+  </form>
+
+  <div class="card" id="riasecResult" style="display:none">
+    <h3 style="margin-top:0">Kết quả trắc nghiệm</h3>
+    <div id="riasecTop"></div>
+    <div style="margin-top:10px">
+      <strong>Ngành/nhóm ngành gợi ý (2–3) + 1 dự phòng</strong>
+      <div id="majorList" style="margin-top:8px"></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+      <button type="button" onclick="go('experience')">Tới Trải nghiệm nghề nghiệp</button>
+      <button type="button" class="ghost" onclick="go('chatbot')">Hỏi Chatbot AI</button>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="page" id="experience">
+  <div class="card">
+    <h3 style="margin-top:0">Trải nghiệm nghề nghiệp</h3>
+    <p class="muted">
+      3 ngành phù hợp nhất được ưu tiên hiển thị đầu danh sách.
+      Bên dưới là toàn bộ ngành nghề.
+    </p>
+
+    <div id="careerList"></div>
+
+    <hr style="border-color:#1e2a44;margin:16px 0">
+
+    <div id="careerDetail" class="card" style="display:none"></div>
+  </div>
+</section>
+
+<!-- CHATBOT -->
+<section class="page" id="chatbot">
+  <div class="card">
+    <h3 style="margin-top:0">Chatbot AI Hướng nghiệp</h3>
+    <div id="chatContext"></div>
+    <p><strong>Gợi ý:</strong></p>
+    <ul id="chatSuggest"></ul>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="page" id="dashboard">
+  <div class="card">
+    <h3 style="margin-top:0">Dashboard thống kê</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <button type="button" class="ghost" onclick="clearAllData()">Xoá dữ liệu (local)</button>
+      <span class="muted" style="align-self:center;font-size:13px">Chỉ xoá trên trình duyệt hiện tại</span>
+    </div>
+    <div id="dashboardData"></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(() => {
+  // ===== Helpers =====
+  const $ = (id) => document.getElementById(id);
+  const DB_KEY = 'careerVR';
+  const readDB = () => {
+    try { return JSON.parse(localStorage.getItem(DB_KEY) || '[]'); }
+    catch { return []; }
+  };
+  const writeDB = (arr) => localStorage.setItem(DB_KEY, JSON.stringify(arr));
+
+  // ===== SPA navigation =====
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const navs = Array.from(document.querySelectorAll('.nav'));
+
+  window.go = function go(pageId) {
+    pages.forEach(p => p.style.display = (p.id === pageId) ? 'block' : 'none');
+    navs.forEach(a => a.classList.toggle('active', a.dataset.page === pageId));
+    if (pageId === 'experience') syncExperienceFromLast();
+    if (pageId === 'chatbot') showChat();
+    if (pageId === 'dashboard') showDashboard();
+    try { history.replaceState(null, '', '#' + pageId); } catch {}
+  };
+
+  navs.forEach(a => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    go(a.dataset.page);
+  }));
+
+  window.addEventListener('hashchange', () => {
+    const h = (location.hash || '#home').replace('#', '');
+    if (pages.some(p => p.id === h)) go(h);
+  });
+
+  // ===== RIASEC + 50 câu hỏi (đúng theo tài liệu) + chấm điểm RIASEC cho cả 50 câu =====
+  const riasecQuestions = [
+    // PHẦN 1 – SỞ THÍCH & TÍNH CÁCH (RIASEC) (1–24)
+    {t:'Câu 1: Tôi thích sửa chữa, lắp ráp đồ đạc hoặc thiết bị.', r:'R'},
+    {t:'Câu 2: Tôi hứng thú với các công việc cần vận động hoặc làm ngoài trời.', r:'R'},
+    {t:'Câu 3: Tôi thích làm việc với công cụ, máy móc hơn là giấy tờ.', r:'R'},
+    {t:'Câu 4: Tôi học tốt hơn khi được làm trực tiếp thay vì chỉ nghe giảng.', r:'R'},
+    {t:'Câu 5: Tôi thích tìm hiểu nguyên nhân – kết quả của một vấn đề.', r:'I'},
+    {t:'Câu 6: Tôi thích các môn học cần suy luận như Toán, Lý, Hóa.', r:'I'},
+    {t:'Câu 7: Tôi thường đặt câu hỏi “vì sao” khi học kiến thức mới.', r:'I'},
+    {t:'Câu 8: Tôi thích phân tích dữ liệu, thí nghiệm hoặc nghiên cứu.', r:'I'},
+    {t:'Câu 9: Tôi thích vẽ, viết, thiết kế hoặc sáng tạo nội dung.', r:'A'},
+    {t:'Câu 10: Tôi không thích công việc quá khuôn mẫu, lặp lại.', r:'A'},
+    {t:'Câu 11: Tôi thích thể hiện ý tưởng và cảm xúc cá nhân.', r:'A'},
+    {t:'Câu 12: Tôi hứng thú với âm nhạc, mỹ thuật hoặc truyền thông.', r:'A'},
+    {t:'Câu 13: Tôi thích giúp đỡ, hướng dẫn hoặc hỗ trợ người khác.', r:'S'},
+    {t:'Câu 14: Tôi cảm thấy vui khi làm việc nhóm.', r:'S'},
+    {t:'Câu 15: Tôi có xu hướng lắng nghe và chia sẻ với mọi người.', r:'S'},
+    {t:'Câu 16: Tôi thích các công việc liên quan đến giáo dục, y tế hoặc xã hội.', r:'S'},
+    {t:'Câu 17: Tôi thích lãnh đạo hoặc thuyết phục người khác.', r:'E'},
+    {t:'Câu 18: Tôi hứng thú với kinh doanh, bán hàng hoặc tổ chức hoạt động.', r:'E'},
+    {t:'Câu 19: Tôi tự tin khi trình bày ý kiến trước đám đông.', r:'E'},
+    {t:'Câu 20: Tôi thích đặt mục tiêu và chinh phục kết quả.', r:'E'},
+    {t:'Câu 21: Tôi thích công việc rõ ràng, có quy trình cụ thể.', r:'C'},
+    {t:'Câu 22: Tôi cẩn thận với số liệu, hồ sơ và giấy tờ.', r:'C'},
+    {t:'Câu 23: Tôi thích làm việc có kế hoạch, thời gian biểu rõ ràng.', r:'C'},
+    {t:'Câu 24: Tôi cảm thấy yên tâm khi mọi việc được sắp xếp gọn gàng.', r:'C'},
+
+    // PHẦN 2 – NĂNG LỰC & KỸ NĂNG (25–38)
+    {t:'Câu 25: Tôi học tốt hơn khi được thực hành, thao tác trực tiếp.', r:'R'},
+    {t:'Câu 26: Tôi học tốt các môn cần tư duy logic và phân tích.', r:'I'},
+    {t:'Câu 27: Tôi sử dụng máy tính và phần mềm học tập một cách hiệu quả.', r:'C'},
+    {t:'Câu 28: Tôi giao tiếp và trình bày ý kiến khá tự tin.', r:'E'},
+    {t:'Câu 29: Tôi làm tốt các công việc cần thao tác tay hoặc kỹ thuật.', r:'R'},
+    {t:'Câu 30: Tôi tiếp thu nhanh khi được quan sát và làm thử.', r:'R'},
+    {t:'Câu 31: Tôi có khả năng phân tích vấn đề và tìm cách giải quyết.', r:'I'},
+    {t:'Câu 32: Tôi thích các nhiệm vụ cần suy luận, tính toán.', r:'I'},
+    {t:'Câu 33: Tôi có khả năng sáng tạo ý tưởng mới.', r:'A'},
+    {t:'Câu 34: Tôi thường có cách làm riêng, không thích bị bó buộc.', r:'A'},
+    {t:'Câu 35: Tôi có khả năng lắng nghe và hỗ trợ người khác.', r:'S'},
+    {t:'Câu 36: Tôi cảm thấy thoải mái khi làm việc nhóm.', r:'S'},
+    {t:'Câu 37: Tôi tự tin đưa ra ý kiến và dẫn dắt nhóm.', r:'E'},
+    {t:'Câu 38: Tôi làm việc hiệu quả khi có kế hoạch rõ ràng.', r:'C'},
+
+    // PHẦN 3 – GIÁ TRỊ NGHỀ NGHIỆP & MONG MUỐN (39–46)
+    {t:'Câu 39: Tôi coi trọng việc nghề nghiệp mang lại thu nhập và cơ hội thăng tiến.', r:'E'},
+    {t:'Câu 40: Tôi mong muốn công việc ổn định, lâu dài.', r:'C'},
+    {t:'Câu 41: Tôi muốn nghề nghiệp có ích cho xã hội và cộng đồng.', r:'S'},
+    {t:'Câu 42: Tôi coi trọng sự sáng tạo trong công việc.', r:'A'},
+    {t:'Câu 43: Tôi muốn nghề nghiệp giúp tôi phát triển bản thân.', r:'I'},
+    {t:'Câu 44: Tôi thích môi trường làm việc linh hoạt, không gò bó.', r:'A'},
+    {t:'Câu 45: Tôi coi trọng việc không ngừng học hỏi và nâng cao kiến thức.', r:'I'},
+    {t:'Câu 46: Tôi mong muốn công việc phản ánh giá trị cá nhân và có ý nghĩa.', r:'A'},
+
+    // PHẦN 4 – ĐIỀU KIỆN THỰC TẾ (47–50)
+    {t:'Câu 47: Tôi sẵn sàng học tập dài hạn để theo đuổi nghề phù hợp.', r:'I'},
+    {t:'Câu 48: Điều kiện tài chính gia đình cho phép tôi học tập có kế hoạch.', r:'C'},
+    {t:'Câu 49: Gia đình ủng hộ và tôn trọng lựa chọn nghề nghiệp của tôi.', r:'S'},
+    {t:'Câu 50: Tôi sẵn sàng lập kế hoạch cụ thể để theo đuổi nghề đã chọn.', r:'C'},
+  ];
+
+  const perTab = [24,14,8,4];
+  let tab = 0;
+
+  // Lưu trạng thái lựa chọn để khi chuyển tab vẫn giữ đáp án
+  const DRAFT_KEY = 'careerVR_draft';
+  let answers = Array.from({length:50}).map(()=>null); // 1..5
+
+  function loadDraft(){
+    try{
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+      if(d && Array.isArray(d.answers) && d.answers.length===50){
+        answers = d.answers.map(v => (v===null? null : Number(v)));
+      }
+      if(d && d.profile){
+        if($('name')) $('name').value = d.profile.name || $('name').value;
+        if($('cls')) $('cls').value = d.profile.cls || $('cls').value;
+        if($('school')) $('school').value = d.profile.school || $('school').value;
+      }
+    } catch {}
+  }
+
+  function saveDraft(){
+    const profile = {
+      name: $('name')?.value || '',
+      cls: $('cls')?.value || '',
+      school: $('school')?.value || ''
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({answers, profile, time:new Date().toISOString()}));
+  }
+
+  loadDraft();
+
+  // ===== Database ngành/nhóm ngành (demo) =====
+  const majorsDb = [
+    {name:'Kỹ thuật cơ khí – Chế tạo máy', code:'RIE', path:'THPT: Toán–Lý–Tin → ĐH/CĐ Cơ khí/Chế tạo → Kỹ sư cơ khí, kỹ sư sản xuất.'},
+    {name:'Công nghệ thông tin – Kỹ thuật phần mềm', code:'IRC', path:'THPT: Toán–Tin–Anh → CNTT → Lập trình Web/App/AI.'},
+    {name:'Điện – Điện tử – Tự động hoá', code:'RIE', path:'THPT: Toán–Lý → Điện/Điện tử/Tự động hoá → Kỹ sư vận hành/thiết kế.'},
+    {name:'Y khoa / Điều dưỡng / Y tế công cộng', code:'SIR', path:'THPT: Sinh–Hóa → Khối sức khoẻ → Bác sĩ/Điều dưỡng/KTV.'},
+    {name:'Tâm lý học – Công tác xã hội', code:'SIA', path:'THPT: Văn–Sinh → Tâm lý/CTXH → Tham vấn, giáo dục, cộng đồng.'},
+    {name:'Giáo dục – Sư phạm', code:'SAE', path:'THPT: Văn–Sử/Toán → Sư phạm → Giáo viên, quản lý giáo dục.'},
+    {name:'Thiết kế đồ hoạ – Truyền thông', code:'AES', path:'THPT: Mỹ thuật/Văn → Thiết kế/Truyền thông → Designer, content, media.'},
+    {name:'Kiến trúc – Thiết kế nội thất', code:'ARE', path:'THPT: Toán–Vẽ → Kiến trúc/Nội thất → Kiến trúc sư, thiết kế.'},
+    {name:'Kinh doanh – Marketing', code:'EAS', path:'THPT: Toán–Anh → QTKD/Marketing → Sales, marketing, quản trị.'},
+    {name:'Tài chính – Kế toán', code:'CEI', path:'THPT: Toán → Kế toán/Tài chính → Kế toán, phân tích tài chính.'},
+    {name:'Luật – Hành chính công', code:'SEC', path:'THPT: Văn–Sử → Luật/Hành chính → Luật sư, công chức.'},
+    {name:'Du lịch – Nhà hàng – Khách sạn', code:'ESA', path:'THPT: Anh–Văn → Du lịch/QLKS → Lễ tân, điều hành tour, quản lý.'},
+  ];
+
+  // ===== Render câu hỏi theo tab (giữ đáp án khi chuyển tab) =====
+  window.showTab = function showTab(i){
+    tab = i;
+    document.querySelectorAll('.tab').forEach((t,idx)=>t.classList.toggle('active', idx===i));
+    renderQuestions();
+  };
+
+  function renderQuestions(){
+    const wrap = $('questions');
+    if(!wrap) return;
+    wrap.innerHTML = '';
+
+    const start = perTab.slice(0,tab).reduce((a,b)=>a+b,0);
+    const end = start + perTab[tab];
+
+    riasecQuestions.slice(start,end).forEach((q,idx)=>{
+      const qIndex = start + idx;
+      const current = answers[qIndex];
+
+      const html = `
+        <div class='question card' style='padding:12px' data-q='${qIndex}'>
+          <div style='display:flex;justify-content:space-between;gap:10px;align-items:flex-start'>
+            <div style='font-weight:600'>${q.t}</div>
+            <span class='pill'>${q.r}</span>
+          </div>
+          <div class='options' style='margin-top:8px'>
+            ${[1,2,3,4,5].map(v=>
+              `<label style='display:flex;gap:6px;align-items:center'>
+                <input type='radio' name='q${qIndex}' value='${v}' ${current===v?'checked':''} />
+                <span>${v}</span>
+              </label>`
+            ).join('')}
+          </div>
+        </div>
+      `;
+
+      wrap.insertAdjacentHTML('beforeend', html);
+    });
+  }
+
+  function updateProgress(){
+    const answered = answers.filter(v => v!==null).length;
+    const bar = $('bar');
+    const pt = $('progressText');
+    if(bar) bar.style.width = (answered/50*100)+'%';
+    if(pt) pt.textContent = `${answered} / 50 câu`;
+  }
+
+  // ✅ FIX ReferenceError: questionsWrap was missing
+  const questionsWrap = $('questions');
+
+  // Event delegation: cập nhật answers + lưu draft
+  if (questionsWrap) {
+    questionsWrap.addEventListener('change', (ev) => {
+      const inp = ev.target;
+      if (!inp || inp.type !== 'radio') return;
+      const name = inp.name || '';
+      if (!name.startsWith('q')) return;
+      const idx = Number(name.slice(1));
+      const val = Number(inp.value);
+      if (Number.isFinite(idx) && idx>=0 && idx<50) {
+        answers[idx] = val;
+        saveDraft();
+        updateProgress();
+      }
+    });
+  }
+
+  window.resetRiasec = function resetRiasec(){
+    answers = Array.from({length:50}).map(()=>null);
+    localStorage.removeItem(DRAFT_KEY);
+    document.querySelectorAll("input[type=radio]:checked").forEach(i=>i.checked=false);
+    const res = $('riasecResult');
+    if(res) res.style.display = 'none';
+    renderQuestions();
+    updateProgress();
+    showTab(0);
+  };
+
+  // initial render
+  renderQuestions();
+  updateProgress();
+
+  // lưu profile khi nhập
+  ['name','cls','school'].forEach(id=>{
+    const el = $(id);
+    if(el) el.addEventListener('input', () => saveDraft());
+  });
+
+  // ===== Thuật toán gợi ý ngành theo TOP 3 RIASEC =====
+  function recommendMajors(top3){
+    const topSet = new Set(top3);
+    const scored = majorsDb.map(m=>{
+      const codeSet = new Set(m.code.split(''));
+      let common = 0;
+      for(const ch of codeSet){ if(topSet.has(ch)) common++; }
+      const match3 = top3.every(ch=>m.code.includes(ch));
+      return {...m, common, match3};
+    });
+
+    let candidates = scored.filter(x=>x.common>=2);
+    if(candidates.length<3) candidates = scored.filter(x=>x.common>=1);
+
+    candidates.sort((a,b)=>{
+      if(a.match3!==b.match3) return (b.match3?1:0)-(a.match3?1:0);
+      if(b.common!==a.common) return b.common-a.common;
+      return a.name.localeCompare(b.name,'vi');
+    });
+
+    const picks = candidates.slice(0,3);
+    const backup = candidates[3] || null;
+    return {picks: picks.slice(0, Math.min(3, picks.length)), backup};
+  }
+
+  // ===== Submit RIASEC =====
+  const riasecForm = $('riasecForm');
+  if (riasecForm) {
+    riasecForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const scores = {R:0,I:0,A:0,S:0,E:0,C:0};
+      let answeredCount = 0;
+      for(let i=0;i<50;i++){
+        const v = answers[i];
+        if(v === null) continue;
+        answeredCount++;
+        const key = riasecQuestions[i].r;
+        scores[key] += v;
+      }
+
+      if(answeredCount === 0){
+        alert('Bạn chưa trả lời câu nào. Vui lòng chọn ít nhất 1 câu để xem kết quả.');
+        return;
+      }
+
+      const top3 = Object.entries(scores)
+        .sort((a,b)=>b[1]-a[1])
+        .map(x=>x[0])
+        .slice(0,3);
+
+      const rec = recommendMajors(top3);
+
+      const record = {
+        name: $('name').value || 'Ẩn danh',
+        cls: $('cls').value || '-',
+        school: $('school').value || '-',
+        scores,
+        riasec: top3,
+        suggestedMajors: rec.picks.map(p=>({name:p.name, code:p.code, path:p.path, common:p.common, match3:p.match3})),
+        backupMajor: rec.backup ? {name:rec.backup.name, code:rec.backup.code, path:rec.backup.path, common:rec.backup.common, match3:rec.backup.match3} : null,
+        answeredCount,
+        time: new Date().toISOString()
+      };
+
+      const db = readDB();
+      db.push(record);
+      writeDB(db);
+
+      const box = $('riasecResult');
+      const top = $('riasecTop');
+      const list = $('majorList');
+
+      if(top){
+        top.innerHTML = `
+          <div style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>
+            <span class='pill'>TOP 3 RIASEC: ${top3.join('-')}</span>
+            <span class='pill muted'>Đã trả lời: ${answeredCount}/50</span>
+          </div>
+          <div class='muted' style='margin-top:8px'>Điểm RIASEC: R ${scores.R} · I ${scores.I} · A ${scores.A} · S ${scores.S} · E ${scores.E} · C ${scores.C}</div>
+        `;
+      }
+
+      if(list){
+        const htmlPicks = rec.picks.map((m,idx)=>{
+          const badge = m.match3 ? `<span class='pill'>Trùng 3/3</span>` : `<span class='pill'>Trùng ${m.common}/3</span>`;
+          return `
+            <div class='major'>
+              <div style='display:flex;gap:8px;align-items:center;flex-wrap:wrap'>
+                <h4 style='flex:1;margin:0'>${idx+1}. ${m.name}</h4>
+                <span class='pill'>Mã: ${m.code}</span>
+                ${badge}
+              </div>
+              <p><strong>Lộ trình:</strong> ${m.path}</p>
+            </div>`;
+        }).join('');
+
+        const htmlBackup = rec.backup ? `
+          <div class='major'>
+            <div style='display:flex;gap:8px;align-items:center;flex-wrap:wrap'>
+              <h4 style='flex:1;margin:0'>Dự phòng: ${rec.backup.name}</h4>
+              <span class='pill'>Mã: ${rec.backup.code}</span>
+              <span class='pill'>Trùng ${rec.backup.common}/3</span>
+            </div>
+            <p><strong>Lộ trình:</strong> ${rec.backup.path}</p>
+          </div>` : `<div class='muted'>Chưa có ngành dự phòng (cần mở rộng cơ sở dữ liệu ngành).</div>`;
+
+        list.innerHTML = htmlPicks + htmlBackup;
+      }
+
+      if(box) box.style.display = 'block';
+
+      syncExperienceFromLast();
+      showChat();
+      showDashboard();
+    });
+  }
+
+  // ===== Experience =====
+ function syncExperienceFromLast(){
+  const listBox = document.getElementById('careerList');
+  const detailBox = document.getElementById('careerDetail');
+  if(!listBox || !detailBox) return;
+
+  const db = readDB();
+  if(!db.length){
+    listBox.innerHTML = '<div class="muted">Chưa có kết quả RIASEC. Vui lòng làm trắc nghiệm trước.</div>';
+    detailBox.style.display = 'none';
+    return;
+  }
+
+  const last = db[db.length-1];
+  const topMajors = last.suggestedMajors || [];
+  const allMajors = majorsDb || [];
+
+  // Đưa 3 ngành ưu tiên lên đầu, sau đó là toàn bộ ngành còn lại
+  const used = new Set(topMajors.map(m=>m.name));
+  const ordered = [...topMajors, ...allMajors.filter(m=>!used.has(m.name))];
+
+  window.__careerOrdered = ordered;
+
+  listBox.innerHTML = ordered.map((m,idx)=>{
+    const badge = idx < 3 ? `<span class="pill">Ưu tiên</span>` : '';
+    return `
+      <div class="major" style="cursor:pointer" onclick="showCareerDetail(${idx})">
+        <h4>${idx+1}. ${m.name} ${badge}</h4>
+        <p class="muted">RIASEC: ${m.code}</p>
+      </div>
+    `;
+  }).join('');
+
+  detailBox.style.display = 'none';
+}
+
+function showCareerDetail(idx){
+  const m = window.__careerOrdered[idx];
+  const box = document.getElementById('careerDetail');
+  if(!m || !box) return;
+
+  box.innerHTML = `
+    <h4>${m.name} <span class="pill">${m.code}</span></h4>
+
+    <p><strong>Mô tả nghề:</strong>
+      Nghề phù hợp với nhóm RIASEC ${m.code}, yêu cầu kỹ năng chuyên môn và định hướng học tập rõ ràng.
+    </p>
+
+    <p><strong>Video VR:</strong></p>
+    <video controls width="100%" style="border-radius:8px">
+      <source src="assets/vr/${m.code}.mp4" type="video/mp4">
+    </video>
+
+    <p style="margin-top:8px">
+      <strong>Mini Task:</strong>
+      Thực hiện nhiệm vụ mô phỏng liên quan đến nghề <em>${m.name}</em>.
+    </p>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+      <button onclick="go('chatbot')">Hỏi Chatbot AI</button>
+      <button class="ghost">Bắt đầu Mini Task</button>
+    </div>
+  `;
+  box.style.display = 'block';
+}
+
+
+  // ===== Chatbot =====
+  function showChat(){
+    const ctx = $('chatContext');
+    const list = $('chatSuggest');
+    if(!ctx || !list) return;
+
+    const db = readDB();
+    if(!db.length){
+      ctx.textContent = 'Chưa có dữ liệu RIASEC. Vui lòng làm trắc nghiệm trước.';
+      list.innerHTML = '';
+      return;
+    }
+
+    const last = db[db.length-1];
+    ctx.innerHTML = `
+      <div style='display:flex;gap:8px;flex-wrap:wrap'>
+        <span class='pill'>RIASEC: ${last.riasec.join('-')}</span>
+        <span class='pill muted'>HS: ${last.name} · ${last.cls} · ${last.school}</span>
+      </div>
+      <div class='muted' style='margin-top:8px;font-size:13px'>AI sẽ ưu tiên tư vấn theo tổ hợp 3 chữ RIASEC và gợi ý ngành/lộ trình tương ứng.</div>
+    `;
+
+    const majors = last.suggestedMajors || [];
+    const backup = last.backupMajor;
+
+    const items = majors.map(m=>`
+      <li>
+        <strong>${m.name}</strong> <span class='pill'>${m.code}</span><br>
+        <span class='muted'>Lộ trình: ${m.path}</span>
+      </li>
+    `).join('');
+
+    const bk = backup ? `
+      <li>
+        <strong>Dự phòng:</strong> ${backup.name} <span class='pill'>${backup.code}</span><br>
+        <span class='muted'>Lộ trình: ${backup.path}</span>
+      </li>
+    ` : '';
+
+    list.innerHTML = items + bk;
+  }
+  window.showChat = showChat;
+
+  // ===== Dashboard =====
+  function showDashboard(){
+    const wrap = $('dashboardData');
+    if(!wrap) return;
+
+    const db = readDB();
+    if(!db.length){
+      wrap.innerHTML = '<div class="muted">Chưa có dữ liệu. Hãy làm RIASEC trước.</div>';
+      return;
+    }
+
+    const bySchool = {};
+    const byClass = {};
+    for(const r of db){
+      const sch = r.school || '-';
+      const clsKey = `${r.school || '-'} | ${r.cls || '-'}`;
+      bySchool[sch] = (bySchool[sch] || 0) + 1;
+      byClass[clsKey] = (byClass[clsKey] || 0) + 1;
+    }
+
+    const schoolHtml = Object.entries(bySchool)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([k,v])=>`<div class='major'><h4 style='margin:0'>${k}</h4><p class='muted'>Số lượt làm: ${v}</p></div>`)
+      .join('');
+
+    const classHtml = Object.entries(byClass)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([k,v])=>`<div class='major'><h4 style='margin:0'>${k}</h4><p class='muted'>Số lượt làm: ${v}</p></div>`)
+      .join('');
+
+    const latest = db[db.length-1];
+    const latestMajors = (latest.suggestedMajors || []).map(m=>`<li>${m.name} <span class='pill'>${m.code}</span></li>`).join('');
+
+    wrap.innerHTML = `
+      <div class='card'>
+        <h4 style='margin-top:0'>Bản ghi gần nhất</h4>
+        <div class='muted'>${latest.name} – ${latest.cls} – ${latest.school} – RIASEC: ${latest.riasec.join('-')} – Trả lời: ${(latest.answeredCount ?? 0)}/50</div>
+        <div style='margin-top:8px'><strong>Gợi ý ngành:</strong><ul>${latestMajors || '<li class="muted">(chưa có)</li>'}</ul></div>
+      </div>
+      <div class='card'>
+        <h4 style='margin-top:0'>Thống kê theo Trường</h4>
+        ${schoolHtml}
+      </div>
+      <div class='card'>
+        <h4 style='margin-top:0'>Thống kê theo Lớp</h4>
+        ${classHtml}
+      </div>
+    `;
+  }
+  window.showDashboard = showDashboard;
+
+  window.clearAllData = function clearAllData(){
+    if(!confirm('Xoá toàn bộ dữ liệu trắc nghiệm đã lưu trên trình duyệt này?')) return;
+    writeDB([]);
+    showDashboard();
+    syncExperienceFromLast();
+    showChat();
+    alert('Đã xoá dữ liệu.');
+  };
+
+  // ===== Self-tests (console) =====
+  function runSelfTests(){
+    const tests = [];
+    const assert = (name, cond) => tests.push({name, pass: !!cond});
+
+    assert('riasecQuestions has 50', riasecQuestions.length === 50);
+    assert('perTab sums to 50', perTab.reduce((a,b)=>a+b,0) === 50);
+    assert('all questions have RIASEC letter', riasecQuestions.every(q => ['R','I','A','S','E','C'].includes(q.r)));
+    assert('answers has 50 slots', Array.isArray(answers) && answers.length === 50);
+    assert('questionsWrap exists', !!questionsWrap);
+
+    const failed = tests.filter(t=>!t.pass);
+    if(failed.length){
+      console.warn('Self-tests failed:', failed);
+      window.__careerVR_tests = {pass:false, tests};
+    } else {
+      console.log('Self-tests passed:', tests.length);
+      window.__careerVR_tests = {pass:true, tests};
+    }
+  }
+  runSelfTests();
+
+  // initial page
+  const initial = (location.hash || '#home').replace('#','');
+  go(pages.some(p=>p.id===initial) ? initial : 'home');
+})();
+</script>
+</body>
+</html>
