@@ -900,7 +900,8 @@
       <h1 style="margin-top: 3rem; margin-bottom: 2rem;">Thống kê & Quản lý dữ liệu</h1>
       <div id="dashboardContent"></div>
       <div style="text-align: center; margin-top: 3rem; margin-bottom: 3rem;">
-        <button class="btn btn-secondary" onclick="clearAllData()">Xoá tất cả dữ liệu</button>
+        <button id="btnClearData" class="btn btn-secondary" onclick="clearAllData()" style="display: none;">Xoá tất cả
+          dữ liệu</button>
       </div>
     </section>
 
@@ -1929,6 +1930,10 @@
       if (document.querySelector('#vrGrid')) {
         renderVRJobs();
       }
+
+      // 4. Update Clear Data Button (Dashboard)
+      const btnClear = $('btnClearData');
+      if (btnClear) btnClear.style.display = isDev ? 'inline-block' : 'none';
     }
 
     // Call on load
