@@ -158,14 +158,18 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Lỗi tính toán RIASEC: {str(e)}")
     
+    # Prepare Dify payload with added RIASEC type
+    scores_for_dify = riasec_result["full_scores"].copy()
+    scores_for_dify["riasec_type"] = "-".join(riasec_result["top_3_list"])
+    
     # Send initial message to Dify
     payload = {
         "inputs": {
             "name": data.name,
             "class": data.class_,
             "school": data.school,
-            "answer": json.dumps(riasec_result["full_scores"], ensure_ascii=False),
-            "riasec_scores": json.dumps(riasec_result["full_scores"], ensure_ascii=False),
+            "answer": json.dumps(scores_for_dify, ensure_ascii=False),
+            "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
             "top_3_types": ",".join(riasec_result["top_3_list"])
         },
         "query": data.initial_question,
@@ -229,15 +233,19 @@ def chat(data: ChatMessage):
     
     conv = conversations[conversation_id]
     
+    # Prepare Dify payload with added RIASEC type
+    scores_for_dify = conv["riasec_scores"].copy()
+    scores_for_dify["riasec_type"] = "-".join(conv["top_3_types"])
+    
     # Send message to Dify
     payload = {
         "inputs": {
             "name": conv["name"],
             "class": conv["class"],
             "school": conv["school"],
-            "riasec_scores": json.dumps(conv["riasec_scores"], ensure_ascii=False),
+            "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
             "top_3_types": ",".join(conv["top_3_types"]),
-            "answer": json.dumps(conv["riasec_scores"], ensure_ascii=False)
+            "answer": json.dumps(scores_for_dify, ensure_ascii=False)
         },
         "query": data.message,
         "response_mode": "blocking",
@@ -271,14 +279,18 @@ def run_riasec(data: RIASECRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Lỗi tính toán RIASEC: {str(e)}")
 
+    # Prepare Dify payload with added RIASEC type
+    scores_for_dify = riasec_result["full_scores"].copy()
+    scores_for_dify["riasec_type"] = "-".join(riasec_result["top_3_list"])
+
     # Send to Dify
     payload = {
         "inputs": {
             "name": data.name,
             "class": data.class_,
             "school": data.school,
-            "answer": json.dumps(riasec_result["full_scores"], ensure_ascii=False),
-            "riasec_scores": json.dumps(riasec_result["full_scores"], ensure_ascii=False),
+            "answer": json.dumps(scores_for_dify, ensure_ascii=False),
+            "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
             "top_3_types": ",".join(riasec_result["top_3_list"])
         },
         "query": (
