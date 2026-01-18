@@ -1,91 +1,78 @@
-# CareerGo - Hành trình hướng nghiệp số – Nền tảng Hướng nghiệp AI & VR
+# CareerGo - Hành trình hướng nghiệp số
 
-Career guidance platform using RIASEC testing, AI chatbot, and VR experiences for Vietnamese high school students.
+Nền tảng hướng nghiệp sử dụng trắc nghiệm RIASEC, Chatbot AI và Trải nghiệm Nghề nghiệp dành cho học sinh THPT Việt Nam.
 
-## Project Structure
+## Tính năng
+
+- **Trắc nghiệm RIASEC**: 50 câu hỏi khoa học để đánh giá sở thích, kỹ năng và tính cách.
+- **AI Chatbot**: Tư vấn hướng nghiệp thông minh sử dụng Dify API.
+- **Kết quả Cá nhân hóa**: Đề xuất ngành nghề phù hợp dựa trên điểm số.
+- **Trải nghiệm Nghề nghiệp**: Khám phá môi trường làm việc qua video mô phỏng.
+- **Dashboard**: Thống kê và quản lý dữ liệu cá nhân.
+
+## Cấu trúc Dự án
 
 ```
 careervr/
-├── frontend/                 # Static frontend (Deploy to Vercel)
-│   ├── index_redesigned_v2.html  # Main app
-│   ├── package.json
+├── backend/                  # FastAPI Backend & Static Files
+│   ├── main.py               # Ứng dụng chính (API + phục vụ Static)
+│   ├── static/               # Frontend (HTML/CSS/JS)
+│   │   ├── index_redesigned_v2.html  # Giao diện chính
+│   │   └── ...
+│   ├── requirements.txt      # Thư viện Python
 │   └── ...
-├── backend/                  # FastAPI backend (Deploy to Railway)
-│   ├── main.py
-│   ├── requirements.txt
-│   └── Procfile
-├── vercel.json              # Vercel configuration
-└── README.md
+├── docker-compose.yml        # Cấu hình Docker
+├── DEPLOY.sh                 # Script triển khai
+└── README.md                 # Tài liệu này
 ```
 
-## Features
+## Cài đặt & Chạy Local
 
-- **RIASEC Test**: 50-question scientific career assessment
-- **AI Chatbot**: Dify-powered career counseling
-- **Result Analysis**: Personalized career recommendations
-- **Dashboard**: Statistics and data management
+### Yêu cầu
+- Python 3.8+
+- Dify API Key (Tạo `.env` file)
 
-## Tech Stack
+### Các bước
+1.  **Clone dự án**
+    ```bash
+    git clone https://github.com/nthuthuy020979-nvh/careervr.git
+    cd careervr
+    ```
 
-- **Frontend**: Vanilla HTML/CSS/JavaScript
-- **Backend**: Python FastAPI
-- **AI**: Dify API
-- **Deployment**: Vercel (frontend) + Railway (backend)
+2.  **Cấu hình biến môi trường**
+    Tạo file `.env` tại thư mục `backend/.env` hoặc gốc (tùy cấu hình docker):
+    ```env
+    DIFY_API_KEY=your_dify_api_key_here
+    ```
 
-## Development Setup
+3.  **Chạy Backend (bao gồm Frontend)**
+    ```bash
+    cd backend
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    ```
 
-### Frontend
+4.  **Truy cập**
+    Mở trình duyệt: `http://localhost:8000`
 
+## Triển khai (Deployment)
+
+### Docker
+Dự án có sẵn `docker-compose.yml`.
 ```bash
-cd frontend
-npx http-server . -p 3000
-```
-Open: http://localhost:3000/index_redesigned_v2.html
-
-### Backend
-
-```bash
-cd backend
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 8001
+docker-compose up --build -d
 ```
 
-## Environment Variables
+### Railway / Cloud
+- Dự án được cấu hình để deploy dễ dàng lên Railway hoặc các nền tảng hỗ trợ Docker/Python.
+- Đảm bảo thiết lập biến môi trường `DIFY_API_KEY` trên server.
 
-Create `.env` file in root:
-
-```
-DIFY_API_KEY=your_dify_api_key_here
-```
-
-## Deployment
-
-### Frontend (Vercel)
-
-1. Connect GitHub repo to Vercel
-2. Set output directory: `frontend`
-3. Deploy
-
-### Backend (Railway)
-
-1. Connect GitHub repo to Railway
-2. Add env vars: `DIFY_API_KEY`
-3. Railway auto-detects `Procfile` and deploys
-
-### Update API URL
-
-After deployment, update `frontend/index_redesigned_v2.html`:
-
-```javascript
-const API_BASE = 'https://your-railway-backend.railway.app';
-```
-
-## API Endpoints
-
-- `GET /health` - Health check
-- `POST /run-riasec` - Run RIASEC test with Dify
+## API Endpoints chính
+- `GET /health`: Kiểm tra trạng thái server.
+- `GET /`: Trang chủ ứng dụng.
+- Dữ liệu trắc nghiệm và lịch sử chat được lưu trữ cục bộ (LocalStorage) hoặc qua API tùy cấu hình.
 
 ## License
-
 MIT
