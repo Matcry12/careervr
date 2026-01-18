@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# CareerVR Deployment Script
+# CareerGo Deployment Script
 # Usage: ./deploy.sh [environment]
 
 set -e
@@ -8,7 +8,7 @@ set -e
 ENVIRONMENT=${1:-production}
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-echo "🚀 Deploying CareerVR to $ENVIRONMENT..."
+echo "🚀 Deploying CareerGo to $ENVIRONMENT..."
 
 # Check Python version
 PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')

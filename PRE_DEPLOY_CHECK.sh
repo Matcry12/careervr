@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# CareerVR Pre-Deployment Verification Script
+# CareerGo - Hành trình hướng nghiệp số Pre-Deployment Verification Script
 # Run this before pushing to GitHub
 
-echo "🔍 CareerVR Pre-Deployment Checklist"
+echo "🔍 CareerGo - Hành trình hướng nghiệp số Pre-Deployment Checklist"
 echo "====================================="
 echo ""
 

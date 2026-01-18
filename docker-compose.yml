@@ -3,7 +3,7 @@ version: '3.8'
 services:
   backend:
     build: .
-    container_name: careervr-backend
+    container_name: careergo-backend
     ports:
       - "8000:8000"
     environment:
@@ -14,12 +14,12 @@ services:
       - ./backend:/app
     restart: unless-stopped
     networks:
-      - careervr-network
+      - careergo-network
 
   # Optional: Add a simple HTTP server for frontend
   frontend:
     image: nginx:alpine
-    container_name: careervr-frontend
+    container_name: careergo-frontend
     ports:
       - "80:80"
     volumes:
@@ -30,8 +30,8 @@ services:
       - backend
     restart: unless-stopped
     networks:
-      - careervr-network
+      - careergo-network
 
 networks:
-  careervr-network:
+  careergo-network:
     driver: bridge

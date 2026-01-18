@@ -1,4 +1,4 @@
-# CareerVR – Single Server Deployment
+# CareerGo - Hành trình hướng nghiệp số – Single Server Deployment
 
 ## Simple Structure
 
@@ -69,5 +69,5 @@ Visit: `https://your-railway-url.railway.app/health`
 
 Should return:
 ```json
-{"status": "ok", "message": "CareerVR backend is running"}
+{"status": "ok", "message": "CareerGo - Hành trình hướng nghiệp số backend is running"}
 ```

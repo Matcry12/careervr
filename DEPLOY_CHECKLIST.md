@@ -1,4 +1,4 @@
-# 🚀 CareerVR Deployment Checklist
+# 🚀 CareerGo - Hành trình hướng nghiệp số Deployment Checklist
 
 ## Pre-Deployment Verification
 
@@ -18,7 +18,7 @@ Expected: See RIASEC test form
 
 #### ✅ Check Health Endpoint
 Visit: http://localhost:8000/health
-Expected: `{"status":"ok","message":"CareerVR backend is running"}`
+Expected: `{"status":"ok","message":"CareerGo - Hành trình hướng nghiệp số backend is running"}`
 
 #### ✅ Check API Routes Exist
 ```bash
@@ -97,7 +97,7 @@ git status
 git add .
 
 # Commit
-git commit -m "CareerVR: Single-server setup ready for deployment"
+git commit -m "CareerGo - Hành trình hướng nghiệp số: Single-server setup ready for deployment"
 
 # Push
 git push -u origin main
@@ -144,7 +144,7 @@ https://careervr-[random-id].railway.app
 curl https://careervr-[random-id].railway.app/health
 
 # Expected response:
-# {"status":"ok","message":"CareerVR backend is running"}
+# {"status":"ok","message":"CareerGo - Hành trình hướng nghiệp số backend is running"}
 ```
 
 **Visit in browser:**

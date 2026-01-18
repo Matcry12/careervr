@@ -32,7 +32,7 @@
 3. ✅ Deploy on Railway (3 min)
 
 ### For Understanding the Project
-1. 📖 [README.md](./README.md) - What CareerVR does
+1. 📖 [README.md](./README.md) - What CareerGo - Hành trình hướng nghiệp số does
 2. 🔍 [BUGS_FIXED.md](./BUGS_FIXED.md) - What was improved
 3. 📋 [DEPLOYMENT_GUIDE.txt](./DEPLOYMENT_GUIDE.txt) - How to deploy
 

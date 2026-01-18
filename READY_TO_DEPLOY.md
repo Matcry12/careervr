@@ -1,4 +1,4 @@
-# ✅ CareerVR – Ready to Deploy
+# ✅ CareerGo - Hành trình hướng nghiệp số – Ready to Deploy
 
 ## Status
 - ✅ Backend code verified
@@ -80,7 +80,7 @@ cd /home/matcry/Documents/careervr
 git add .
 
 # Commit
-git commit -m "CareerVR: Production-ready single-server setup"
+git commit -m "CareerGo - Hành trình hướng nghiệp số: Production-ready single-server setup"
 
 # Push to GitHub
 git push origin main
@@ -116,7 +116,7 @@ curl https://careervr-[random-id].railway.app/health
 ```
 Expected:
 ```json
-{"status":"ok","message":"CareerVR backend is running"}
+{"status":"ok","message":"CareerGo - Hành trình hướng nghiệp số backend is running"}
 ```
 
 ### Test 2: Frontend Loads

@@ -99,7 +99,7 @@ source venv/bin/activate
 curl http://localhost:7000/health  # or 8000/8001 depending on your port
 
 # Should return:
-# {"status":"ok","message":"CareerVR backend is running"}
+# {"status":"ok","message":"CareerGo - Hành trình hướng nghiệp số backend is running"}
 ```
 
 ### ⚠️ Getting 404 "Not Found"?

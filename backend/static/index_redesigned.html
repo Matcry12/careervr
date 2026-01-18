@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CareerVR - Khám Phá Hướng Nghiệp Của Bạn</title>
+  <title>CareerGo - Hành trình hướng nghiệp số - Khám Phá Hướng Nghiệp Của Bạn</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -20,16 +21,16 @@
       justify-content: center;
       padding: 20px;
     }
-    
+
     .container {
       max-width: 800px;
       width: 100%;
       background: white;
       border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       overflow: hidden;
     }
-    
+
     /* Header */
     .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -37,57 +38,62 @@
       padding: 40px 30px;
       text-align: center;
     }
-    
+
     .header h1 {
       font-size: 32px;
       margin-bottom: 10px;
       font-weight: 700;
     }
-    
+
     .header p {
       font-size: 16px;
       opacity: 0.9;
     }
-    
+
     /* Main Content */
     .content {
       padding: 40px 30px;
       min-height: 400px;
     }
-    
+
     /* Sections */
     .section {
       display: none;
     }
-    
+
     .section.active {
       display: block;
       animation: fadeIn 0.3s ease-in;
     }
-    
+
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
-    
+
     /* Welcome Section */
     .welcome-section {
       text-align: center;
     }
-    
+
     .welcome-section h2 {
       font-size: 24px;
       margin-bottom: 20px;
       color: #333;
     }
-    
+
     .welcome-section p {
       font-size: 16px;
       color: #666;
       margin-bottom: 15px;
       line-height: 1.6;
     }
-    
+
     .features {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -95,26 +101,26 @@
       margin: 30px 0;
       text-align: left;
     }
-    
+
     .feature {
       padding: 15px;
       background: #f8f9fa;
       border-radius: 8px;
       border-left: 4px solid #667eea;
     }
-    
+
     .feature h4 {
       margin-bottom: 8px;
       color: #667eea;
       font-size: 14px;
     }
-    
+
     .feature p {
       font-size: 13px;
       color: #666;
       margin: 0;
     }
-    
+
     /* Test Section */
     .student-info {
       background: #f8f9fa;
@@ -122,17 +128,17 @@
       border-radius: 8px;
       margin-bottom: 30px;
     }
-    
+
     .student-info h3 {
       margin-bottom: 15px;
       font-size: 16px;
       color: #333;
     }
-    
+
     .form-group {
       margin-bottom: 15px;
     }
-    
+
     .form-group label {
       display: block;
       margin-bottom: 5px;
@@ -140,7 +146,7 @@
       font-weight: 600;
       color: #333;
     }
-    
+
     .form-group input {
       width: 100%;
       padding: 10px;
@@ -148,11 +154,11 @@
       border-radius: 6px;
       font-size: 14px;
     }
-    
+
     .progress-bar {
       margin-bottom: 20px;
     }
-    
+
     .progress-text {
       font-size: 14px;
       margin-bottom: 8px;
@@ -160,7 +166,7 @@
       display: flex;
       justify-content: space-between;
     }
-    
+
     .progress-fill {
       width: 100%;
       height: 8px;
@@ -168,72 +174,72 @@
       border-radius: 4px;
       overflow: hidden;
     }
-    
+
     .progress-bar-inner {
       height: 100%;
       background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
       width: 0%;
       transition: width 0.3s ease;
     }
-    
+
     .question-container {
       margin-bottom: 25px;
       padding-bottom: 25px;
       border-bottom: 1px solid #eee;
     }
-    
+
     .question-container:last-child {
       border-bottom: none;
     }
-    
+
     .question-number {
       font-size: 12px;
       color: #667eea;
       font-weight: 600;
       margin-bottom: 5px;
     }
-    
+
     .question-text {
       font-size: 15px;
       font-weight: 600;
       color: #333;
       margin-bottom: 12px;
     }
-    
+
     .options {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
     }
-    
+
     .option-label {
       flex: 1;
       min-width: 70px;
     }
-    
+
     .option-label input {
       margin-right: 6px;
       cursor: pointer;
       accent-color: #667eea;
     }
-    
+
     .option-label label {
       cursor: pointer;
       font-size: 14px;
       color: #666;
     }
-    
+
     /* Results Section */
     .results-section {
       text-align: center;
     }
-    
+
     .results-section h2 {
       font-size: 24px;
       margin-bottom: 30px;
       color: #333;
     }
-    
+
     .riasec-result {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -241,35 +247,35 @@
       border-radius: 12px;
       margin-bottom: 30px;
     }
-    
+
     .riasec-label {
       font-size: 14px;
       opacity: 0.9;
       margin-bottom: 10px;
     }
-    
+
     .riasec-code {
       font-size: 48px;
       font-weight: 700;
       letter-spacing: 8px;
       margin-bottom: 15px;
     }
-    
+
     .riasec-description {
       font-size: 14px;
       line-height: 1.6;
     }
-    
+
     .majors-section {
       text-align: left;
     }
-    
+
     .majors-section h3 {
       font-size: 18px;
       margin-bottom: 20px;
       color: #333;
     }
-    
+
     .major-card {
       background: #f8f9fa;
       padding: 20px;
@@ -277,13 +283,13 @@
       margin-bottom: 15px;
       border-left: 4px solid #667eea;
     }
-    
+
     .major-card h4 {
       font-size: 16px;
       color: #333;
       margin-bottom: 8px;
     }
-    
+
     .major-code {
       display: inline-block;
       background: #667eea;
@@ -294,13 +300,13 @@
       font-weight: 600;
       margin-bottom: 10px;
     }
-    
+
     .major-description {
       font-size: 14px;
       color: #666;
       line-height: 1.6;
     }
-    
+
     /* Buttons */
     .button-group {
       display: flex;
@@ -308,7 +314,7 @@
       margin-top: 30px;
       flex-wrap: wrap;
     }
-    
+
     button {
       flex: 1;
       min-width: 150px;
@@ -320,35 +326,35 @@
       cursor: pointer;
       transition: all 0.3s ease;
     }
-    
+
     .btn-primary {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
-    
+
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
     }
-    
+
     .btn-secondary {
       background: #f0f0f0;
       color: #333;
     }
-    
+
     .btn-secondary:hover {
       background: #e0e0e0;
     }
-    
+
     .btn-danger {
       background: #ff6b6b;
       color: white;
     }
-    
+
     .btn-danger:hover {
       background: #ff5252;
     }
-    
+
     /* Footer */
     .footer {
       background: #f8f9fa;
@@ -358,7 +364,7 @@
       font-size: 12px;
       color: #999;
     }
-    
+
     /* Dev Mode */
     .dev-mode-badge {
       position: fixed;
@@ -374,15 +380,15 @@
       z-index: 1000;
       transition: all 0.3s ease;
     }
-    
+
     .dev-mode-badge.on {
       background: #51cf66;
     }
-    
+
     .dev-mode-badge:hover {
       transform: scale(1.05);
     }
-    
+
     /* Modal */
     .modal {
       display: none;
@@ -392,15 +398,15 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.5);
       align-items: center;
       justify-content: center;
     }
-    
+
     .modal.active {
       display: flex;
     }
-    
+
     .modal-content {
       background: white;
       padding: 40px;
@@ -408,43 +414,43 @@
       max-width: 400px;
       text-align: center;
     }
-    
+
     .modal-content h3 {
       margin-bottom: 15px;
       font-size: 20px;
     }
-    
+
     .modal-content p {
       margin-bottom: 20px;
       color: #666;
     }
-    
+
     /* Responsive */
     @media (max-width: 600px) {
       .header {
         padding: 30px 20px;
       }
-      
+
       .header h1 {
         font-size: 24px;
       }
-      
+
       .content {
         padding: 20px;
       }
-      
+
       .features {
         grid-template-columns: 1fr;
       }
-      
+
       .button-group {
         flex-direction: column;
       }
-      
+
       button {
         min-width: unset;
       }
-      
+
       .riasec-code {
         font-size: 36px;
         letter-spacing: 4px;
@@ -452,10 +458,11 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Dev Mode Badge -->
   <div class="dev-mode-badge" id="devModeBadge">🧪 Dev Mode OFF</div>
-  
+
   <!-- Main Container -->
   <div class="container">
     <!-- Header -->
@@ -463,7 +470,7 @@
       <h1>🎯 CareerVR</h1>
       <p>Khám phá hướng nghiệp phù hợp với bạn</p>
     </div>
-    
+
     <!-- Content -->
     <div class="content">
       <!-- Welcome Section -->
@@ -471,7 +478,7 @@
         <div class="welcome-section">
           <h2>Chào mừng bạn!</h2>
           <p>Bạn sắp bắt đầu một hành trình khám phá bản thân và tìm ra hướng nghiệp phù hợp nhất.</p>
-          
+
           <div class="features">
             <div class="feature">
               <h4>📋 50 Câu Hỏi</h4>
@@ -490,7 +497,7 @@
               <p>Chat với AI để tìm hiểu thêm về các ngành</p>
             </div>
           </div>
-          
+
           <div class="button-group">
             <button class="btn-primary" onclick="goToSection('testSection')">
               Bắt Đầu Trắc Nghiệm
@@ -498,7 +505,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Test Section -->
       <div class="section" id="testSection">
         <div class="student-info">
@@ -516,7 +523,7 @@
             <input type="text" id="school" placeholder="Ví dụ: THPT Ngô Quyền">
           </div>
         </div>
-        
+
         <div class="progress-bar">
           <div class="progress-text">
             <span>Tiến trình</span>
@@ -526,33 +533,34 @@
             <div class="progress-bar-inner" id="progressFill"></div>
           </div>
         </div>
-        
+
         <div id="questionsContainer"></div>
-        
+
         <div class="button-group">
           <button class="btn-secondary" onclick="goToSection('welcomeSection')">← Quay Lại</button>
           <button class="btn-primary" onclick="submitTest()">Xem Kết Quả →</button>
         </div>
       </div>
-      
+
       <!-- Results Section -->
       <div class="section" id="resultsSection">
         <div class="results-section">
           <h2>Kết Quả Của Bạn</h2>
-          
+
           <div class="riasec-result">
             <div class="riasec-label">Loại Hình Hướng Nghiệp (RIASEC)</div>
             <div class="riasec-code" id="riasecCode">RIA</div>
             <div class="riasec-description" id="riasecDescription">
-              Bạn là người thực tế, tò mò và sáng tạo. Phù hợp với các công việc liên quan đến kỹ thuật, nghiên cứu và thiết kế.
+              Bạn là người thực tế, tò mò và sáng tạo. Phù hợp với các công việc liên quan đến kỹ thuật, nghiên cứu và
+              thiết kế.
             </div>
           </div>
-          
+
           <div class="majors-section">
             <h3>🎓 Ngành Học Gợi Ý</h3>
             <div id="majorsContainer"></div>
           </div>
-          
+
           <div class="button-group">
             <button class="btn-secondary" onclick="resetTest()">Làm Lại</button>
             <button class="btn-primary" onclick="goToSection('welcomeSection')">← Trang Chủ</button>
@@ -560,13 +568,14 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Footer -->
     <div class="footer">
-      <p>💡 Đây là công cụ hỗ trợ. Hãy kết hợp với sự hướng dẫn của giáo viên và gia đình để đưa ra quyết định tốt nhất.</p>
+      <p>💡 Đây là công cụ hỗ trợ. Hãy kết hợp với sự hướng dẫn của giáo viên và gia đình để đưa ra quyết định tốt nhất.
+      </p>
     </div>
   </div>
-  
+
   <script>
     // ===== DATA =====
     const questions = [
@@ -621,37 +630,37 @@
       "Gia đình ủng hộ lựa chọn nghề nghiệp của tôi.",
       "Tôi sẵn sàng lập kế hoạch để theo đuổi nghề đã chọn."
     ];
-    
+
     const majorsDb = [
-      {name: "Kỹ Sư Cơ Khí", code: "RIE", path: "Đại học Bách Khoa → Thạc sĩ → Công ty tư nhân/Nhà nước"},
-      {name: "Lập Trình Viên", code: "RIC", path: "Đại học CNTT → Công ty tech → Startup/Tự do"},
-      {name: "Nhà Thiết Kế Đồ Họa", code: "AEC", path: "Đại học Mỹ Thuật → Agency → Tự do/Startup"},
-      {name: "Y Tá/Điều Dưỡng", code: "SEC", path: "Cao đẳng Y Tế → Bệnh viện → Phòng khám"},
-      {name: "Giáo Viên", code: "SAE", path: "Đại học Sư Phạm → Trường học → Quản lý giáo dục"},
-      {name: "Kỹ Sư Xây Dựng", code: "REC", path: "Đại học Xây Dựng → Công ty XD → Độc lập"},
-      {name: "Nhà Báo/Truyền Thông", code: "AES", path: "Đại học Báo Chí → Tờ báo/TV → Tự do"},
-      {name: "Nhân Sự", code: "ESC", path: "Đại học Quản Lý → Công ty lớn → Độc lập"}
+      { name: "Kỹ Sư Cơ Khí", code: "RIE", path: "Đại học Bách Khoa → Thạc sĩ → Công ty tư nhân/Nhà nước" },
+      { name: "Lập Trình Viên", code: "RIC", path: "Đại học CNTT → Công ty tech → Startup/Tự do" },
+      { name: "Nhà Thiết Kế Đồ Họa", code: "AEC", path: "Đại học Mỹ Thuật → Agency → Tự do/Startup" },
+      { name: "Y Tá/Điều Dưỡng", code: "SEC", path: "Cao đẳng Y Tế → Bệnh viện → Phòng khám" },
+      { name: "Giáo Viên", code: "SAE", path: "Đại học Sư Phạm → Trường học → Quản lý giáo dục" },
+      { name: "Kỹ Sư Xây Dựng", code: "REC", path: "Đại học Xây Dựng → Công ty XD → Độc lập" },
+      { name: "Nhà Báo/Truyền Thông", code: "AES", path: "Đại học Báo Chí → Tờ báo/TV → Tự do" },
+      { name: "Nhân Sự", code: "ESC", path: "Đại học Quản Lý → Công ty lớn → Độc lập" }
     ];
-    
+
     // ===== STATE =====
     let answers = Array(50).fill(null);
     let devMode = localStorage.getItem('devMode') === 'true';
-    
+
     const randomAnswer = () => Math.floor(Math.random() * 5) + 1;
-    
+
     // ===== FUNCTIONS =====
     function goToSection(sectionId) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById(sectionId).classList.add('active');
       window.scrollTo(0, 0);
     }
-    
+
     function fillRandomAnswers() {
       answers = Array(50).fill(null).map(() => randomAnswer());
       renderQuestions();
       updateProgress();
     }
-    
+
     function renderQuestions() {
       const container = document.getElementById('questionsContainer');
       container.innerHTML = questions.map((q, i) => `
@@ -668,7 +677,7 @@
           </div>
         </div>
       `).join('');
-      
+
       document.querySelectorAll('input[type="radio"]').forEach(inp => {
         inp.addEventListener('change', (e) => {
           const idx = parseInt(e.target.name.slice(1));
@@ -676,7 +685,7 @@
           updateProgress();
         });
       });
-      
+
       // Show dev auto-fill button if enabled
       if (devMode) {
         const btn = document.createElement('button');
@@ -692,47 +701,47 @@
         }
       }
     }
-    
+
     function updateProgress() {
       const answered = answers.filter(a => a !== null).length;
       const percent = (answered / 50) * 100;
       document.getElementById('progressFill').style.width = percent + '%';
       document.getElementById('progressCount').textContent = `${answered}/50`;
     }
-    
+
     function submitTest() {
       if (answers.filter(a => a !== null).length === 0) {
         alert('Vui lòng trả lời ít nhất 1 câu');
         return;
       }
-      
+
       // Calculate RIASEC scores
       const riasecMap = {
-        R: [0,1,2,3],
-        I: [4,5,6,7],
-        A: [8,9,10,11],
-        S: [12,13,14,15],
-        E: [16,17,18,19],
-        C: [20,21,22,23]
+        R: [0, 1, 2, 3],
+        I: [4, 5, 6, 7],
+        A: [8, 9, 10, 11],
+        S: [12, 13, 14, 15],
+        E: [16, 17, 18, 19],
+        C: [20, 21, 22, 23]
       };
-      
+
       const scores = {};
       for (const [type, indices] of Object.entries(riasecMap)) {
         scores[type] = indices.reduce((sum, i) => sum + (answers[i] || 0), 0);
       }
-      
+
       // Get top 3
       const top3 = Object.entries(scores)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
         .map(e => e[0])
         .join('');
-      
+
       // Get majors
       const majors = majorsDb
         .filter(m => m.code.split('').some(c => top3.includes(c)))
         .slice(0, 3);
-      
+
       // Display results
       document.getElementById('riasecCode').textContent = top3;
       document.getElementById('majorsContainer').innerHTML = majors.map(m => `
@@ -742,17 +751,17 @@
           <div class="major-description">Lộ trình: ${m.path}</div>
         </div>
       `).join('');
-      
+
       goToSection('resultsSection');
     }
-    
+
     function resetTest() {
       answers = Array(50).fill(null);
       document.querySelectorAll('input[type="radio"]').forEach(inp => inp.checked = false);
       updateProgress();
       goToSection('testSection');
     }
-    
+
     // ===== DEV MODE =====
     const devBadge = document.getElementById('devModeBadge');
     devBadge.addEventListener('click', () => {
@@ -761,19 +770,20 @@
       devBadge.textContent = devMode ? '🧪 Dev Mode ON' : '🧪 Dev Mode OFF';
       devBadge.classList.toggle('on');
     });
-    
+
     document.addEventListener('keydown', (e) => {
       if (e.shiftKey && e.key === 'D') {
         devBadge.click();
       }
     });
-    
+
     if (devMode) {
       devBadge.classList.add('on');
     }
-    
+
     // ===== INIT =====
     renderQuestions();
   </script>
 </body>
+
 </html>

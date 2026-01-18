@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
-  <title>CareerVR – Nền tảng Hướng nghiệp AI & VR</title>
+  <title>CareerGo - Hành trình hướng nghiệp số – Nền tảng Hướng nghiệp AI & VR</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0b1220;color:#e6f0ff}
@@ -44,7 +44,7 @@
 </head>
 <body>
 <header>
-  <h1>CareerVR</h1>
+  <h1>CareerGo - Hành trình hướng nghiệp số</h1>
   <nav>
     <a href="#home" data-page="home" class="nav active">Trang chủ</a>
     <a href="#riasec" data-page="riasec" class="nav">RIASEC Test</a>
@@ -64,7 +64,7 @@
     </video>
     <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(11,18,32,.9));display:flex;align-items:center;justify-content:center">
       <div style="text-align:center;max-width:760px;padding:20px">
-        <h2 style="font-size:32px;margin:0 0 12px 0">CareerVR – Nền tảng Hướng nghiệp AI & VR</h2>
+        <h2 style="font-size:32px;margin:0 0 12px 0">CareerGo - Hành trình hướng nghiệp số – Nền tảng Hướng nghiệp AI & VR</h2>
         <p style="color:#cfe0ff;font-size:16px;margin:0 0 20px 0">Khám phá bản thân – Trải nghiệm nghề nghiệp – Định hướng tương lai bằng công nghệ AI và VR.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           <button onclick="go('riasec')">Trắc nghiệm RIASEC</button>
@@ -179,7 +179,7 @@
 (() => {
   // ===== Helpers =====
   const $ = (id) => document.getElementById(id);
-  const DB_KEY = 'careerVR';
+  const DB_KEY = 'careerGo';
   const readDB = () => {
     try { return JSON.parse(localStorage.getItem(DB_KEY) || '[]'); }
     catch { return []; }
@@ -274,7 +274,7 @@
   let tab = 0;
 
   // Lưu trạng thái lựa chọn để khi chuyển tab vẫn giữ đáp án
-  const DRAFT_KEY = 'careerVR_draft';
+  const DRAFT_KEY = 'careerGo_draft';
   let answers = Array.from({length:50}).map(()=>null); // 1..5
 
   function loadDraft(){
@@ -709,10 +709,10 @@ function showCareerDetail(idx){
     const failed = tests.filter(t=>!t.pass);
     if(failed.length){
       console.warn('Self-tests failed:', failed);
-      window.__careerVR_tests = {pass:false, tests};
+      window.__careerGo_tests = {pass:false, tests};
     } else {
       console.log('Self-tests passed:', tests.length);
-      window.__careerVR_tests = {pass:true, tests};
+      window.__careerGo_tests = {pass:true, tests};
     }
   }
   runSelfTests();

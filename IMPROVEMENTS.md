@@ -123,7 +123,7 @@ Added:
 ```python
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "message": "CareerVR backend is running"}
+    return {"status": "ok", "message": "CareerGo - Hành trình hướng nghiệp số backend is running"}
 ```
 **Benefits**:
 - Docker health checks

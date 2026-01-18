@@ -17,7 +17,7 @@ cd /home/matcry/Documents/careervr
 # Initialize git
 git init
 git add .
-git commit -m "Initial commit: CareerVR restructured for Vercel + Railway"
+git commit -m "Initial commit: CareerGo - Hành trình hướng nghiệp số restructured for Vercel + Railway"
 
 # Add remote
 git remote add origin https://github.com/YOUR_USERNAME/careervr.git

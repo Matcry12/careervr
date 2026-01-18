@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# CareerVR Deployment Script
+# CareerGo Deployment Script
 # This script automates the GitHub push
 
-echo "🚀 CareerVR Deployment Script"
+echo "🚀 CareerGo Deployment Script"
 echo "=============================="
 echo ""
 
@@ -33,7 +33,7 @@ echo ""
 # Step 3: Commit
 echo "Step 3: Committing changes..."
 git add .
-git commit -m "CareerVR: Production deployment $(date '+%Y-%m-%d %H:%M:%S')"
+git commit -m "CareerGo: Production deployment $(date '+%Y-%m-%d %H:%M:%S')"
 if [ $? -ne 0 ]; then
     echo "❌ Git commit failed"
     exit 1
@@ -58,7 +58,7 @@ echo ""
 echo "Next steps:"
 echo "1. Go to: https://railway.app"
 echo "2. Click: New Project → Deploy from GitHub"
-echo "3. Select: careervr repository"
+echo "3. Select: careergo repository"
 echo "4. Wait: 2-3 minutes for deployment"
 echo "5. Open: Your Railway URL"
 echo ""

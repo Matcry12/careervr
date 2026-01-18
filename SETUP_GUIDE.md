@@ -73,7 +73,7 @@ curl http://localhost:8000/health
 
 Should return:
 ```json
-{"status":"ok","message":"CareerVR backend is running"}
+{"status":"ok","message":"CareerGo - Hành trình hướng nghiệp số backend is running"}
 ```
 
 ---

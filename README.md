@@ -1,4 +1,4 @@
-# CareerVR – Nền tảng Hướng nghiệp AI & VR
+# CareerGo - Hành trình hướng nghiệp số – Nền tảng Hướng nghiệp AI & VR
 
 Career guidance platform using RIASEC testing, AI chatbot, and VR experiences for Vietnamese high school students.
 

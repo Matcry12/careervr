@@ -1,4 +1,4 @@
-# CareerVR Code Review & Improvements Summary
+# CareerGo - Hành trình hướng nghiệp số Code Review & Improvements Summary
 
 **Date**: January 5, 2025  
 **Version**: 1.1.0  
@@ -8,7 +8,7 @@
 
 ## Overview
 
-CareerVR is a Vietnamese career guidance platform that uses RIASEC personality testing and AI chatbot integration to help high school students discover their ideal career paths.
+CareerGo - Hành trình hướng nghiệp số is a Vietnamese career guidance platform that uses RIASEC personality testing and AI chatbot integration to help high school students discover their ideal career paths.
 
 **Tech Stack**:
 - Frontend: HTML5 + Vanilla JavaScript

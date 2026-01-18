@@ -1,5 +1,5 @@
 ╔════════════════════════════════════════════════════════════════════════════╗
-║                  🚀 CAREERVR DEPLOYMENT GUIDE                             ║
+║                  🚀 CAREERGO DEPLOYMENT GUIDE                             ║
 ║                   Ready for Production Deployment                          ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
@@ -29,12 +29,12 @@ Step 1: Push to GitHub (Run once)
 Step 2: Deploy on Railway
   1. Go to: https://railway.app
   2. Click: "New Project" → "Deploy from GitHub repo"
-  3. Select: careervr
+  3. Select: careergo
   4. Wait: 2-3 minutes
   5. Your URL appears in Dashboard
 
 Step 3: Test
-  1. Visit: https://careervr-[id].railway.app
+  1. Visit: https://careergo-[id].railway.app
   2. Fill RIASEC test
   3. Click AI Chatbot
   4. Click "Yêu cầu tư vấn"
@@ -58,7 +58,7 @@ Issues Found:
 
 📁 PROJECT STRUCTURE
 
-careervr/
+careergo/
 ├── backend/
 │   ├── main.py                    (FastAPI app - serves API + frontend)
 │   ├── static/

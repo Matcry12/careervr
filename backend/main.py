@@ -265,7 +265,7 @@ class ChatMessage(BaseModel):
 @app.get("/health")
 def health_check():
     """Health check endpoint"""
-    return {"status": "ok", "message": "CareerVR backend is running"}
+    return {"status": "ok", "message": "CareerGo - Hành trình hướng nghiệp số backend is running"}
 
 @app.get("/")
 def serve_index():

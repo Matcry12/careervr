@@ -1,8 +1,8 @@
-# 🚀 START HERE - CareerVR Deployment
+# 🚀 START HERE - CareerGo - Hành trình hướng nghiệp số Deployment
 
 ## Summary
 
-Your CareerVR project is **100% ready for deployment**. All bugs fixed, all tests pass.
+Your CareerGo - Hành trình hướng nghiệp số project is **100% ready for deployment**. All bugs fixed, all tests pass.
 
 ---
 

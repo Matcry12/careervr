@@ -12,8 +12,7 @@ def test_health():
     """Test health check endpoint"""
     response = client.get("/health")
     assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "ok"
+    assert response.json() == {"status": "ok", "message": "CareerGo - Hành trình hướng nghiệp số backend is running"}
     print("✅ Health check test passed")
 
 def test_riasec_valid():
