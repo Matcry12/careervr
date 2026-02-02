@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Optional, Dict, Any
 import os
 import requests
@@ -74,8 +74,10 @@ class VRJob(BaseModel):
     icon: str = "🎬"
 
 class Submission(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     name: str = "Ẩn danh"
-    class_name: str = "-" # Field alias might be needed if frontend sends 'class'
+    class_name: str = Field(alias="class", default="-")
     school: str = "-"
     riasec: List[str]
     scores: Dict[str, int]
@@ -83,9 +85,6 @@ class Submission(BaseModel):
     time: str
     suggestedMajors: str = ""
     combinations: str = ""
-    
-    class Config:
-        fields = {'class_name': 'class'} # Mapped 'class' from JSON to 'class_name'
 
 # Data Manager
 # Data Manager Removed - Replaced by database.py
@@ -149,8 +148,7 @@ async def update_vr_jobs(jobs: List[VRJob]):
 async def get_submissions():
     return db.get_submissions()
 
-@app.post("/api/submissions")
-async def add_submission(sub: Submission):
+
 @app.post("/api/submissions")
 async def add_submission(sub: Submission):
     db.add_submission(sub.dict(by_alias=True))
@@ -436,4 +434,8 @@ def run_riasec(data: RIASECRequest):
         "top_3_types": riasec_result["top_3_list"],
         "top_1_type": riasec_result["top_1_type"]
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
