@@ -14,6 +14,17 @@ class Database:
         self.db = None
         self.connection_error = None
         self.uri_configured = False
+        
+        # Local file paths (Fallback / Dev without Mongo)
+        self.data_dir = Path(__file__).parent / "data"
+        try:
+            self.data_dir.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            # On Vercel (Read-Only FS), this might fail. Ignore it.
+            pass
+            
+        self.vr_jobs_file = self.data_dir / "vr_jobs.json"
+        self.submissions_file = self.data_dir / "submissions.json"
 
         # Try connecting to MongoDB
         mongo_uri = os.getenv("MONGODB_URI")
