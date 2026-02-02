@@ -2022,11 +2022,6 @@
                     <p><strong>Database Type:</strong> ${data.db_type}</p>
                     <p><strong>DB Name:</strong> ${data.database_name}</p>
                     <p><strong>API Status:</strong> ${data.status.toUpperCase()}</p>
-                    <hr style="margin: 0.5rem 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <p style="font-size: 0.85rem; color: #9fb7ff;">
-                        <strong>URI Configured:</strong> ${data.uri_configured ? '✅ Yes' : '❌ No (Missing Env Var)'}<br>
-                        ${data.connection_error ? `<strong style="color: #ff4d4f;">Error:</strong> ${data.connection_error}` : ''}
-                    </p>
                 </div>
                 <div style="margin-top: 2rem;">
                     <button onclick="checkHealth()" class="btn btn-secondary">🔄 Refresh</button>

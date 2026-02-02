@@ -159,9 +159,7 @@ async def health_check():
         "status": "ok",
         "db_type": "MongoDB Atlas" if db.is_mongo else "Local File",
         "db_connected": db.is_mongo,
-        "database_name": getattr(db, "db_name", "N/A"),
-        "uri_configured": getattr(db, "uri_configured", False),
-        "connection_error": getattr(db, "connection_error", None)
+        "database_name": getattr(db, "db_name", "N/A")
     }
 
 # ================== HELPERS ==================
