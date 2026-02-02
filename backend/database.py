@@ -36,7 +36,12 @@ class Database:
     def get_vr_jobs(self, default_jobs: List[Dict]) -> List[Dict]:
         if self.is_mongo:
             try:
-                return list(self.db.vr_jobs.find({}, {"_id": 0})) or default_jobs
+                jobs = list(self.db.vr_jobs.find({}, {"_id": 0}))
+                if not jobs and default_jobs:
+                    # Seed DB with defaults if empty
+                    self.update_vr_jobs(default_jobs)
+                    return default_jobs
+                return jobs or default_jobs
             except Exception:
                 return default_jobs
         

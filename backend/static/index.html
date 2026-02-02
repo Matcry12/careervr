@@ -19,6 +19,40 @@
       line-height: 1.6;
     }
 
+    /* Score temp display */
+    .score-temp {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: rgba(15, 31, 58, 0.95);
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(77, 124, 255, 0.3);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: none;
+      /* Hidden by default */
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      width: 200px;
+    }
+
+    .score-temp.active {
+      display: block;
+      animation: slideInRight 0.3s ease;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
     /* ===== HEADER ===== */
     header {
       position: sticky;
@@ -613,14 +647,15 @@
       display: none !important;
     }
 
-    .dev-mode .dev-only {
+    /* Only show nav links inline */
+    .dev-mode a.dev-only,
+    .dev-mode button.dev-only {
       display: inline-block !important;
-      /* For nav links */
     }
 
-    section.dev-only.active {
+    /* Sections work normally (hidden by default, block when active) */
+    .dev-mode section.dev-only.active {
       display: block !important;
-      /* For full pages */
     }
 
     /* Health Page Styles */
@@ -721,15 +756,7 @@
       </div>
     </section>
 
-    <!-- DASHBOARD PAGE -->
-    <section id="dashboard" class="page wrapper">
-      <div class="test-section">
-        <h2 style="text-align: center; margin-bottom: 1rem;">📊 Thống kê Hệ thống</h2>
-        <div class="dashboard-grid" id="statsGrid">
-          <!-- Stats will be populated here -->
-        </div>
-      </div>
-    </section>
+    <!-- DASHBOARD PAGE (Duplicate removed) -->
 
     <!-- HEALTH PAGE (DEV ONLY) -->
     <section id="health" class="page wrapper dev-only">
@@ -796,7 +823,8 @@
         <form id="testForm">
           <div id="questionsContainer"></div>
           <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
-            <button type="submit" class="btn btn-primary">Nộp bài</button>
+            <button type="button" onclick="submitTest()" class="btn btn-primary"
+              style="padding: 0.8rem 2rem; font-size: 1.1rem;">🚀 Nộp bài & Xem kết quả</button>
             <button type="button" class="btn btn-secondary" onclick="resetTest()">Làm lại</button>
             <button type="button" id="btnDevFill" class="btn btn-secondary"
               style="border-color: #ffd700; color: #ffd700; display: none;" onclick="devAutoFill()">⚡ Dev Fill</button>
@@ -1201,7 +1229,7 @@
           <div class="answer-options">
             ${[1, 2, 3, 4, 5].map(v => `
               <div class="answer-option">
-                <input type="radio" name="q${idx}" value="${v}" id="q${idx}_${v}" onchange="updateProgress()">
+                <input type="radio" name="q${idx}" value="${v}" id="q${idx}_${v}" onchange="updateProgress(); updateRealTimeScore()">
                 <label for="q${idx}_${v}">${v}</label>
               </div>
             `).join('')}
@@ -1226,39 +1254,88 @@
       }
     }
 
-    // ===== CALCULATE RIASEC SCORES =====
-    function calculateRIASEC() {
-      const answers = [];
-      for (let i = 0; i < 50; i++) {
-        const value = parseInt(document.querySelector(`input[name="q${i}"]:checked`)?.value) || 0;
-        answers.push(value);
+    // ===== REAL-TIME SCORE UPDATE =====
+    function updateRealTimeScore() {
+      const answers = document.querySelectorAll('input[type="radio"]:checked');
+      const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+
+      // We need to map Question Index -> Type
+      // Since map is not easily accessible here without parsing Q again, 
+      // let's rely on the definition.
+      // Q 0-3 -> R, 4-7 -> I, etc...
+      // This is brittle. Better: Read value and map via known structure?
+      // Actually, let's just use the calculateRIASEC logic but permissive.
+
+      const currentScores = calculateSimpleScores();
+
+      // Render Temp Score
+      let tempEl = $('tempScoreDisplay');
+      if (!tempEl) {
+        tempEl = document.createElement('div');
+        tempEl.id = 'tempScoreDisplay';
+        tempEl.className = 'score-temp';
+        // Note: .active class controls visibility via CSS (only show if we want? or always?)
+        // Let's make it show if we have nonzero scores
+        document.body.appendChild(tempEl);
       }
 
-      if (!answers.every(v => v > 0)) {
-        alert('Vui lòng trả lời hết 50 câu!');
+      const hasScore = Object.values(currentScores).some(v => v > 0);
+      if (hasScore) tempEl.classList.add('active');
+
+      tempEl.innerHTML = `<div style="margin-bottom:0.5rem; color:#ffd700;">📊 Điểm tạm thời</div>` + tempHtml;
+    }
+
+    // Helper to sum scores without validation
+    function calculateSimpleScores() {
+      const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+      // We iterate 0..49
+      for (let i = 0; i < 50; i++) {
+        const val = parseInt(document.querySelector(`input[name="q${i}"]:checked`)?.value) || 0;
+        if (val === 0) continue;
+
+        // Map Index -> Type (Same logic as calculateRIASEC)
+        let type = '';
+        // Base (0-23) - blocks of 4
+        if (i < 24) {
+          if (i < 4) type = 'R';
+          else if (i < 8) type = 'I';
+          else if (i < 12) type = 'A';
+          else if (i < 16) type = 'S';
+          else if (i < 20) type = 'E';
+          else type = 'C';
+        }
+        // Skills (24-49) - scattered
+        // This is hard to replicate perfectly without a look-up.
+        // Let's use the Question Object!
+        else {
+          // Optimization: Look up type from global array
+          type = RIASEC_QUESTIONS[i].type;
+        }
+
+        if (type && scores[type] !== undefined) {
+          scores[type] += val;
+        }
+      }
+      return scores;
+    }
+
+    // ===== CALCULATE RIASEC (FINAL) =====
+    function calculateRIASEC() {
+      // Validate completion
+      const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+      if (answered < 50) {
+        alert(`Vui lòng trả lời hết 50 câu! (Mới xong ${answered}/50)`);
         return null;
       }
 
-      // ===== MATCH BACKEND LOGIC =====
-      // Part 1: Base (Q1-24)
-      let R = answers[0] + answers[1] + answers[2] + answers[3];
-      let I = answers[4] + answers[5] + answers[6] + answers[7];
-      let A = answers[8] + answers[9] + answers[10] + answers[11];
-      let S = answers[12] + answers[13] + answers[14] + answers[15];
-      let E = answers[16] + answers[17] + answers[18] + answers[19];
-      let C = answers[20] + answers[21] + answers[22] + answers[23];
+      const scores = calculateSimpleScores();
 
-      // Part 2: Skills (Q25-38)
-      R += answers[24] + answers[28] + answers[29];
-      I += answers[25] + answers[30] + answers[31];
-      A += answers[32] + answers[33] + answers[41];
-      S += answers[27] + answers[34] + answers[35];
-      E += answers[26] + answers[36] + answers[37];
-      C += answers[38] + answers[39] + answers[44];
-
-      const scores = { R, I, A, S, E, C };
       const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
       const top3 = sorted.slice(0, 3).map(x => x[0]);
+
+      // Reconstruct raw answers for backend if needed
+      const answers = [];
+      for (let i = 0; i < 50; i++) answers.push(parseInt(document.querySelector(`input[name="q${i}"]:checked`)?.value) || 0);
 
       return { scores, top3, answered: 50, raw_answers: answers };
     }
@@ -1275,7 +1352,9 @@
       }
 
       $('riasecDisplay').textContent = current.riasec.join('-');
-      $('resultTime').textContent = `Ngày: ${new Date(current.time).toLocaleDateString('vi-VN')}`;
+      const dateStr = (current.time || current.date);
+      const safeDate = (dateStr && !isNaN(new Date(dateStr))) ? new Date(dateStr).toLocaleDateString('vi-VN') : 'Mới nhất';
+      $('resultTime').textContent = `Ngày: ${safeDate}`;
 
       // Render Scores
       if (current.scores) {
@@ -1408,7 +1487,9 @@
           return `
                     <tr style="border-bottom: 1px solid rgba(30, 42, 68, 0.3);">
                     <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${index + 1}</td>
-                    <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5);">${new Date(row.time).toLocaleDateString('vi-VN')}</td>
+                    <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5);">
+                        ${(row.time && !isNaN(new Date(row.time))) ? new Date(row.time).toLocaleDateString('vi-VN') : 'Mới nhất'}
+                    </td>
                     <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); font-weight: 500;">
                         ${row.name || 'Ẩn danh'}<br>
                         <span style="font-size: 0.8rem; color: #9fb7ff;">${row.class || '-'}</span>
@@ -1445,6 +1526,7 @@
     }
 
     // ===== RESET TEST =====
+    // ===== RESET TEST =====
     function resetTest() {
       if (!confirm('Xoá hết dữ liệu nhập liệu?')) return;
       document.getElementById('testForm').reset();
@@ -1452,10 +1534,21 @@
       $('progressText').textContent = '0 / 50 câu';
       $('estimatedTime').textContent = '~10 phút';
 
+      // Clear local storage for current user
+      localStorage.removeItem(RIASEC_KEY); // Removes 'current'
+
       // Clear chat session
       sessionStorage.removeItem('conversation_id');
       const msgBox = $('messagesBox');
       if (msgBox) msgBox.innerHTML = '<div style="color: #9fb7ff; font-size: 0.9rem;"><strong>🤖 AI:</strong> Xin chào! Tôi sẵn sàng tư vấn cho bạn dựa trên kết quả RIASEC. Nhấn nút "Bắt đầu tư vấn" bên dưới để bắt đầu.</div>';
+
+      // Clear temp graphics if any
+      const tempEl = $('tempScoreDisplay');
+      if (tempEl) {
+        tempEl.remove();
+      }
+
+      alert("Đã làm mới dữ liệu cục bộ! (Dữ liệu trên Server vẫn được giữ)");
     }
 
     // ===== CLEAR ALL DATA =====
@@ -1510,47 +1603,75 @@
     }
 
     // ===== SUBMIT TEST =====
-    $('testForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const result = calculateRIASEC();
-      if (!result) return;
-
-      // Get recommendations to save
-      const recs = getRecommendations(result.top3);
-      const majorNames = recs.map(r => r.name).join(', ');
-      // Get unique combinations from the top recs
-      const uniqueCombs = [...new Set(recs.map(r => r.combinations))].join(' | ');
-
-      const record = {
-        name: $('name').value || 'Ẩn danh',
-        class: $('class').value || '-',
-        school: $('school').value || '-',
-        riasec: result.top3,
-        scores: result.scores,
-        answers: result.raw_answers,
-        time: new Date().toISOString(),
-        suggestedMajors: majorNames,
-        combinations: uniqueCombs
-      };
-
+    async function submitTest() {
       try {
-        const res = await fetch(`${API_BASE}/api/submissions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(record)
-        });
+        if (!confirm('Bạn có chắc chắn muốn nộp bài?')) return;
 
-        if (res.ok) {
-          // Also update local current context for the Results page viewing
-          writeCurrent(record);
-          goPage('results');
-        } else {
-          alert("Lỗi khi gửi kết quả lên Server. Vui lòng thử lại.");
+        const result = calculateRIASEC();
+        if (!result) return; // Validation failed
+
+        const { scores, top3, raw_answers } = result;
+
+        // Calculate Recommendations for saving
+        const recs = getRecommendations(top3);
+        const majorNames = recs.map(r => r.name).join(', ');
+        const uniqueCombs = [...new Set(recs.map(r => r.combinations))].join(' | ');
+
+        // Save to LocalStorage (Immediate UI update)
+        const resultObj = {
+          scores,
+          riasec: top3,
+          date: new Date().toISOString(),
+          name: $('name').value,
+          class: $('class').value,
+          school: $('school').value
+        };
+        writeCurrent(resultObj);
+
+        // Safe ID generation
+        const safeId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : 'sub_' + Math.random().toString(36).substr(2, 9);
+
+        // Save to Backend (Async) - MUST MATCH PYDANTIC MODEL
+        const payload = {
+          name: $('name').value || "Ẩn danh",
+          class: $('class').value || "-", // Pydantic alias="class"
+          school: $('school').value || "-",
+          riasec: top3,           // Expects List[str]
+          scores: scores,         // Expects Dict[str, int]
+          answers: raw_answers,   // Expects List[int]
+          time: new Date().toISOString(), // Expects "time"
+          suggestedMajors: majorNames,
+          combinations: uniqueCombs
+        };
+
+        console.log("Sending payload:", payload);
+
+        try {
+          const res = await fetch(`${API_BASE}/api/submissions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            console.log("✅ Saved to backend");
+          } else {
+            console.error("❌ Failed to save backend", await res.text());
+          }
+        } catch (e) {
+          console.error("❌ Network error saving backend", e);
         }
-      } catch (e) {
-        alert("Lỗi kết nối Server: " + e.message);
+
+        // Go to Results
+        showResults();
+        goPage('results');
+
+      } catch (err) {
+        alert('Lỗi hệ thống: ' + err.message);
+        console.error(err);
       }
-    });
+    }
 
     // ===== CHATBOT =====
     // Use relative URL - works on localhost and production
@@ -1585,7 +1706,7 @@
           <strong>🎯 RIASEC:</strong> <span style="background: rgba(26, 60, 255, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">${current.riasec.join('-')}</span>
         </div>
         <div>
-          <strong>⏱️ Ngày:</strong> ${new Date(current.time).toLocaleDateString('vi-VN')}
+          <strong>⏱️ Ngày:</strong> ${(current.time && !isNaN(new Date(current.time))) ? new Date(current.time).toLocaleDateString('vi-VN') : 'Mới nhất'}
         </div>
       </div>
     `;
@@ -1823,6 +1944,12 @@
     // Init test page when landing is loaded
     window.addEventListener('load', () => {
       initTest();
+
+      // Restore Dev Mode
+      const savedDevMode = localStorage.getItem('careervr_dev_mode') === 'true';
+      if (savedDevMode) {
+        toggleGlobalDevMode(true);
+      }
     });
 
     // ===== VR EXPERIENCE LOGIC =====
@@ -1971,8 +2098,19 @@
     }
 
     // Global Dev Mode Logic
-    function toggleGlobalDevMode() {
-      const isDev = document.body.classList.toggle('dev-mode');
+    function toggleGlobalDevMode(forceState = null) {
+      const current = document.body.classList.contains('dev-mode');
+      const isDev = forceState !== null ? forceState : !current;
+
+      if (isDev) {
+        document.body.classList.add('dev-mode');
+      } else {
+        document.body.classList.remove('dev-mode');
+      }
+
+      // Save state
+      localStorage.setItem('careervr_dev_mode', isDev);
+
       const btn = $('navDevToggle');
 
       if (isDev) {
@@ -1995,6 +2133,7 @@
         }
       }
 
+      // Toggle visibility of Dev elements in questions (if configured)
       // Toggle visibility of Dev elements in questions (if configured)
       document.querySelectorAll('.dev-fill-btn').forEach(el => {
         el.style.display = isDev ? 'inline-block' : 'none';
