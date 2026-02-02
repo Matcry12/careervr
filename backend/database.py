@@ -4,7 +4,7 @@ import logging
 from typing import Any, List, Dict
 from pathlib import Path
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, ConfigurationError
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class Database:
                 self.db = self.client[self.db_name]
                 self.is_mongo = True
                 logger.info(f"✅ Connected to MongoDB Atlas: {self.db_name}")
-            except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+            except (ConnectionFailure, ServerSelectionTimeoutError, ConfigurationError) as e:
                 logger.warning(f"⚠️ Could not connect to MongoDB: {e}. Falling back to local files.")
         else:
             logger.info("ℹ️ No MONGODB_URI found. Using local JSON files.")
