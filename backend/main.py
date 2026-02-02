@@ -1,5 +1,8 @@
 # ... (Keep existing imports and config)
 # ... (Keep existing imports and config)
+from dotenv import load_dotenv
+load_dotenv() # Load env vars FIRST before other imports use them
+
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,15 +14,11 @@ import requests
 import json
 from pathlib import Path
 import logging
-from dotenv import load_dotenv
 import uuid
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from riasec_calculator import calculate_riasec, recommend_jobs
 from database import db
-
-# Load environment variables from .env file
-load_dotenv()
 
 # ... logging setup ...
 logging.basicConfig(level=logging.INFO)
