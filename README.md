@@ -29,6 +29,7 @@ Nền tảng hướng nghiệp toàn diện dành cho học sinh THPT Việt Nam
     ```env
     DIFY_API_KEY=your_dify_api_key
     DIFY_CHAT_URL=https://api.dify.ai/v1/chat-messages
+    MONGODB_URI=your_mongodb_connection_string (Optional - for Cloud Persistence)
     ```
 
 3.  **Cài đặt dependencies**
@@ -51,15 +52,16 @@ Dự án đã được cấu hình sẵn để triển khai lên Vercel.
 2.  Thêm biến môi trường trên Vercel:
     - `DIFY_API_KEY`
     - `DIFY_CHAT_URL`
+    - `MONGODB_URI` (Khuyên dùng MongoDB Atlas để lưu dữ liệu)
 3.  Deploy:
     ```bash
     vercel
     ```
 
-**Lưu ý về dữ liệu trên Vercel**:
-- Hệ thống file trên Vercel là **Read-Only**.
-- Các tính năng ghi file JSON (`submissions.json`, `vr_jobs.json`) sẽ bị vô hiệu hóa hoặc không lưu trữ lâu dài.
-- Dữ liệu người dùng sẽ được gửi tự động về Google Sheets (nếu đã cấu hình script).
+**Lưu ý về dữ liệu**:
+- **Local Dev**: Nếu không có `MONGODB_URI`, dữ liệu sẽ lưu vào `backend/data/*.json`.
+- **Vercel**: Bắt buộc dùng `MONGODB_URI` để lưu trữ bền vững. Nếu không, dữ liệu sẽ bị mất do tính chất Read-Only của Vercel.
+
 
 ## 📂 Cấu trúc dự án
 

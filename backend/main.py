@@ -16,6 +16,7 @@ import uuid
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from riasec_calculator import calculate_riasec, recommend_jobs
+from database import db
 
 # Load environment variables from .env file
 load_dotenv()
@@ -61,10 +62,8 @@ app.add_middleware(
 )
 
 # ===== PERSISTENCE SETUP =====
-DATA_DIR = Path("backend/data")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-VR_JOBS_FILE = DATA_DIR / "vr_jobs.json"
-SUBMISSIONS_FILE = DATA_DIR / "submissions.json"
+# ===== PERSISTENCE SETUP =====
+# (Managed by database.py now)
 
 # Models
 class VRJob(BaseModel):
@@ -89,32 +88,8 @@ class Submission(BaseModel):
         fields = {'class_name': 'class'} # Mapped 'class' from JSON to 'class_name'
 
 # Data Manager
-class DataManager:
-    @staticmethod
-    def load_json(file_path: Path, default: Any):
-        if not file_path.exists():
-            return default
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception as e:
-            logger.error(f"Error reading {file_path}: {e}")
-            return default
+# Data Manager Removed - Replaced by database.py
 
-    @staticmethod
-    def save_json(file_path: Path, data: Any):
-        if IS_VERCEL:
-            # On Vercel, the filesystem is read-only (except /tmp, but that's ephemeral).
-            # We skip saving to JSON to avoid 500 errors.
-            # Data should be persisted via Google Sheets or external DB.
-            logger.info(f"Vercel environment detected. Skipping write to {file_path}")
-            return
-
-        try:
-            with open(file_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            logger.error(f"Error writing {file_path}: {e}")
 
 # Default VR Jobs (Fallback/Initial)
 DEFAULT_VR_JOBS = [
@@ -155,35 +130,30 @@ DEFAULT_VR_JOBS = [
       }
 ]
 
-# Ensure defaults exist (Only locally)
-if not IS_VERCEL:
-    if not VR_JOBS_FILE.exists():
-        DataManager.save_json(VR_JOBS_FILE, DEFAULT_VR_JOBS)
-    if not SUBMISSIONS_FILE.exists():
-        DataManager.save_json(SUBMISSIONS_FILE, [])
+# Defaults handled in database.py
+
 
 
 # ===== API ROUTES =====
 
 @app.get("/api/vr-jobs", response_model=List[VRJob])
 async def get_vr_jobs():
-    return DataManager.load_json(VR_JOBS_FILE, DEFAULT_VR_JOBS)
+    return db.get_vr_jobs(DEFAULT_VR_JOBS)
 
 @app.post("/api/vr-jobs")
 async def update_vr_jobs(jobs: List[VRJob]):
-    DataManager.save_json(VR_JOBS_FILE, [job.dict(by_alias=True) for job in jobs])
+    db.update_vr_jobs([job.dict(by_alias=True) for job in jobs])
     return {"status": "success", "count": len(jobs)}
 
 @app.get("/api/submissions", response_model=List[Submission])
 async def get_submissions():
-    return DataManager.load_json(SUBMISSIONS_FILE, [])
+    return db.get_submissions()
 
 @app.post("/api/submissions")
 async def add_submission(sub: Submission):
-    current = DataManager.load_json(SUBMISSIONS_FILE, [])
-    # Add new submission
-    current.append(sub.dict(by_alias=True))
-    DataManager.save_json(SUBMISSIONS_FILE, current)
+@app.post("/api/submissions")
+async def add_submission(sub: Submission):
+    db.add_submission(sub.dict(by_alias=True))
     return {"status": "success"}
 
 # ================== HELPERS ==================
