@@ -13,6 +13,8 @@ from pathlib import Path
 import logging
 from dotenv import load_dotenv
 import uuid
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from riasec_calculator import calculate_riasec, recommend_jobs
 
 # Load environment variables from .env file
@@ -40,6 +42,9 @@ if not DIFY_API_KEY:
     logger.error("DIFY_API_KEY not set")
 
 DIFY_CHAT_URL = os.getenv("DIFY_CHAT_URL", "https://api.dify.ai/v1/chat-messages")
+
+# Vercel Environment Detection
+IS_VERCEL = os.getenv("VERCEL") == "1"
 
 # In-memory conversation storage (use Redis/DB in production)
 conversations: Dict[str, Any] = {}
@@ -98,6 +103,13 @@ class DataManager:
 
     @staticmethod
     def save_json(file_path: Path, data: Any):
+        if IS_VERCEL:
+            # On Vercel, the filesystem is read-only (except /tmp, but that's ephemeral).
+            # We skip saving to JSON to avoid 500 errors.
+            # Data should be persisted via Google Sheets or external DB.
+            logger.info(f"Vercel environment detected. Skipping write to {file_path}")
+            return
+
         try:
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
@@ -143,11 +155,12 @@ DEFAULT_VR_JOBS = [
       }
 ]
 
-# Ensure defaults exist
-if not VR_JOBS_FILE.exists():
-    DataManager.save_json(VR_JOBS_FILE, DEFAULT_VR_JOBS)
-if not SUBMISSIONS_FILE.exists():
-    DataManager.save_json(SUBMISSIONS_FILE, [])
+# Ensure defaults exist (Only locally)
+if not IS_VERCEL:
+    if not VR_JOBS_FILE.exists():
+        DataManager.save_json(VR_JOBS_FILE, DEFAULT_VR_JOBS)
+    if not SUBMISSIONS_FILE.exists():
+        DataManager.save_json(SUBMISSIONS_FILE, [])
 
 
 # ===== API ROUTES =====
@@ -269,11 +282,11 @@ def health_check():
 
 @app.get("/")
 def serve_index():
-    """Serve main app (index_redesigned_v2.html)"""
-    index_file = STATIC_DIR / "index_redesigned_v2.html"
+    """Serve main app (index.html)"""
+    index_file = STATIC_DIR / "index.html"
     if index_file.exists():
         return FileResponse(index_file, media_type="text/html")
-    return {"error": "Main app not found. Place index_redesigned_v2.html in backend/static/"}
+    return {"error": "Main app not found. Place index.html in backend/static/"}
 
 # ================== MOUNT STATIC FILES ==================
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
