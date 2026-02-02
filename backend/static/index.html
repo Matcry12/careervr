@@ -607,6 +607,45 @@
       font-size: 0.75rem;
       font-weight: 600;
     }
+
+    /* ===== DEV MODE ONLY ===== */
+    .dev-only {
+      display: none !important;
+    }
+
+    .dev-mode .dev-only {
+      display: inline-block !important;
+      /* For nav links */
+    }
+
+    section.dev-only.active {
+      display: block !important;
+      /* For full pages */
+    }
+
+    /* Health Page Styles */
+    .health-card {
+      background: rgba(15, 31, 58, 0.8);
+      border: 1px solid rgba(26, 60, 255, 0.3);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      max-width: 600px;
+      margin: 2rem auto;
+    }
+
+    .status-indicator {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-ok {
+      color: #4ade80;
+    }
+
+    .status-error {
+      color: #f87171;
+    }
   </style>
 </head>
 
@@ -631,6 +670,7 @@
       <a href="#" data-page="chatbot" class="nav-link">💬 AI Chatbot</a>
       <a href="#" data-page="vr-mode" class="nav-link">Trải nghiệm nghề nghiệp</a>
       <a href="#" data-page="dashboard" class="nav-link">Thống kê</a>
+      <a href="#" data-page="health" class="nav-link dev-only">🏥 Health</a>
       <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 0.5rem;"></div>
       <button id="navDevToggle" onclick="toggleGlobalDevMode()" class="btn btn-secondary"
         style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: rgba(255,215,0,0.5); color: #ffd700;">
@@ -677,6 +717,27 @@
           <div class="feature-icon">🤖</div>
           <h3>Tư vấn AI</h3>
           <p>Chatbot thông minh giúp bạn trả lời mọi câu hỏi về hộ sự nghiệp</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD PAGE -->
+    <section id="dashboard" class="page wrapper">
+      <div class="test-section">
+        <h2 style="text-align: center; margin-bottom: 1rem;">📊 Thống kê Hệ thống</h2>
+        <div class="dashboard-grid" id="statsGrid">
+          <!-- Stats will be populated here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- HEALTH PAGE (DEV ONLY) -->
+    <section id="health" class="page wrapper dev-only">
+      <div class="test-section">
+        <h2 style="text-align: center; margin-bottom: 1rem;">🏥 System Health</h2>
+        <div id="healthContent" class="health-card">
+          <div class="spinner"></div>
+          <p>Checking system status...</p>
         </div>
       </div>
     </section>
@@ -1108,15 +1169,24 @@
     const writeCurrent = (obj) => localStorage.setItem(RIASEC_KEY, JSON.stringify(obj));
 
     // ===== PAGE NAVIGATION =====
-    function goPage(page) {
+    function goPage(pageId) {
+      // Update Nav
+      document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.remove('active');
+        if (l.dataset.page === pageId) l.classList.add('active');
+      });
+
+      // Update Page
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      $(page).classList.add('active');
+      const target = $(pageId);
+      if (target) {
+        target.classList.add('active');
+        window.scrollTo(0, 0);
 
-      document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
-      document.querySelector(`[data-page="${page}"]`).classList.add('active');
-
-      if (page === 'results') showResults();
-      if (page === 'dashboard') showDashboard();
+        // Page specific init
+        if (pageId === 'dashboard') showDashboard();
+        if (pageId === 'health') checkHealth();
+      }
     }
 
     // ===== INIT TEST PAGE =====
@@ -1902,9 +1972,71 @@
 
     // Global Dev Mode Logic
     function toggleGlobalDevMode() {
-      const current = localStorage.getItem('careervr_dev_mode') === 'true';
-      localStorage.setItem('careervr_dev_mode', !current);
-      updateDevModeUI();
+      const isDev = document.body.classList.toggle('dev-mode');
+      const btn = $('navDevToggle');
+
+      if (isDev) {
+        btn.textContent = "🧪 Dev Mode: ON";
+        btn.style.background = "rgba(255, 215, 0, 0.2)";
+        btn.style.color = "#ffd700";
+        btn.style.borderColor = "#ffd700";
+
+        // Show Health Link (Handled by CSS .dev-mode .dev-only)
+      } else {
+        btn.textContent = "🛠️ Dev";
+        btn.style.background = "transparent";
+        btn.style.color = "#ffd700";
+        btn.style.borderColor = "rgba(255, 215, 0, 0.5)";
+
+        // If we are on a dev-only page, redirect home
+        const activePage = document.querySelector('.page.active');
+        if (activePage && activePage.classList.contains('dev-only')) {
+          goPage('landing');
+        }
+      }
+
+      // Toggle visibility of Dev elements in questions (if configured)
+      document.querySelectorAll('.dev-fill-btn').forEach(el => {
+        el.style.display = isDev ? 'inline-block' : 'none';
+      });
+    }
+
+    async function checkHealth() {
+      const content = $('healthContent');
+      if (!content) return;
+
+      content.innerHTML = '<div class="spinner"></div><p>Checking system status...</p>';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/health`);
+        const data = await res.json();
+
+        const isConnected = data.db_connected;
+        const statusColor = isConnected ? 'status-ok' : 'status-error';
+        const statusIcon = isConnected ? '✅' : '❌';
+
+        content.innerHTML = `
+                <div class="status-indicator ${statusColor}">${statusIcon}</div>
+                <h3>${isConnected ? 'System Healthy' : 'System Information'}</h3>
+                <div style="margin-top: 1.5rem; text-align: left; display: inline-block;">
+                    <p><strong>Database Type:</strong> ${data.db_type}</p>
+                    <p><strong>DB Name:</strong> ${data.database_name}</p>
+                    <p><strong>API Status:</strong> ${data.status.toUpperCase()}</p>
+                </div>
+                <div style="margin-top: 2rem;">
+                    <button onclick="checkHealth()" class="btn btn-secondary">🔄 Refresh</button>
+                </div>
+            `;
+      } catch (e) {
+        content.innerHTML = `
+                <div class="status-indicator status-error">⚠️</div>
+                <h3>Connection Failed</h3>
+                <p>Could not reach backend API.</p>
+                <div style="margin-top: 1rem;">
+                    <button onclick="checkHealth()" class="btn btn-secondary">🔄 Try Again</button>
+                </div>
+            `;
+      }
     }
 
     function updateDevModeUI() {

@@ -156,6 +156,15 @@ async def add_submission(sub: Submission):
     db.add_submission(sub.dict(by_alias=True))
     return {"status": "success"}
 
+@app.get("/api/health")
+async def health_check():
+    return {
+        "status": "ok",
+        "db_type": "MongoDB Atlas" if db.is_mongo else "Local File",
+        "db_connected": db.is_mongo,
+        "database_name": getattr(db, "db_name", "N/A")
+    }
+
 # ================== HELPERS ==================
 def call_dify_api(payload: Dict[str, Any]) -> Dict[str, Any]:
     """Helper to call Dify API with error handling"""
