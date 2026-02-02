@@ -12,17 +12,13 @@ class Database:
     def __init__(self):
         self.client = None
         self.db = None
-        self.is_mongo = False
-        
-        # Local file paths (Fallback / Dev without Mongo)
-        self.data_dir = Path(__file__).parent / "data"
-        self.data_dir.mkdir(parents=True, exist_ok=True)
-        self.vr_jobs_file = self.data_dir / "vr_jobs.json"
-        self.submissions_file = self.data_dir / "submissions.json"
+        self.connection_error = None
+        self.uri_configured = False
 
         # Try connecting to MongoDB
         mongo_uri = os.getenv("MONGODB_URI")
         if mongo_uri:
+            self.uri_configured = True
             try:
                 self.client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
                 # Trigger a connection check
@@ -32,6 +28,7 @@ class Database:
                 self.is_mongo = True
                 logger.info(f"✅ Connected to MongoDB Atlas: {self.db_name}")
             except (ConnectionFailure, ServerSelectionTimeoutError, ConfigurationError) as e:
+                self.connection_error = str(e)
                 logger.warning(f"⚠️ Could not connect to MongoDB: {e}. Falling back to local files.")
         else:
             logger.info("ℹ️ No MONGODB_URI found. Using local JSON files.")
