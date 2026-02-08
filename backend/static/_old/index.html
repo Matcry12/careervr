@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CareerGo - Hành trình hướng nghiệp số</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <!-- LOADING MODAL -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-modal">
+            <div class="spinner"></div>
+            <div class="loading-text">🤖 AI đang suy nghĩ...</div>
+            <div class="loading-subtext">Vui lòng chờ khi AI phân tích hồ sơ của bạn</div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">CareerGo</div>
+        <nav>
+            <a href="/" class="nav-link active">Trang chủ</a>
+            <a href="/test" class="nav-link">RIASEC Test</a>
+            <a href="/results" class="nav-link">Kết quả</a>
+      <a href="/community" class="nav-link">Cộng đồng</a>
+            <a href="/chatbot" class="nav-link">💬 AI Chatbot</a>
+            <a href="/vr-mode" class="nav-link">Trải nghiệm nghề nghiệp</a>
+            <a href="/dashboard" class="nav-link">Thống kê</a>
+            <a href="/health-page" class="nav-link dev-only">🏥 Health</a>
+            <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 0.5rem;"></div>
+            <button id="navDevToggle" onclick="toggleGlobalDevMode()" class="btn btn-secondary"
+                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: rgba(255,215,0,0.5); color: #ffd700;">
+                🛠️ Dev
+            </button>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="wrapper">
+        <section class="page active" id="landing">
+            <div class="hero">
+                <div class="hero-content">
+                    <p
+                        style="color: #1a3cff; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 1px; text-transform: uppercase;">
+                        CareerGo - Hành trình hướng nghiệp số</p>
+                    <h1>Khám phá con đường sự nghiệp của bạn</h1>
+                    <p>Sử dụng trắc nghiệm RIASEC được cá nhân hóa để tìm hiểu về những ngành nghề phù hợp nhất với bạn.
+                        Trải
+                        nghiệm Nghề nghiệp và nhận lời khuyên từ AI.</p>
+                    <div class="cta-group">
+                        <button class="btn btn-primary" onclick="goPage('test')">Bắt đầu trắc nghiệm</button>
+                        <button class="btn btn-secondary" onclick="goPage('dashboard')">Xem thống kê</button>
+                    </div>
+                </div>
+                <img src="static/background.png"
+                    style="width: 100%; height: auto; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);"
+                    alt="CareerGo Banner">
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>RIASEC Test</h3>
+                    <p>50 câu hỏi khoa học để đánh giá sở thích, kỹ năng, và tính cách của bạn</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🥽</div>
+                    <h3>Trải nghiệm nghề nghiệp</h3>
+                    <p>Khám phá các ngành nghề qua trực quan hóa VR tương tác</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Tư vấn AI</h3>
+                    <p>Chatbot thông minh giúp bạn trả lời mọi câu hỏi về hộ sự nghiệp</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

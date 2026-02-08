@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RIASEC Test - CareerGo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-modal">
+            <div class="spinner"></div>
+            <div class="loading-text">Thinking...</div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo">CareerGo</div>
+        <nav>
+            <a href="/" class="nav-link">Trang chủ</a>
+            <a href="/test" class="nav-link active">RIASEC Test</a>
+            <a href="/results" class="nav-link">Kết quả</a>
+      <a href="/community" class="nav-link">Cộng đồng</a>
+            <a href="/chatbot" class="nav-link">💬 AI Chatbot</a>
+            <a href="/vr-mode" class="nav-link">Trải nghiệm nghề nghiệp</a>
+            <a href="/dashboard" class="nav-link">Thống kê</a>
+            <a href="/health-page" class="nav-link dev-only">🏥 Health</a>
+            <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 0.5rem;"></div>
+            <button id="navDevToggle" onclick="toggleGlobalDevMode()" class="btn btn-secondary"
+                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: rgba(255,215,0,0.5); color: #ffd700;">
+                🛠️ Dev
+            </button>
+        </nav>
+    </header>
+
+    <div class="wrapper">
+        <section class="page active" id="test">
+            <div class="test-container">
+                <h1 style="text-align: center; margin-bottom: 3rem;">Trắc nghiệm RIASEC</h1>
+
+                <div class="test-section"
+                    style="background: rgba(26, 60, 255, 0.1); border-color: rgba(26, 60, 255, 0.3);">
+                    <h2 style="font-size: 1.25rem;">Thông tin cá nhân</h2>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                        <div>
+                            <label for="name">Họ và tên</label>
+                            <input type="text" id="name" placeholder="Nguyễn Văn A"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                        </div>
+                        <div>
+                            <label for="class">Lớp</label>
+                            <input type="text" id="class" placeholder="10A1"
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                        </div>
+                        <div>
+                            <label for="school">Trường</label>
+                            <input type="text" id="school" placeholder="THPT ..."
+                                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="progressText">0 / 50 câu</span>
+                        <span id="estimatedTime">~10 phút</span>
+                    </div>
+                </div>
+
+                <div class="scale-explanation">
+                    <strong>Hướng dẫn trả lời:</strong> Với mỗi câu hỏi, hãy đánh giá từ 1 (Rất không đúng) đến 5 (Rất
+                    đúng)
+                    <div class="scale-legend">
+                        <div class="scale-item">1️⃣ Rất không đúng</div>
+                        <div class="scale-item">2️⃣ Không đúng</div>
+                        <div class="scale-item">3️⃣ Phân vân</div>
+                        <div class="scale-item">4️⃣ Đúng</div>
+                        <div class="scale-item">5️⃣ Rất đúng</div>
+                    </div>
+                </div>
+
+                <form id="testForm">
+                    <div id="questionsContainer"></div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
+                        <button type="button" onclick="submitTest()" class="btn btn-primary"
+                            style="padding: 0.8rem 2rem; font-size: 1.1rem;">🚀 Nộp bài & Xem kết quả</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetTest()">Làm lại</button>
+                        <button type="button" id="btnDevFill" class="btn btn-secondary"
+                            style="border-color: #ffd700; color: #ffd700; display: none;" onclick="devAutoFill()">⚡ Dev
+                            Fill</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

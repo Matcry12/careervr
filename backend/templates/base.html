@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}CareerGo - Hành trình hướng nghiệp số{% endblock %}</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="/static/style.css">
+    {% block head %}{% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+    <!-- LOADING MODAL -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-modal">
+            <div class="spinner"></div>
+            <div class="loading-text">{% block loading_text %}Đang tải...{% endblock %}</div>
+            <div class="loading-subtext">{% block loading_subtext %}{% endblock %}</div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">CareerGo</div>
+        <nav>
+            <a href="/" class="nav-link {% if active_page == 'home' %}active{% endif %}">Trang chủ</a>
+            <a href="/test" class="nav-link auth-only {% if active_page == 'test' %}active{% endif %}">RIASEC Test</a>
+            <a href="/results" class="nav-link auth-only {% if active_page == 'results' %}active{% endif %}">Kết quả</a>
+            <a href="/community" class="nav-link auth-only {% if active_page == 'community' %}active{% endif %}">Cộng
+                đồng</a>
+            <a href="/chatbot" class="nav-link auth-only {% if active_page == 'chatbot' %}active{% endif %}">💬 AI
+                Chatbot</a>
+            <a href="/vr-mode" class="nav-link auth-only {% if active_page == 'vr' %}active{% endif %}">Trải nghiệm nghề
+                nghiệp</a>
+            <a href="/dashboard" class="nav-link auth-only {% if active_page == 'dashboard' %}active{% endif %}">Thống
+                kê</a>
+            <a href="/health-page" class="nav-link admin-only {% if active_page == 'health' %}active{% endif %}"
+                style="display: none;">🏥
+                Health</a>
+            <span id="navAuth" style="margin-left: 1rem;">
+                <!-- JS will populate: Login or Hi User/Logout -->
+            </span>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block modals %}{% endblock %}
+
+    <script src="/static/script.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

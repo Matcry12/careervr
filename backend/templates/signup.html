@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng ký - CareerGo{% endblock %}
+
+{% block content %}
+<section class="page active" id="signup">
+    <div class="auth-container"
+        style="max-width: 400px; margin: 4rem auto; padding: 2rem; background: rgba(15, 31, 58, 0.8); border-radius: 12px; border: 1px solid rgba(30, 42, 68, 0.5);">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Đăng ký tài khoản</h2>
+
+        <form onsubmit="event.preventDefault(); handleRegister();">
+            <div style="margin-bottom: 1.5rem;">
+                <label for="regUsername" style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Tên đăng
+                    nhập</label>
+                <input type="text" id="regUsername" required class="community-input" placeholder="username">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label for="regFullname" style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Họ và
+                    tên</label>
+                <input type="text" id="regFullname" class="community-input" placeholder="Nguyễn Văn A">
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label for="regPassword" style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Mật khẩu</label>
+                <input type="password" id="regPassword" required class="community-input" placeholder="••••••••">
+            </div>
+
+            <!-- Hidden role field, default to user -->
+            <input type="hidden" id="regRole" value="user">
+            <div style="margin-bottom: 1rem;">
+                <label style="color: #9fb7ff; font-size: 0.9rem;">
+                    <input type="checkbox" id="regAdmin"> Đăng ký với quyền Admin (Demo Only)
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Đăng ký</button>
+        </form>
+
+        <p style="text-align: center; margin-top: 1.5rem; color: #9fb7ff;">
+            Đã có tài khoản? <a href="/login" style="color: #4d7cff;">Đăng nhập</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

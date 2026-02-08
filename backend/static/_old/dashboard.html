@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thống kê - CareerGo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">CareerGo</div>
+        <nav>
+            <a href="/" class="nav-link">Trang chủ</a>
+            <a href="/test" class="nav-link">RIASEC Test</a>
+            <a href="/results" class="nav-link">Kết quả</a>
+      <a href="/community" class="nav-link">Cộng đồng</a>
+            <a href="/chatbot" class="nav-link">💬 AI Chatbot</a>
+            <a href="/vr-mode" class="nav-link">Trải nghiệm nghề nghiệp</a>
+            <a href="/dashboard" class="nav-link active">Thống kê</a>
+            <a href="/health-page" class="nav-link dev-only">🏥 Health</a>
+            <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 0.5rem;"></div>
+            <button id="navDevToggle" onclick="toggleGlobalDevMode()" class="btn btn-secondary"
+                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: rgba(255,215,0,0.5); color: #ffd700;">
+                🛠️ Dev
+            </button>
+        </nav>
+    </header>
+
+    <div class="wrapper">
+        <section class="page active" id="dashboard">
+            <h1 style="margin-top: 3rem; margin-bottom: 2rem;">Thống kê & Quản lý dữ liệu</h1>
+            <div id="dashboardContent"></div>
+            <div style="text-align: center; margin-top: 3rem; margin-bottom: 3rem;">
+                <button id="btnClearData" class="btn btn-secondary" onclick="clearAllData()" style="display: none;">Xoá
+                    tất cả
+                    dữ liệu</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

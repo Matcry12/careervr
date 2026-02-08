@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Kết quả - CareerGo{% endblock %}
+
+{% block content %}
+<section class="page active" id="results">
+    <div class="results-container">
+        <div class="result-header">
+            <h1>Kết quả của bạn</h1>
+            <div class="riasec-badge" id="riasecDisplay">...</div>
+
+            <div style="max-width: 500px; margin: 0 auto 2rem auto; position: relative;">
+                <canvas id="riasecChart"></canvas>
+            </div>
+
+            <div id="scoreDetails" style="display: none;"></div>
+
+            <p id="resultTime" style="color: #9fb7ff; margin-top: 1rem;">-</p>
+        </div>
+
+        <h2 style="margin: 2rem 0 1.5rem 0;">Các ngành gợi ý</h2>
+        <div class="major-grid" id="majorContainer"></div>
+
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn btn-primary" onclick="goPage('test')">Làm lại trắc nghiệm</button>
+        </div>
+    </div>
+</section>
+{% endblock %}

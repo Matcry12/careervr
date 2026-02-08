@@ -1,0 +1,66 @@
+[
+  {
+    "username": "testuser_1770548012",
+    "full_name": "Test User",
+    "role": "user",
+    "hashed_password": "$2b$12$kWZCQ.SK0LJ0CkOvVG8/N.3fUPQk7Q/gJ6PVpYRIVXi0PyCqKzkMa",
+    "created_at": "2026-02-08T17:53:32.810494"
+  },
+  {
+    "username": "testuser_1770548062",
+    "full_name": "Test User",
+    "role": "user",
+    "hashed_password": "$2b$12$T4cE0lQEkQwjRjqzPhRjYuLUkAjB0Lby0wMdee0QbR6TX9jiVTP2G",
+    "created_at": "2026-02-08T17:54:23.045519"
+  },
+  {
+    "username": "admin_1770548258",
+    "full_name": "Test Admin",
+    "role": "admin",
+    "hashed_password": "$2b$12$OKRcIEdOgx2JIlBdn3Ys1.RQXg8iWoAnT5Ml2BkZ9To4EFLXzIgBm",
+    "created_at": "2026-02-08T17:57:38.510831"
+  },
+  {
+    "username": "user_1770548258",
+    "full_name": "Test User",
+    "role": "user",
+    "hashed_password": "$2b$12$/cz4o/gKR0rrgkjoDa5YnOtJRBEC9VigYxMzkdC7BoAeyByUoT98K",
+    "created_at": "2026-02-08T17:57:38.886130",
+    "test_key": {
+      "some": "data"
+    }
+  },
+  {
+    "username": "matcry",
+    "full_name": "Nguyen anh triet",
+    "role": "admin",
+    "hashed_password": "$2b$12$iTjJIcx/OYVWufyRnMlcvuh8xvG5TqdL.RQYJVNln9FsvbW6vAXG.",
+    "created_at": "2026-02-08T17:59:43.219958",
+    "last_riasec_result": {
+      "scores": {
+        "R": 22,
+        "I": 23,
+        "A": 23,
+        "S": 23,
+        "E": 27,
+        "C": 20
+      },
+      "riasec": [
+        "E",
+        "I",
+        "A"
+      ],
+      "date": "2026-02-08T11:00:49.568Z",
+      "name": "Dev Tester",
+      "class": "12A Dev",
+      "school": "THPT Dev Mode"
+    }
+  },
+  {
+    "username": "admin_test",
+    "full_name": "Admin Test",
+    "role": "admin",
+    "hashed_password": "$2b$12$/irjk0cFJNJwlqEDZCcKoetLjezPIY6K0kMPjZWZE2vhEfURpK1X.",
+    "created_at": "2026-02-08T18:20:47.830350"
+  }
+]

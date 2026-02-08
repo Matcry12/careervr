@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trải nghiệm VR - CareerGo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">CareerGo</div>
+        <nav>
+            <a href="/" class="nav-link">Trang chủ</a>
+            <a href="/test" class="nav-link">RIASEC Test</a>
+            <a href="/results" class="nav-link">Kết quả</a>
+      <a href="/community" class="nav-link">Cộng đồng</a>
+            <a href="/chatbot" class="nav-link">💬 AI Chatbot</a>
+            <a href="/vr-mode" class="nav-link active">Trải nghiệm nghề nghiệp</a>
+            <a href="/dashboard" class="nav-link">Thống kê</a>
+            <a href="/health-page" class="nav-link dev-only">🏥 Health</a>
+            <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 0.5rem;"></div>
+            <button id="navDevToggle" onclick="toggleGlobalDevMode()" class="btn btn-secondary"
+                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: rgba(255,215,0,0.5); color: #ffd700;">
+                🛠️ Dev
+            </button>
+        </nav>
+    </header>
+
+    <div class="wrapper">
+        <section class="page active" id="vr-mode">
+            <h1 style="text-align: center; margin-bottom: 2rem;">Trải nghiệm Nghề nghiệp</h1>
+            <p
+                style="text-align: center; margin-bottom: 2rem; color: #9fb7ff; max-width: 700px; margin-left: auto; margin-right: auto;">
+                Khám phá môi trường làm việc thực tế qua các video mô phỏng nghề nghiệp. Chọn một nghề để trải nghiệm!
+            </p>
+
+            <div id="vrControls" style="text-align: center; margin-bottom: 2rem; display: none;">
+                <div id="devTools" style="display: none; margin-top: 1rem; gap: 1rem; justify-content: center;">
+                    <button class="btn btn-primary" onclick="addNewVRJob()"
+                        style="padding: 0.5rem 1rem; font-size: 0.9rem;">+
+                        Thêm nghề mới</button>
+                    <button class="btn btn-secondary" onclick="resetVRData()"
+                        style="padding: 0.5rem 1rem; font-size: 0.9rem; border-color: #ffd700; color: #ffd700;">⚡ Dev
+                        Fill
+                        (Reset)</button></a>
+                </div>
+            </div>
+
+            <div id="vrGrid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- VIDEO MODAL -->
+    <div id="videoModal" class="loading-overlay" onclick="closeVideoModal(event)">
+        <div class="loading-modal" style="width: 90%; max-width: 900px; padding: 1rem; background: #0b1220;">
+            <div style="text-align: right; margin-bottom: 0.5rem;">
+                <button onclick="closeVideoModal()"
+                    style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+                <iframe id="videoFrame" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <h3 id="videoTitle" style="margin-top: 1rem; color: #4d7cff;"></h3>
+        </div>
+    </div>
+
+    <!-- DEV EDITOR MODAL -->
+    <div id="devJobModal" class="loading-overlay">
+        <div class="loading-modal"
+            style="width: 90%; max-width: 500px; padding: 2rem; background: #0b1220; text-align: left;">
+            <h2 style="margin-bottom: 1.5rem; text-align: center; color: #ffd700;">🛠️ Chỉnh sửa Video VR</h2>
+
+            <input type="hidden" id="devJobId">
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Tiêu đề:</label>
+                <input type="text" id="devJobTitle"
+                    style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">YouTube Video ID:</label>
+                <input type="text" id="devJobVideoId" placeholder="VD: BZgv0k_0IQs"
+                    style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Mô tả:</label>
+                <textarea id="devJobDesc" rows="3"
+                    style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Icon (Emoji):</label>
+                <input type="text" id="devJobIcon" placeholder="🎥"
+                    style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button onclick="closeDevModal()" class="btn btn-secondary"
+                    style="border-color: #ff4d4f; color: #ff4d4f;">Hủy</button>
+                <button onclick="saveDevJob()" class="btn btn-primary">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

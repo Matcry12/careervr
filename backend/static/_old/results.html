@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kết quả - CareerGo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">CareerGo</div>
+        <nav>
+            <a href="/" class="nav-link">Trang chủ</a>
+            <a href="/test" class="nav-link">RIASEC Test</a>
+            <a href="/results" class="nav-link active">Kết quả</a>
+            <a href="/chatbot" class="nav-link">💬 AI Chatbot</a>
+            <a href="/vr-mode" class="nav-link">Trải nghiệm nghề nghiệp</a>
+            <a href="/dashboard" class="nav-link">Thống kê</a>
+            <a href="/health-page" class="nav-link dev-only">🏥 Health</a>
+            <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 0.5rem;"></div>
+            <button id="navDevToggle" onclick="toggleGlobalDevMode()" class="btn btn-secondary"
+                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: rgba(255,215,0,0.5); color: #ffd700;">
+                🛠️ Dev
+            </button>
+        </nav>
+    </header>
+
+    <div class="wrapper">
+        <section class="page active" id="results">
+            <div class="results-container">
+                <div class="result-header">
+                    <h1>Kết quả của bạn</h1>
+                    <div class="riasec-badge" id="riasecDisplay">...</div>
+
+                    <div id="scoreDetails"
+                        style="max-width: 600px; margin: 0 auto 2rem auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    </div>
+
+                    <p id="resultTime" style="color: #9fb7ff; margin-top: 1rem;">-</p>
+                </div>
+
+                <h2 style="margin: 2rem 0 1.5rem 0;">Các ngành gợi ý</h2>
+                <div class="major-grid" id="majorContainer"></div>
+
+                <div style="text-align: center; margin-top: 3rem;">
+                    <button class="btn btn-primary" onclick="goPage('test')">Làm lại trắc nghiệm</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

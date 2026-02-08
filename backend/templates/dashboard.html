@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Thống kê - CareerGo{% endblock %}
+
+{% block content %}
+<section class="page active" id="dashboard">
+    <h1 style="margin-top: 3rem; margin-bottom: 2rem;">Thống kê & Quản lý dữ liệu</h1>
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h3>📊 Phân bố RIASEC</h3>
+            <canvas id="dashboardRiasecChart"></canvas>
+        </div>
+        <div class="dashboard-card">
+            <h3>📈 Xu hướng nộp bài</h3>
+            <canvas id="dashboardTrendChart"></canvas>
+        </div>
+    </div>
+    <div id="dashboardContent"></div>
+    <div style="text-align: center; margin-top: 3rem; margin-bottom: 3rem;">
+        <button id="btnClearData" class="btn btn-secondary admin-only" onclick="clearAllData()"
+            style="display: none;">Xoá tất cả
+            dữ liệu</button>
+    </div>
+</section>
+{% endblock %}

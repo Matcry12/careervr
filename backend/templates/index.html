@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}CareerGo - Trang chủ{% endblock %}
+
+{% block loading_text %}🤖 AI đang suy nghĩ...{% endblock %}
+{% block loading_subtext %}Vui lòng chờ khi AI phân tích hồ sơ của bạn{% endblock %}
+
+{% block content %}
+<section class="page active" id="landing">
+    <div class="hero">
+        <div class="hero-content fade-up">
+            <p
+                style="color: #3b82f6; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 1px; text-transform: uppercase;">
+                CareerGo - Hành trình hướng nghiệp số</p>
+            <h1>Khám phá con đường sự nghiệp của bạn</h1>
+            <p>Sử dụng trắc nghiệm RIASEC được cá nhân hóa để tìm hiểu về những ngành nghề phù hợp nhất với bạn. Trải
+                nghiệm Nghề nghiệp và nhận lời khuyên từ AI.</p>
+            <div class="cta-group">
+                <button class="btn btn-primary hover-float" onclick="goPage('test')">Bắt đầu trắc nghiệm</button>
+                <button class="btn btn-secondary hover-float" onclick="goPage('dashboard')">Xem thống kê</button>
+            </div>
+        </div>
+        <img src="/static/background.png" class="fade-up hover-float"
+            style="width: 100%; height: auto; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation-delay: 0.2s;"
+            alt="CareerGo Banner">
+    </div>
+
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>RIASEC Test</h3>
+            <p>50 câu hỏi khoa học để đánh giá sở thích, kỹ năng, và tính cách của bạn</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🥽</div>
+            <h3>Trải nghiệm nghề nghiệp</h3>
+            <p>Khám phá các ngành nghề qua trực quan hóa VR tương tác</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>Tư vấn AI</h3>
+            <p>Chatbot thông minh giúp bạn trả lời mọi câu hỏi về hộ sự nghiệp</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

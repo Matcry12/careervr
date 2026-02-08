@@ -3,10 +3,11 @@
 from dotenv import load_dotenv
 load_dotenv() # Load env vars FIRST before other imports use them
 
-from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Optional, Dict, Any
 import os
@@ -18,6 +19,11 @@ import uuid
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from riasec_calculator import calculate_riasec, recommend_jobs
+from datetime import datetime, timedelta
+from passlib.context import CryptContext
+from jose import JWTError, jwt
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends, status, HTTPException
 from database import db
 
 # ... logging setup ...
@@ -51,6 +57,60 @@ conversations: Dict[str, Any] = {}
 
 app = FastAPI()
 
+# ================== SECURITY CONFIG ==================
+SECRET_KEY = os.getenv("SECRET_KEY", "careervr_super_secret_key_2026") # Change in production!
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 Days
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/token")
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    user = db.get_user(username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+async def get_current_active_user(current_user: dict = Depends(get_current_user)):
+    return current_user
+
+async def get_admin_user(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required"
+        )
+    return current_user
+
 # ... existing CORS ...
 app.add_middleware(
     CORSMiddleware,
@@ -83,7 +143,51 @@ class Submission(BaseModel):
     answers: List[int]
     time: str
     suggestedMajors: str = ""
+    suggestedMajors: str = ""
     combinations: str = ""
+
+class Comment(BaseModel):
+    id: str
+    author: str
+    content: str
+    timestamp: str
+
+class Post(BaseModel):
+    id: str
+    author: str
+    content: str
+    timestamp: str
+    comments: List[Comment] = []
+
+class CreatePostRequest(BaseModel):
+    author: str
+    content: str
+
+class CreateCommentRequest(BaseModel):
+    author: str
+    content: str
+
+# ===== AUTH SCHEMA =====
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+class User(BaseModel):
+    username: str
+    full_name: Optional[str] = None
+    role: str = "user"
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    full_name: Optional[str] = None
+    role: str = "user" # Allow setting role for now (or default to user)
+
+class UserInDB(User):
+    hashed_password: str
 
 # Data Manager
 # Data Manager Removed - Replaced by database.py
@@ -132,6 +236,65 @@ DEFAULT_VR_JOBS = [
 
 
 
+class UserDataUpdate(BaseModel):
+    key: str
+    value: Any
+
+# ================== AUTH API ==================
+@app.post("/api/auth/register", response_model=Token)
+async def register(user: UserCreate):
+    db_user = db.get_user(user.username)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    
+    hashed_password = get_password_hash(user.password)
+    user_data = {
+        "username": user.username,
+        "full_name": user.full_name,
+        "role": user.role, # In prod, force 'user' unless admin creates
+        "hashed_password": hashed_password,
+        "created_at": datetime.now().isoformat()
+    }
+    db.create_user(user_data)
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/api/auth/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = db.get_user(form_data.username)
+    if not user or not verify_password(form_data.password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/api/auth/me", response_model=User)
+async def read_users_me(current_user: dict = Depends(get_current_active_user)):
+    return current_user
+
+@app.post("/api/user/data")
+async def update_user_data(data: UserDataUpdate, current_user: dict = Depends(get_current_active_user)):
+    db.update_user_history(current_user["username"], data.key, data.value)
+    return {"status": "success"}
+
+@app.get("/api/user/data")
+async def get_user_data(current_user: dict = Depends(get_current_active_user)):
+    # Return full user object (excluding password)
+    safe_user = current_user.copy()
+    safe_user.pop("hashed_password", None)
+    safe_user.pop("_id", None) # Remove mongo ID if exists
+    return safe_user
+
 # ===== API ROUTES =====
 
 @app.get("/api/vr-jobs", response_model=List[VRJob])
@@ -139,12 +302,12 @@ async def get_vr_jobs():
     return db.get_vr_jobs(DEFAULT_VR_JOBS)
 
 @app.post("/api/vr-jobs")
-async def update_vr_jobs(jobs: List[VRJob]):
+async def update_vr_jobs(jobs: List[VRJob], current_user: dict = Depends(get_admin_user)):
     db.update_vr_jobs([job.dict(by_alias=True) for job in jobs])
     return {"status": "success", "count": len(jobs)}
 
 @app.get("/api/submissions", response_model=List[Submission])
-async def get_submissions():
+async def get_submissions(current_user: dict = Depends(get_admin_user)):
     return db.get_submissions()
 
 
@@ -161,6 +324,34 @@ async def health_check():
         "db_connected": db.is_mongo,
         "database_name": getattr(db, "db_name", "N/A")
     }
+
+# ================== COMMUNITY API ==================
+@app.get("/api/community/posts", response_model=List[Post])
+async def get_posts():
+    return db.get_posts()
+
+@app.post("/api/community/posts")
+async def create_post(req: CreatePostRequest):
+    new_post = {
+        "id": str(uuid.uuid4()),
+        "author": req.author.strip() or "Ẩn danh",
+        "content": req.content,
+        "timestamp": datetime.now().isoformat(),
+        "comments": []
+    }
+    db.add_post(new_post)
+    return new_post
+
+@app.post("/api/community/posts/{post_id}/comments")
+async def add_comment(post_id: str, req: CreateCommentRequest):
+    new_comment = {
+        "id": str(uuid.uuid4()),
+        "author": req.author.strip() or "Ẩn danh",
+        "content": req.content,
+        "timestamp": datetime.now().isoformat()
+    }
+    db.add_comment(post_id, new_comment)
+    return new_comment
 
 # ================== HELPERS ==================
 def call_dify_api(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -256,13 +447,49 @@ def health_check():
     """Health check endpoint"""
     return {"status": "ok", "message": "CareerGo - Hành trình hướng nghiệp số backend is running"}
 
+# ================== TEMPLATES ==================
+templates = Jinja2Templates(directory="backend/templates")
+
 @app.get("/")
-def serve_index():
-    """Serve main app (index.html)"""
-    index_file = STATIC_DIR / "index.html"
-    if index_file.exists():
-        return FileResponse(index_file, media_type="text/html")
-    return {"error": "Main app not found. Place index.html in backend/static/"}
+def serve_index(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html", context={"active_page": "home"})
+
+@app.get("/test")
+def serve_test(request: Request):
+    return templates.TemplateResponse(request=request, name="test.html", context={"active_page": "test"})
+
+@app.get("/results")
+def serve_results(request: Request):
+    return templates.TemplateResponse(request=request, name="results.html", context={"active_page": "results"})
+
+@app.get("/chatbot")
+def serve_chatbot(request: Request):
+    return templates.TemplateResponse(request=request, name="chatbot.html", context={"active_page": "chatbot"})
+
+@app.get("/vr-mode")
+def serve_vr(request: Request):
+    return templates.TemplateResponse(request=request, name="vr.html", context={"active_page": "vr"})
+
+@app.get("/dashboard")
+def serve_dashboard(request: Request):
+    # API data is protected. Page just shows empty or login prompt if API fails.
+    return templates.TemplateResponse(request=request, name="dashboard.html", context={"active_page": "dashboard"})
+
+@app.get("/health-page")
+def serve_health_page(request: Request):
+    return templates.TemplateResponse(request=request, name="health.html", context={"active_page": "health"})
+
+@app.get("/community")
+def serve_community(request: Request):
+    return templates.TemplateResponse(request=request, name="community.html", context={"active_page": "community"})
+
+@app.get("/login")
+def serve_login(request: Request):
+    return templates.TemplateResponse(request=request, name="login.html", context={"active_page": "login"})
+
+@app.get("/signup")
+def serve_signup(request: Request):
+    return templates.TemplateResponse(request=request, name="signup.html", context={"active_page": "signup"})
 
 # ================== MOUNT STATIC FILES ==================
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
