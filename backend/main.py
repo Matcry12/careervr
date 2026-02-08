@@ -19,7 +19,7 @@ import uuid
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from riasec_calculator import calculate_riasec, recommend_jobs
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -94,9 +94,9 @@ def get_password_hash(password):
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -323,7 +323,7 @@ async def get_vr_jobs():
 
 @app.post("/api/vr-jobs")
 async def update_vr_jobs(jobs: List[VRJob], current_user: dict = Depends(get_admin_user)):
-    db.update_vr_jobs([job.dict(by_alias=True) for job in jobs])
+    db.update_vr_jobs([job.model_dump(by_alias=True) for job in jobs])
     return {"status": "success", "count": len(jobs)}
 
 @app.get("/api/submissions", response_model=List[Submission])
@@ -333,7 +333,7 @@ async def get_submissions(current_user: dict = Depends(get_admin_user)):
 
 @app.post("/api/submissions")
 async def add_submission(sub: Submission):
-    db.add_submission(sub.dict(by_alias=True))
+    db.add_submission(sub.model_dump(by_alias=True))
     return {"status": "success"}
 
 @app.get("/api/health")
