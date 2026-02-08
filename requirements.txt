@@ -1,11 +1,1 @@
-fastapi
-uvicorn
-requests
-python-dotenv
-pydantic
-pymongo[srv]
-dnspython
-passlib[bcrypt]
-python-jose[cryptography]
-python-multipart
-bcrypt==4.0.1
+fastapi\nuvicorn\nrequests\npython-dotenv\npydantic\npymongo[srv]\ndnspython\npasslib[bcrypt]\npython-jose[cryptography]\npython-multipart\nbcrypt==4.0.1

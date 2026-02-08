@@ -30,9 +30,30 @@ from database import db
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ================== STATIC FILES ==================
-STATIC_DIR = Path(__file__).parent / "static"
-STATIC_DIR.mkdir(exist_ok=True)
+# ================== STATIC FILES & TEMPLATES ==================
+# Use absolute paths for Vercel compatibility
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
+
+if not STATIC_DIR.exists():
+    os.makedirs(STATIC_DIR)
+
+app = FastAPI() # app initialization moved here to be before app.mount and templates initialization
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+# Add global context for templates (like Vercel env var)
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    response = await call_next(request)
+    return response
+
+# Clean up double slashes in static paths if any
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse(STATIC_DIR / "favicon.ico")
 
 # ================== CONFIG ==================
 DIFY_API_KEY = os.getenv("DIFY_API_KEY")
@@ -50,12 +71,11 @@ if not DIFY_API_KEY:
 DIFY_CHAT_URL = os.getenv("DIFY_CHAT_URL", "https://api.dify.ai/v1/chat-messages")
 
 # Vercel Environment Detection
+# Vercel Environment Detection
 IS_VERCEL = os.getenv("VERCEL") == "1"
 
 # In-memory conversation storage (use Redis/DB in production)
 conversations: Dict[str, Any] = {}
-
-app = FastAPI()
 
 # ================== SECURITY CONFIG ==================
 SECRET_KEY = os.getenv("SECRET_KEY", "careervr_super_secret_key_2026") # Change in production!
