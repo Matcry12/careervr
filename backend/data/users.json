@@ -34,27 +34,29 @@
     "username": "matcry",
     "full_name": "Nguyen anh triet",
     "role": "admin",
-    "hashed_password": "$2b$12$iTjJIcx/OYVWufyRnMlcvuh8xvG5TqdL.RQYJVNln9FsvbW6vAXG.",
+    "hashed_password": "$2b$12$lYiBYFfNuo1lAbV3eo5a5OpF0hAmhSAunHvZNzt5ufyClVPbj7Si.",
     "created_at": "2026-02-08T17:59:43.219958",
     "last_riasec_result": {
       "scores": {
-        "R": 22,
-        "I": 23,
-        "A": 23,
-        "S": 23,
-        "E": 27,
-        "C": 20
+        "R": 28,
+        "I": 21,
+        "A": 18,
+        "S": 25,
+        "E": 30,
+        "C": 27
       },
       "riasec": [
         "E",
-        "I",
-        "A"
+        "R",
+        "C"
       ],
-      "date": "2026-02-08T11:00:49.568Z",
-      "name": "Dev Tester",
+      "date": "2026-02-09T15:24:09.072Z",
+      "name": "Nguyen anh triet",
       "class": "12A Dev",
       "school": "THPT Dev Mode"
-    }
+    },
+    "school": "",
+    "class": ""
   },
   {
     "username": "admin_test",
@@ -62,5 +64,58 @@
     "role": "admin",
     "hashed_password": "$2b$12$/irjk0cFJNJwlqEDZCcKoetLjezPIY6K0kMPjZWZE2vhEfURpK1X.",
     "created_at": "2026-02-08T18:20:47.830350"
+  },
+  {
+    "username": "matcry1",
+    "full_name": "a",
+    "role": "user",
+    "hashed_password": "$2b$12$Ip61pa66raIP25dY.XIqTOoiVGdSBzq8c3zc6TswjE7ygPwiYGhHm",
+    "created_at": "2026-02-08T21:46:18.295674"
+  },
+  {
+    "username": "user_1770562456",
+    "full_name": "Test User",
+    "role": "user",
+    "hashed_password": "$2b$12$aVa6RiTt5nJr5EWDYtfEiuNK.YSHgkEyhPfR02u5wu4DNHgYbhoza",
+    "created_at": "2026-02-08T21:54:16.512592"
+  },
+  {
+    "username": "admin_1770562456",
+    "full_name": "Test User",
+    "role": "admin",
+    "hashed_password": "$2b$12$jdTlh0jRf1q/munAMSaBLeIBZUTdPBxlfFRKHyBsaliYg7gohyklC",
+    "created_at": "2026-02-08T21:54:16.709801"
+  },
+  {
+    "username": "newadmin",
+    "full_name": "Admin User",
+    "role": "admin",
+    "hashed_password": "$2b$12$.q7B1cGhkqjOumeU7IdG.uprm8.UakFo0Sh6SXHka5Pc/o0rMaUtG",
+    "created_at": "2026-02-08T22:01:02.861646"
+  },
+  {
+    "username": "user_prof_1770564362",
+    "full_name": "Original Name",
+    "role": "user",
+    "hashed_password": "$2b$12$VkqZD2d0jSA5xFqm4Jd0zu5h1g71nynX9B0ogi7PDUJ4mn0CJxMmK",
+    "created_at": "2026-02-08T22:26:02.719526"
+  },
+  {
+    "username": "user_prof_1770564400",
+    "full_name": "Updated Name",
+    "role": "user",
+    "hashed_password": "$2b$12$FmqPJJq0NK7ujd99ZhaG7Ocfb6qsrVRKTkxOSxlcZAlZA3MmNAqHu",
+    "created_at": "2026-02-08T22:26:40.494547",
+    "school": "Test High School",
+    "class": "12A1"
+  },
+  {
+    "username": "user_prof_1770564435",
+    "full_name": "Updated Name",
+    "role": "user",
+    "hashed_password": "$2b$12$jP2Fp9c1LDcaBk7L06w23.EwM2a.3/FNsTjV/1EhF5QpUGS0dNBxa",
+    "created_at": "2026-02-08T22:27:15.302447",
+    "school": "Test High School",
+    "class": "12A1"
   }
 ]

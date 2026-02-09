@@ -15,6 +15,21 @@
             <canvas id="dashboardTrendChart"></canvas>
         </div>
     </div>
+
+    <div class="dashboard-grid" style="margin-top: 1.5rem;">
+        <div class="dashboard-card">
+            <h3>🕸️ Hồ sơ trung bình (Radar)</h3>
+            <canvas id="dashboardRadarChart"></canvas>
+        </div>
+        <div class="dashboard-card" style="grid-column: span 1 / -1;">
+            <h3>🏆 Top Ngành nghề đề xuất</h3>
+            <canvas id="dashboardMajorChart"></canvas>
+        </div>
+        <div class="dashboard-card">
+            <h3>🧩 Tổ hợp tính cách phổ biến</h3>
+            <canvas id="dashboardComboChart"></canvas>
+        </div>
+    </div>
     <div id="dashboardContent"></div>
     <div style="text-align: center; margin-top: 3rem; margin-bottom: 3rem;">
         <button id="btnClearData" class="btn btn-secondary admin-only" onclick="clearAllData()"

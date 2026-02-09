@@ -4,6 +4,23 @@ const RIASEC_KEY = 'careerVR_current';
 const VR_JOBS_KEY = 'careervr_jobs_v1';
 const API_BASE = window.location.origin;
 
+const colors = {
+    R: '#ef4444',
+    I: '#f59e0b',
+    A: '#ec4899',
+    S: '#10b981',
+    E: '#f97316',
+    C: '#3b82f6'
+};
+const names = {
+    R: 'Thực tế (R)',
+    I: 'Nghiên cứu (I)',
+    A: 'Nghệ thuật (A)',
+    S: 'Xã hội (S)',
+    E: 'Quản lý (E)',
+    C: 'Nghiệp vụ (C)'
+};
+
 // ===== AUTH STATE =====
 const token = localStorage.getItem('access_token');
 let currentUser = null;
@@ -32,7 +49,13 @@ async function checkAuth() {
                 `;
             }
             document.body.classList.add('is-logged-in');
+            document.body.classList.add('is-logged-in');
             updateAdminUI();
+
+            // Auto-fill logic
+            if ($('questionsContainer')) autoFillTest();
+            if ($('profileForm')) loadProfile();
+            if ($('postsContainer')) updateCommunityProfileLock();
         } else {
             // Token expired or invalid
             logout();
@@ -112,13 +135,16 @@ async function handleRegister() {
 async function saveUserData(key, value) {
     if (!token) return;
     try {
-        await fetch(`${API_BASE}/api/user/data`, {
-            method: 'POST',
+        const body = {};
+        body[key] = value;
+
+        await fetch(`${API_BASE}/api/auth/me`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ key, value })
+            body: JSON.stringify(body)
         });
     } catch (e) { console.error("Save failed", e); }
 }
@@ -126,7 +152,7 @@ async function saveUserData(key, value) {
 async function loadUserData() {
     if (!token) return null;
     try {
-        const res = await fetch(`${API_BASE}/api/user/data`, {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) return await res.json();
@@ -453,21 +479,35 @@ async function showResults() {
         }
     }
 
+    console.log("DEBUG: showResults current=", current);
+
+    const $content = $('resultsContent');
+    const $empty = $('resultsEmpty');
+
     if (!current) {
-        const container = $('majorContainer');
-        if (container) container.innerHTML = '<div class="empty-state">Vui lòng làm trắc nghiệm trước</div>';
-        const details = $('scoreDetails');
-        if (details) details.innerHTML = '';
+        if ($content) $content.style.display = 'none';
+        if ($empty) $empty.style.display = 'block';
         return;
     }
 
-    $('riasecDisplay').textContent = current.riasec.join('-');
+    if ($content) $content.style.display = 'block';
+    if ($empty) $empty.style.display = 'none';
+
+    $('riasecDisplay').textContent = (current.riasec || []).join('-');
     const dateStr = (current.time || current.date);
     const safeDate = (dateStr && !isNaN(new Date(dateStr))) ? new Date(dateStr).toLocaleDateString('vi-VN') : 'Mới nhất';
     $('resultTime').textContent = `Ngày: ${safeDate}`;
 
     // Render Scores
     if (current.scores) {
+        console.log("DEBUG: Scores found", current.scores);
+        const DETAILS_EL = $('scoreDetails');
+        if (DETAILS_EL) {
+            DETAILS_EL.style.display = 'grid'; // Ensure visible
+            DETAILS_EL.style.gap = '1rem';
+            DETAILS_EL.style.gridTemplateColumns = 'repeat(auto-fit, minmax(150px, 1fr))';
+        }
+
         const scoreHtml = Object.entries(current.scores)
             .sort((a, b) => b[1] - a[1])
             .map(([type, score]) => {
@@ -485,42 +525,126 @@ async function showResults() {
         `;
             }).join('');
 
-        $('scoreDetails').innerHTML = scoreHtml;
+        if (DETAILS_EL) DETAILS_EL.innerHTML = scoreHtml;
+
+        // --- CHART GENERATION ---
+        const ctx = document.getElementById('riasecChart');
+        if (ctx) {
+            // Destroy existing if any to avoid overlap/memory leak
+            if (window.myRiasecChart) {
+                window.myRiasecChart.destroy();
+            }
+
+            const dataValues = [
+                current.scores.R || 0,
+                current.scores.I || 0,
+                current.scores.A || 0,
+                current.scores.S || 0,
+                current.scores.E || 0,
+                current.scores.C || 0
+            ];
+
+            console.log("DEBUG: Chart Data", dataValues);
+
+            window.myRiasecChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['R - Thực tế', 'I - Nghiên cứu', 'A - Nghệ thuật', 'S - Xã hội', 'E - Quản lý', 'C - Nghiệp vụ'],
+                    datasets: [{
+                        label: 'Hồ sơ RIASEC',
+                        data: dataValues,
+                        fill: true,
+                        backgroundColor: 'rgba(77, 124, 255, 0.2)',
+                        borderColor: '#4d7cff',
+                        pointBackgroundColor: '#4d7cff',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#4d7cff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: {
+                                color: '#e2e8f0',
+                                font: { size: 12, family: "'Outfit', sans-serif" }
+                            },
+                            ticks: { display: false, backdropColor: 'transparent' },
+                            suggestedMin: 0,
+                            suggestedMax: 40
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    } else {
+        console.error("DEBUG: No scores in current object!");
     }
 
     // RECOMMENDATION LOGIC
-    const userCodes = current.riasec;
-    let recommendations = MAJORS_DB.map(job => {
-        const jobCodes = job.code.split('-');
-        const intersection = jobCodes.filter(c => userCodes.includes(c));
-        const matchCount = intersection.length;
-        let score = matchCount * 10;
-        if (matchCount === 3) score += 20;
-        if (jobCodes[0] === userCodes[0]) score += 5;
-        return { ...job, matchCount, score };
-    });
+    try {
+        let userCodes = current.riasec;
+        console.log("DEBUG: Raw user codes", userCodes);
+        // Normalize userCodes
+        if (typeof userCodes === 'string') {
+            userCodes = userCodes.includes('-') ? userCodes.split('-') : userCodes.split('');
+        }
+        if (!Array.isArray(userCodes)) userCodes = []; // Fallback
 
-    recommendations = recommendations.filter(r => r.matchCount >= 2);
-    recommendations.sort((a, b) => b.score - a.score);
-    const finalRecs = recommendations.slice(0, 4);
+        let recommendations = MAJORS_DB.map(job => {
+            const jobCodes = job.code.split('-');
+            const intersection = jobCodes.filter(c => userCodes.includes(c));
+            const matchCount = intersection.length;
+            let score = matchCount * 10;
+            if (matchCount === 3) score += 20;
+            if (jobCodes[0] === userCodes[0]) score += 5;
+            return { ...job, matchCount, score };
+        });
 
-    if (finalRecs.length === 0) {
-        $('majorContainer').innerHTML = '<div class="empty-state">Không tìm thấy ngành phù hợp sát với tiêu chí (trùng >= 2 nhóm). Hãy thử tham khảo các ngành chung của nhóm cao nhất!</div>';
-        return;
+        recommendations = recommendations.filter(r => r.matchCount >= 2);
+        recommendations.sort((a, b) => b.score - a.score);
+        const finalRecs = recommendations.slice(0, 4);
+
+        const container = $('majorContainer');
+        if (!container) return;
+
+        if (finalRecs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>Chưa tìm thấy ngành phù hợp "Khớp"</h3>
+                    <p>Mã hồ sơ: <strong style="color: #4d7cff;">${userCodes.join('-')}</strong></p>
+                    <p>Hệ thống không tìm thấy ngành nào khớp >= 2 tiêu chí trong ${MAJORS_DB.length} ngành.</p>
+                    <p>Gợi ý: Hãy thử tham khảo nhóm nghề của chữ cái đầu tiên (<strong>${userCodes[0]}</strong>).</p>
+                </div>`;
+            return;
+        }
+
+        const html = finalRecs.map((m, idx) => `
+      <div class="major-card rank-${idx + 1}" style="${idx === 3 ? 'opacity: 0.8; border: 1px dashed rgba(30,42,68,0.5);' : ''}">
+        <div class="major-badge" style="${idx === 3 ? 'background: rgba(100,100,100,0.2); border-color: #aaa; color: #aaa;' : ''}">
+          ${idx < 3 ? `Gợi ý #${idx + 1}` : 'Dự phòng'}
+        </div>
+        <h3>${m.name}</h3>
+        <div class="major-code">Mã: <strong>${m.code}</strong> <span style="font-size: 0.8rem; color: #666;">(${m.group})</span></div>
+        <p>Phù hợp: ${m.code.split('-').map(c => userCodes.includes(c) ? `<b style="color: #4d7cff;">${c}</b>` : c).join('-')}</p>
+      </div>
+    `).join('');
+
+        container.innerHTML = html;
+    } catch (e) {
+        console.error("Rec Error:", e);
+        const container = $('majorContainer');
+        if (container) {
+            container.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">Lỗi tính toán: ${e.message}</div>`;
+        }
     }
-
-    const html = finalRecs.map((m, idx) => `
-  <div class="major-card rank-${idx + 1}" style="${idx === 3 ? 'opacity: 0.8; border: 1px dashed rgba(30,42,68,0.5);' : ''}">
-    <div class="major-badge" style="${idx === 3 ? 'background: rgba(100,100,100,0.2); border-color: #aaa; color: #aaa;' : ''}">
-      ${idx < 3 ? `Gợi ý #${idx + 1}` : 'Dự phòng'}
-    </div>
-    <h3>${m.name}</h3>
-    <div class="major-code">Mã: <strong>${m.code}</strong> <span style="font-size: 0.8rem; color: #666;">(${m.group})</span></div>
-    <p>Phù hợp với hồ sơ: ${m.code.split('-').map(c => userCodes.includes(c) ? `<b style="color: #4d7cff;">${c}</b>` : c).join('-')}</p>
-  </div>
-`).join('');
-
-    $('majorContainer').innerHTML = html;
 }
 
 // ===== SHOW DASHBOARD =====
@@ -530,8 +654,27 @@ async function showDashboard() {
     $content.innerHTML = '<div style="color: #9fb7ff; text-align: center;">⏳ Đang tải dữ liệu...</div>';
 
     try {
-        const res = await fetch(`${API_BASE}/api/submissions`);
-        if (!res.ok) throw new Error("Failed to load submissions");
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_BASE}/api/submissions`, { headers });
+
+        if (res.status === 401 || res.status === 403) {
+            $content.innerHTML = `
+                <div class="empty-state" style="color: #ff4d4f; padding: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">⛔ Quyền truy cập bị từ chối</h3>
+                    <p>Trang này chỉ dành cho Quản trị viên (Admin).</p>
+                    <button onclick="goPage('landing')" class="btn btn-primary" style="margin-top: 1.5rem;">Về trang chủ</button>
+                </div>
+            `;
+            return;
+        }
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Failed to load submissions (Status: ${res.status} - ${res.statusText}). Server says: ${errText.substring(0, 100)}`);
+        }
 
         const db = await res.json();
 
@@ -617,7 +760,144 @@ async function showDashboard() {
                 }
             });
         }
-        // --- CHART LOGIC END ---
+
+        // 3. Average RIASEC Profile (Radar Chart)
+        const totalScores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+        let scoreCount = 0;
+
+        db.forEach(sub => {
+            if (sub.scores) {
+                Object.keys(totalScores).forEach(key => {
+                    if (sub.scores[key] !== undefined) {
+                        totalScores[key] += sub.scores[key];
+                    }
+                });
+                scoreCount++;
+            }
+        });
+
+        const avgScores = scoreCount > 0
+            ? Object.keys(totalScores).map(k => (totalScores[k] / scoreCount).toFixed(1))
+            : [0, 0, 0, 0, 0, 0];
+
+        const ctxRadar = document.getElementById('dashboardRadarChart');
+        if (ctxRadar) {
+            new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['R (Thực tế)', 'I (Nghiên cứu)', 'A (Nghệ thuật)', 'S (Xã hội)', 'E (Quản lý)', 'C (Nghiệp vụ)'],
+                    datasets: [{
+                        label: 'Trung bình toàn trường',
+                        data: avgScores,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#3b82f6',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: '#e2e8f0', font: { size: 12 } },
+                            ticks: { display: false, backdropColor: 'transparent' },
+                            suggestedMin: 0,
+                            suggestedMax: 40
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // 4. Top Recommended Careers (Bar Chart)
+        const jobCounts = {};
+        db.forEach(sub => {
+            // Check both fields for backward compatibility
+            const majors = sub.suggestedMajors || "";
+            if (majors) {
+                // Split by comma and trim
+                majors.split(',').forEach(m => {
+                    const jobName = m.trim();
+                    if (jobName) jobCounts[jobName] = (jobCounts[jobName] || 0) + 1;
+                });
+            }
+        });
+
+        // Sort and take top 10
+        const sortedJobs = Object.entries(jobCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);
+
+        const ctxMajor = document.getElementById('dashboardMajorChart');
+        if (ctxMajor) {
+            new Chart(ctxMajor, {
+                type: 'bar',
+                data: {
+                    labels: sortedJobs.map(i => i[0]),
+                    datasets: [{
+                        label: 'Số lượt đề xuất',
+                        data: sortedJobs.map(i => i[1]),
+                        backgroundColor: '#10b981',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y', // Horizontal bar
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#e2e8f0' }, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // 5. Personality Combinations (Pie/Doughnut)
+        const comboCounts = {};
+        db.forEach(sub => {
+            if (sub.riasec && sub.riasec.length >= 3) {
+                const code = sub.riasec.slice(0, 3).join('-');
+                comboCounts[code] = (comboCounts[code] || 0) + 1;
+            }
+        });
+
+        // Sort and take top 5 + Others
+        const sortedCombos = Object.entries(comboCounts).sort((a, b) => b[1] - a[1]);
+        let finalCombos = sortedCombos.slice(0, 5);
+        const otherCount = sortedCombos.slice(5).reduce((sum, item) => sum + item[1], 0);
+
+        const labels = finalCombos.map(i => i[0]);
+        const data = finalCombos.map(i => i[1]);
+        if (otherCount > 0) {
+            labels.push('Khác');
+            data.push(otherCount);
+        }
+
+        const ctxCombo = document.getElementById('dashboardComboChart');
+        if (ctxCombo) {
+            new Chart(ctxCombo, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#64748b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#e2e8f0' } }
+                    }
+                }
+            });
+        }
+
 
         const rows = [...db].reverse();
         // ... Table HTML generation continues below ...
@@ -1107,43 +1387,6 @@ window.closeVideoModal = () => {
 }
 
 
-async function checkHealth() {
-    const content = $('healthContent');
-    if (!content) return;
-    content.innerHTML = '<div class="spinner"></div><p>Checking system status...</p>';
-
-    try {
-        const res = await fetch(`${API_BASE}/api/health`);
-        const data = await res.json();
-        const isConnected = data.db_connected;
-        const statusColor = isConnected ? 'status-ok' : 'status-error';
-        const statusIcon = isConnected ? '✅' : '❌';
-
-        content.innerHTML = `
-            <div class="status-indicator ${statusColor}">${statusIcon}</div>
-            <h3>${isConnected ? 'System Healthy' : 'System Information'}</h3>
-            <div style="margin-top: 1.5rem; text-align: left; display: inline-block;">
-                <p><strong>Database Type:</strong> ${data.db_type}</p>
-                <p><strong>DB Name:</strong> ${data.database_name}</p>
-                <p><strong>API Status:</strong> ${data.status.toUpperCase()}</p>
-            </div>
-            <div style="margin-top: 2rem;">
-                <button onclick="checkHealth()" class="btn btn-secondary">🔄 Refresh</button>
-            </div>
-        `;
-    } catch (e) {
-        content.innerHTML = `
-            <div class="status-indicator status-error">⚠️</div>
-            <h3>Connection Failed</h3>
-            <p>Could not reach backend API.</p>
-            <div style="margin-top: 1rem;">
-                <button onclick="checkHealth()" class="btn btn-secondary">🔄 Try Again</button>
-            </div>
-        `;
-    }
-}
-
-
 
 function resetVRData() {
     if (confirm('Bạn có chắc chắn muốn Reset dữ liệu VR về mặc định không?')) {
@@ -1302,12 +1545,39 @@ async function loadPosts() {
         console.error(err);
         container.innerHTML = '<div class="empty-state" style="color: #f87171;">Không thể tải bài viết.</div>';
     }
+    // Lock fields if user is already logged in
+    updateCommunityProfileLock();
 }
 
 function getDefaultName() {
+    if (currentUser && currentUser.full_name) return currentUser.full_name;
     // Try to get from local storage if user took test
     const current = readCurrent();
     return current && current.name ? current.name : "";
+}
+
+function updateCommunityProfileLock() {
+    if (!currentUser) return;
+    const name = currentUser.full_name || currentUser.username;
+
+    // Lock Post Author
+    const postAuthor = $('postAuthor');
+    if (postAuthor) {
+        postAuthor.value = name;
+        postAuthor.readOnly = true;
+        postAuthor.style.backgroundColor = 'rgba(15, 31, 58, 0.4)';
+        postAuthor.style.cursor = 'not-allowed';
+        postAuthor.title = 'Chỉnh sửa tên trong Hồ sơ cá nhân';
+    }
+
+    // Lock Comment Authors
+    document.querySelectorAll('input[id^="comment-author-"]').forEach(el => {
+        el.value = name;
+        el.readOnly = true;
+        el.style.backgroundColor = 'rgba(15, 31, 58, 0.4)';
+        el.style.cursor = 'not-allowed';
+        el.title = 'Chỉnh sửa tên trong Hồ sơ cá nhân';
+    });
 }
 
 async function createPost() {
@@ -1390,6 +1660,71 @@ function updateAdminUI() {
     }
 }
 
+// ===== PROFILE FUNCTIONS =====
+function autoFillTest() {
+    if (!currentUser) return;
+
+    // Lock fields if logged in (edit only in Profile page)
+    const lockField = (id, val) => {
+        const el = $(id);
+        if (el) {
+            el.value = val || '';
+            el.readOnly = true;
+            el.style.backgroundColor = 'rgba(15, 31, 58, 0.4)';
+            el.style.cursor = 'not-allowed';
+            el.title = 'Vui lòng chỉnh sửa trong trang Hồ sơ';
+        }
+    };
+
+    lockField('name', currentUser.full_name);
+    lockField('class', currentUser.class || currentUser.class_name);
+    lockField('school', currentUser.school);
+}
+
+function loadProfile() {
+    if (!currentUser) return;
+    if ($('profileName')) $('profileName').value = currentUser.full_name || '';
+    if ($('profileClass')) $('profileClass').value = currentUser.class || currentUser.class_name || '';
+    if ($('profileSchool')) $('profileSchool').value = currentUser.school || '';
+}
+
+async function saveProfile() {
+    const full_name = $('profileName').value;
+    const school = $('profileSchool').value;
+    const class_name = $('profileClass').value;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ full_name, school, class: class_name })
+        });
+
+        if (res.ok) {
+            alert("✅ Đã lưu hồ sơ thành công!");
+            // Refresh currentUser logic
+            const updatedUser = await res.json();
+            currentUser = updatedUser;
+            updateAdminUI(); // Refresh header name if changed
+            // Also update header explicitly if needed, but checkAuth handles it generally. 
+            // Let's just re-run checkAuth to be safe or manually update nav
+            const navAuth = $('navAuth');
+            if (navAuth) {
+                navAuth.innerHTML = `
+                    <span style="color: #9fb7ff; margin-right: 0.5rem; font-size: 0.9rem;">Hi, ${escapeHtml(currentUser.username)}</span>
+                    <button onclick="logout()" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border: 1px solid #4d7cff; color: #4d7cff;">Logout</button>
+                `;
+            }
+        } else {
+            alert("❌ Lỗi khi lưu hồ sơ.");
+        }
+    } catch (e) { console.error(e); alert("Lỗi kết nối."); }
+}
+
+
 // ===== INIT =====
 window.addEventListener('load', () => {
     checkAuth();
@@ -1400,7 +1735,7 @@ window.addEventListener('load', () => {
     if ($('majorContainer')) showResults();
     if ($('dashboardContent')) showDashboard();
     if ($('vrGrid')) fetchVRJobs();
-    if ($('healthContent')) checkHealth();
+
 
     // Community Page Init
     if ($('postsContainer')) {

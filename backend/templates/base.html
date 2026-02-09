@@ -42,11 +42,12 @@
                 Chatbot</a>
             <a href="/vr-mode" class="nav-link auth-only {% if active_page == 'vr' %}active{% endif %}">Trải nghiệm nghề
                 nghiệp</a>
-            <a href="/dashboard" class="nav-link auth-only {% if active_page == 'dashboard' %}active{% endif %}">Thống
+            <a href="/dashboard" class="nav-link admin-only {% if active_page == 'dashboard' %}active{% endif %}"
+                style="display: none;">Thống
                 kê</a>
-            <a href="/health-page" class="nav-link admin-only {% if active_page == 'health' %}active{% endif %}"
-                style="display: none;">🏥
-                Health</a>
+
+            <a href="/profile" class="nav-link auth-only {% if active_page == 'profile' %}active{% endif %}">👤 Hồ
+                sơ</a>
             <span id="navAuth" style="margin-left: 1rem;">
                 <!-- JS will populate: Login or Hi User/Logout -->
             </span>
@@ -60,7 +61,7 @@
 
     {% block modals %}{% endblock %}
 
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js?v=2.5"></script>
     {% block scripts %}{% endblock %}
 </body>
 

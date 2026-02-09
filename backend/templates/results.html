@@ -5,24 +5,38 @@
 {% block content %}
 <section class="page active" id="results">
     <div class="results-container">
-        <div class="result-header">
-            <h1>Kết quả của bạn</h1>
-            <div class="riasec-badge" id="riasecDisplay">...</div>
+        <!-- Results Content (Hidden by default) -->
+        <div id="resultsContent" style="display: none;">
+            <div class="result-header">
+                <h1>Kết quả của bạn</h1>
+                <div class="riasec-badge" id="riasecDisplay">...</div>
 
-            <div style="max-width: 500px; margin: 0 auto 2rem auto; position: relative;">
-                <canvas id="riasecChart"></canvas>
+                <div style="max-width: 500px; margin: 0 auto 2rem auto; position: relative;">
+                    <canvas id="riasecChart"></canvas>
+                </div>
+
+                <div id="scoreDetails" style="display: none;"></div>
+
+                <p id="resultTime" style="color: #9fb7ff; margin-top: 1rem;">-</p>
             </div>
 
-            <div id="scoreDetails" style="display: none;"></div>
+            <h2 style="margin: 2rem 0 1.5rem 0;">Các ngành gợi ý</h2>
+            <div class="major-grid" id="majorContainer"></div>
 
-            <p id="resultTime" style="color: #9fb7ff; margin-top: 1rem;">-</p>
+            <div style="text-align: center; margin-top: 3rem;">
+                <button class="btn btn-primary" onclick="goPage('test')">Làm lại trắc nghiệm</button>
+            </div>
         </div>
 
-        <h2 style="margin: 2rem 0 1.5rem 0;">Các ngành gợi ý</h2>
-        <div class="major-grid" id="majorContainer"></div>
-
-        <div style="text-align: center; margin-top: 3rem;">
-            <button class="btn btn-primary" onclick="goPage('test')">Làm lại trắc nghiệm</button>
+        <!-- Empty State (Hidden by default, toggled by JS) -->
+        <div id="resultsEmpty" class="empty-state" style="display: none; text-align: center; padding: 4rem 2rem;">
+            <div style="font-size: 4rem; margin-bottom: 1.5rem;">📝</div>
+            <h3 style="margin-bottom: 1rem; color: #fff;">Bạn chưa làm bài trắc nghiệm</h3>
+            <p style="color: #9fb7ff; margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                Hãy hoàn thành bài test RIASEC để nhận gợi ý nghề nghiệp phù hợp nhất với tính cách của bạn.
+            </p>
+            <button onclick="goPage('test')" class="btn btn-primary" style="padding: 0.8rem 2rem;">🚀 Bắt đầu
+                ngay</button>
         </div>
     </div>
 </section>

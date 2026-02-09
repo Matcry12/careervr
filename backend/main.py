@@ -53,7 +53,44 @@ async def add_process_time_header(request: Request, call_next):
 # Clean up double slashes in static paths if any
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
-    return FileResponse(STATIC_DIR / "favicon.ico")
+    file_path = STATIC_DIR / "favicon.ico"
+    if file_path.exists():
+        return FileResponse(file_path)
+    return JSONResponse(content={"detail": "Not found"}, status_code=404)
+
+# ================== AUTH SCHEMA ==================
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+class User(BaseModel):
+    username: str
+    full_name: Optional[str] = None
+    role: str = "user"
+    school: Optional[str] = None
+    class_name: Optional[str] = Field(None, alias="class")
+    last_riasec_result: Optional[Dict[str, Any]] = None
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    full_name: Optional[str] = None
+    role: str = "user"
+    school: Optional[str] = None
+    class_name: Optional[str] = Field(None, alias="class")
+    last_riasec_result: Optional[Dict[str, Any]] = None
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    school: Optional[str] = None
+    class_name: Optional[str] = Field(None, alias="class")
+    last_riasec_result: Optional[Dict[str, Any]] = None
+
+class UserInDB(User):
+    hashed_password: str
 
 # ================== CONFIG ==================
 DIFY_API_KEY = os.getenv("DIFY_API_KEY")
@@ -120,6 +157,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user
 
+@app.put("/api/auth/me", response_model=User)
+async def update_profile(profile: UserProfileUpdate, current_user: dict = Depends(get_current_user)):
+    # Filter out None values to avoid overwriting with nulls if partial update
+    updates = {k: v for k, v in profile.model_dump(by_alias=True).items() if v is not None}
+    
+    if not updates:
+        return current_user
+
+    db.update_user_profile(current_user["username"], updates)
+    
+    # Fetch updated user to return
+    updated_data = db.get_user(current_user["username"])
+    return User(**updated_data)
+
 async def get_current_active_user(current_user: dict = Depends(get_current_user)):
     return current_user
 
@@ -163,7 +214,6 @@ class Submission(BaseModel):
     answers: List[int]
     time: str
     suggestedMajors: str = ""
-    suggestedMajors: str = ""
     combinations: str = ""
 
 class Comment(BaseModel):
@@ -187,27 +237,7 @@ class CreateCommentRequest(BaseModel):
     author: str
     content: str
 
-# ===== AUTH SCHEMA =====
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-class User(BaseModel):
-    username: str
-    full_name: Optional[str] = None
-    role: str = "user"
-
-class UserCreate(BaseModel):
-    username: str
-    password: str
-    full_name: Optional[str] = None
-    role: str = "user" # Allow setting role for now (or default to user)
-
-class UserInDB(User):
-    hashed_password: str
 
 # Data Manager
 # Data Manager Removed - Replaced by database.py
@@ -495,13 +525,15 @@ def serve_dashboard(request: Request):
     # API data is protected. Page just shows empty or login prompt if API fails.
     return templates.TemplateResponse(request=request, name="dashboard.html", context={"active_page": "dashboard"})
 
-@app.get("/health-page")
-def serve_health_page(request: Request):
-    return templates.TemplateResponse(request=request, name="health.html", context={"active_page": "health"})
+
 
 @app.get("/community")
 def serve_community(request: Request):
     return templates.TemplateResponse(request=request, name="community.html", context={"active_page": "community"})
+
+@app.get("/profile")
+def serve_profile(request: Request):
+    return templates.TemplateResponse(request=request, name="profile.html", context={"active_page": "profile"})
 
 @app.get("/login")
 def serve_login(request: Request):

@@ -111,7 +111,11 @@ class Database:
     # ===== AUTH / USERS =====
     def get_user(self, username: str) -> Optional[Dict]:
         if self.is_mongo:
-            return self.db.users.find_one({"username": username}, {"_id": 0})
+            try:
+                return self.db.users.find_one({"username": username}, {"_id": 0})
+            except Exception as e:
+                logger.error(f"Mongo Get User Error: {e}")
+                # Fallback to local
         
         # Local Fallback
         if self.users_file.exists():
@@ -126,9 +130,15 @@ class Database:
         return None
 
     def create_user(self, user_data: Dict):
+        success = False
         if self.is_mongo:
-            self.db.users.insert_one(user_data)
-        else:
+            try:
+                self.db.users.insert_one(user_data)
+                success = True
+            except Exception as e:
+                 logger.error(f"Mongo Create User Error: {e}")
+
+        if not success:
             current = []
             if self.users_file.exists():
                 try:
@@ -140,12 +150,18 @@ class Database:
 
     def update_user_history(self, username: str, key: str, value: Any):
         """Update user persistent data (e.g., last_riasec_result, chat_history)"""
+        success = False
         if self.is_mongo:
-            self.db.users.update_one(
-                {"username": username},
-                {"$set": {key: value}}
-            )
-        else:
+            try:
+                self.db.users.update_one(
+                    {"username": username},
+                    {"$set": {key: value}}
+                )
+                success = True
+            except Exception as e:
+                logger.error(f"Mongo Update History Error: {e}")
+
+        if not success:
             users = []
             if self.users_file.exists():
                 try:
@@ -156,6 +172,34 @@ class Database:
             for u in users:
                 if u.get("username") == username:
                     u[key] = value
+                    break
+            self._save_local(self.users_file, users)
+
+    def update_user_profile(self, username: str, updates: Dict):
+        """Update multiple user fields (e.g. full_name, school, class)"""
+        success = False
+        if self.is_mongo:
+            try:
+                self.db.users.update_one(
+                    {"username": username},
+                    {"$set": updates}
+                )
+                success = True
+            except Exception as e:
+                logger.error(f"Mongo Update Profile Error: {e}")
+
+        if not success:
+            users = []
+            if self.users_file.exists():
+                try:
+                    with open(self.users_file, "r", encoding="utf-8") as f:
+                        users = json.load(f)
+                except: pass
+            
+            for u in users:
+                if u.get("username") == username:
+                    for k, v in updates.items():
+                        u[k] = v
                     break
             self._save_local(self.users_file, users)
 
