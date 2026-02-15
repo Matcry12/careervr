@@ -135,10 +135,11 @@ def test_vr_jobs(test_db):
     # Create Admin
     admin_data = {"username": "admin", "password": "adminpass", "role": "admin"}
     client.post("/api/auth/register", json=admin_data)
+    db.update_user_profile("admin", {"role": "admin"})
     login_res = client.post("/api/auth/token", data={"username": "admin", "password": "adminpass"})
     admin_token = login_res.json()["access_token"]
     
-    new_jobs = [{"id": "j1", "title": "New Job", "videoId": "v1", "description": "desc", "icon": "x"}]
+    new_jobs = [{"id": "j1", "title": "New Job", "videoId": "v1", "riasec_code": "RIC", "description": "desc", "icon": "x"}]
     res = client.post("/api/vr-jobs", json=new_jobs, headers={"Authorization": f"Bearer {admin_token}"})
     assert res.status_code == 200
 
@@ -206,6 +207,7 @@ def test_submissions(test_db):
     # Let's just create a new specific admin for this test to be robust
     try:
         client.post("/api/auth/register", json={"username": "sub_admin", "password": "pw", "role": "admin"})
+        db.update_user_profile("sub_admin", {"role": "admin"})
     except:
         pass # maybe already exists
     
@@ -292,4 +294,3 @@ def test_run_riasec_legacy(test_db, mock_dify):
     assert res.status_code == 200
     assert "text" in res.json()
     assert res.json()["text"] == "This is a mock AI response"
-

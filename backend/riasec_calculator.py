@@ -1,4 +1,8 @@
 import json
+from typing import Any, Dict, List, Optional
+
+VALID_RIASEC = {"R", "I", "A", "S", "E", "C"}
+DEFAULT_ORDER = ["R", "I", "A", "S", "E", "C"]
 
 def calculate_riasec(answers_json):
     """
@@ -77,6 +81,139 @@ def calculate_riasec(answers_json):
         "score_C": C,
         "top_1_type": top_3_riasec[0],
         "top_3_list": top_3_riasec
+    }
+
+
+def _normalize_code(code: Any) -> str:
+    if isinstance(code, list):
+        code = "".join(str(c) for c in code)
+    if code is None:
+        return ""
+    normalized = "".join(ch for ch in str(code).upper() if ch in VALID_RIASEC)
+    return normalized[:3]
+
+
+def _extract_job_code(job: Dict[str, Any]) -> str:
+    return _normalize_code(job.get("riasec_code") or job.get("code"))
+
+
+def _ordered_top_traits(scores: Dict[str, int]) -> List[str]:
+    return sorted(DEFAULT_ORDER, key=lambda t: (-scores.get(t, 0), DEFAULT_ORDER.index(t)))
+
+
+def calculate_relevance(student_code: Any, all_jobs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Weighted matching between student RIASEC code and job RIASEC code.
+    Rules:
+    - +50 primary trait match (job first letter == student first letter)
+    - +30 full code match
+    - +10 per matching letter overlap
+    """
+    normalized_student = _normalize_code(student_code)
+    if len(normalized_student) < 3:
+        return []
+
+    student_set = set(normalized_student)
+    ranked: List[Dict[str, Any]] = []
+
+    for index, job in enumerate(all_jobs):
+        code = _extract_job_code(job)
+        if len(code) < 3:
+            continue
+
+        overlap_count = sum(1 for letter in code if letter in student_set)
+        primary_match = code[0] == normalized_student[0]
+        full_match = code == normalized_student
+        score = (50 if primary_match else 0) + (30 if full_match else 0) + (10 * overlap_count)
+
+        ranked.append({
+            **job,
+            "riasec_code": code,
+            "relevance_score": score,
+            "overlap_count": overlap_count,
+            "is_primary_match": primary_match,
+            "is_full_match": full_match,
+            "_original_index": index,
+        })
+
+    ranked.sort(
+        key=lambda item: (
+            -item["relevance_score"],
+            -int(item["is_full_match"]),
+            -int(item["is_primary_match"]),
+            str(item.get("title", "")).lower(),
+            str(item.get("id", item["_original_index"]))
+        )
+    )
+    for item in ranked:
+        item.pop("_original_index", None)
+    return ranked
+
+
+def get_recommendations_3_plus_1(
+    scores: Dict[str, int],
+    all_jobs: List[Dict[str, Any]],
+    top_3: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    ordered_traits = top_3[:] if top_3 else _ordered_top_traits(scores)[:3]
+    ordered_traits = [_normalize_code(t)[:1] for t in ordered_traits if _normalize_code(t)]
+    if len(ordered_traits) < 3:
+        ordered_traits = _ordered_top_traits(scores)[:3]
+
+    student_code = "".join(ordered_traits[:3])
+    ranked = calculate_relevance(student_code, all_jobs)
+
+    trait_1 = ordered_traits[0]
+    trait_2 = ordered_traits[1] if len(ordered_traits) > 1 else ordered_traits[0]
+
+    priority = [job for job in ranked if job["riasec_code"][0] == trait_1][:3]
+    used_ids = {job.get("id") for job in priority}
+
+    backup = []
+    for job in ranked:
+        if job.get("id") in used_ids:
+            continue
+        if job["riasec_code"][0] == trait_2:
+            backup = [job]
+            used_ids.add(job.get("id"))
+            break
+
+    if len(priority) < 3:
+        for job in ranked:
+            if job.get("id") in used_ids:
+                continue
+            priority.append(job)
+            used_ids.add(job.get("id"))
+            if len(priority) == 3:
+                break
+
+    if not backup:
+        for job in ranked:
+            if job.get("id") in used_ids:
+                continue
+            backup = [job]
+            break
+
+    # Defensive fallback in case ranking is empty (e.g., no valid codes)
+    if not ranked and all_jobs:
+        fallback_jobs = []
+        for job in all_jobs:
+            code = _extract_job_code(job)
+            if len(code) < 3:
+                continue
+            fallback_jobs.append({**job, "riasec_code": code, "relevance_score": 0})
+        ranked = fallback_jobs
+        priority = ranked[:3]
+        backup = ranked[3:4]
+
+    return {
+        "student_code": student_code,
+        "primary_trait": trait_1,
+        "secondary_trait": trait_2,
+        "priority": priority,
+        "backup": backup,
+        "top_4": priority + backup,
+        "all_sorted_jobs": ranked,
     }
 
 def recommend_jobs(top_3_riasec):

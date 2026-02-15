@@ -11,3 +11,5 @@ python-multipart
 bcrypt==4.0.1
 jinja2
 certifi
+pandas
+openpyxl

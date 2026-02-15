@@ -41,3 +41,22 @@
     </div>
 </section>
 {% endblock %}
+
+{% block modals %}
+<div id="videoModal" class="loading-overlay" onclick="closeVideoModal(event)">
+    <div class="loading-modal" style="width: 90%; max-width: 900px; padding: 1rem; background: #0b1220;">
+        <div style="text-align: right; margin-bottom: 0.5rem;">
+            <button onclick="closeVideoModal()"
+                style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
+            <iframe id="videoFrame" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </div>
+        <h3 id="videoTitle" style="margin-top: 1rem; color: #4d7cff;"></h3>
+    </div>
+</div>
+{% endblock %}

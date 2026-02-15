@@ -1,12 +1,10 @@
-# ... (Keep existing imports and config)
-# ... (Keep existing imports and config)
 from dotenv import load_dotenv
 load_dotenv() # Load env vars FIRST before other imports use them
 
-from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, Depends, status
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, Depends, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Optional, Dict, Any
@@ -16,17 +14,17 @@ import json
 from pathlib import Path
 import logging
 import uuid
+import io
+import re
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from riasec_calculator import calculate_riasec, recommend_jobs
+from riasec_calculator import calculate_riasec, get_recommendations_3_plus_1
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi import Depends, status, HTTPException
 from database import db
 
-# ... logging setup ...
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -44,13 +42,11 @@ app = FastAPI() # app initialization moved here to be before app.mount and templ
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Add global context for templates (like Vercel env var)
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     response = await call_next(request)
     return response
 
-# Clean up double slashes in static paths if any
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     file_path = STATIC_DIR / "favicon.ico"
@@ -95,20 +91,11 @@ class UserInDB(User):
 # ================== CONFIG ==================
 DIFY_API_KEY = os.getenv("DIFY_API_KEY")
 if not DIFY_API_KEY:
-    # Optional: Log warning instead of crash if you want backend to run even without keys
     logger.warning("❌ ERROR: DIFY_API_KEY not set. Chat features will not work.")
-    # raise ValueError("❌ ERROR: DIFY_API_KEY not set.") # Keeping it safe to avoid crash on start if user has no env yet? 
-    # User said file was crashing, so likely it raised error.
-    # But wait, lines 36-37 in original file raised ValueError. I will restore it to be safe or just log.
-    # Let's restore strictly.
-
-if not DIFY_API_KEY:
     logger.error("DIFY_API_KEY not set")
 
 DIFY_CHAT_URL = os.getenv("DIFY_CHAT_URL", "https://api.dify.ai/v1/chat-messages")
 
-# Vercel Environment Detection
-# Vercel Environment Detection
 IS_VERCEL = os.getenv("VERCEL") == "1"
 
 # In-memory conversation storage (use Redis/DB in production)
@@ -200,8 +187,17 @@ class VRJob(BaseModel):
     id: str
     title: str
     videoId: str
+    riasec_code: str
     description: str = ""
     icon: str = "🎬"
+
+    @field_validator("riasec_code")
+    @classmethod
+    def validate_riasec_code(cls, value: str):
+        normalized = "".join(ch for ch in str(value).upper() if ch in "RIASEC")
+        if len(normalized) != 3:
+            raise ValueError("riasec_code must contain exactly 3 letters from RIASEC")
+        return normalized
 
 class Submission(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -249,6 +245,7 @@ DEFAULT_VR_JOBS = [
         "id": 'job_1',
         "title": 'Phi công',
         "videoId": 'W0ixQ59o-iI',
+        "riasec_code": "RIE",
         "description": 'Trải nghiệm buồng lái máy bay và quy trình cất cánh.',
         "icon": '✈️'
       },
@@ -256,6 +253,7 @@ DEFAULT_VR_JOBS = [
         "id": 'job_2',
         "title": 'Bác sĩ phẫu thuật',
         "videoId": 'L_H6gA2Fq8A',
+        "riasec_code": "ISR",
         "description": 'Quan sát ca phẫu thuật tim trong môi trường phòng mổ vô trùng.',
         "icon": '👨‍⚕️'
       },
@@ -263,6 +261,7 @@ DEFAULT_VR_JOBS = [
         "id": 'job_3',
         "title": 'Kiến trúc sư',
         "videoId": '7J0i7Q3kZ8c',
+        "riasec_code": "AIR",
         "description": 'Tham quan công trình xây dựng và quy trình thiết kế nhà ở.',
         "icon": '🏗️'
       },
@@ -270,6 +269,7 @@ DEFAULT_VR_JOBS = [
         "id": 'job_4',
         "title": 'Lập trình viên',
         "videoId": 'M2K7_Gfq8sA', # Placeholder valid ID
+        "riasec_code": "IRC",
         "description": 'Một ngày làm việc tại công ty công nghệ lớn.',
         "icon": '💻'
       },
@@ -277,6 +277,7 @@ DEFAULT_VR_JOBS = [
         "id": 'job_5',
         "title": 'Luật sư',
         "videoId": 'M2K7_Gfq8sA',
+        "riasec_code": "IEC",
         "description": 'Tham gia phiên tòa giả định và tìm hiểu quy trình tranh tụng, tư vấn pháp lý.',
         "icon": '⚖️'
       }
@@ -286,9 +287,108 @@ DEFAULT_VR_JOBS = [
 
 
 
+VALID_RIASEC_LETTERS = set("RIASEC")
+DEFAULT_RIASEC_CODE = "RIC"
+
+
+def normalize_riasec_code(raw_code: Any) -> Optional[str]:
+    normalized = "".join(ch for ch in str(raw_code or "").upper() if ch in VALID_RIASEC_LETTERS)
+    if len(normalized) == 3:
+        return normalized
+    return None
+
+
+def infer_riasec_code_from_title(title: str) -> Optional[str]:
+    from job_data import MAJORS_DB
+
+    title_norm = (title or "").strip().lower()
+    for major in MAJORS_DB:
+        major_name = major.get("name", "").strip().lower()
+        major_code = normalize_riasec_code(major.get("code", ""))
+        if title_norm == major_name and major_code:
+            return major_code
+    return None
+
+
+def extract_youtube_video_id(url_or_id: str) -> str:
+    if not url_or_id:
+        return ""
+    value = str(url_or_id).strip()
+    if "youtube.com" not in value and "youtu.be" not in value:
+        return value
+
+    patterns = [
+        r"v=([A-Za-z0-9_-]{11})",
+        r"youtu\.be/([A-Za-z0-9_-]{11})",
+        r"embed/([A-Za-z0-9_-]{11})",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, value)
+        if match:
+            return match.group(1)
+    return value
+
+
+def normalize_vr_job_record(job: Dict[str, Any]) -> Dict[str, Any]:
+    title = (job.get("title") or job.get("Job Title") or "").strip()
+    normalized_code = normalize_riasec_code(
+        job.get("riasec_code") or job.get("RIASEC_Code") or job.get("code")
+    )
+    if not normalized_code:
+        normalized_code = infer_riasec_code_from_title(title) or DEFAULT_RIASEC_CODE
+
+    return {
+        "id": str(job.get("id") or f"job_{uuid.uuid4().hex[:8]}"),
+        "title": title or "Untitled Job",
+        "videoId": extract_youtube_video_id(job.get("videoId") or job.get("Video URL") or ""),
+        "riasec_code": normalized_code,
+        "description": (job.get("description") or job.get("Description") or "").strip(),
+        "icon": (job.get("icon") or job.get("Icon_URL") or "🎬").strip() or "🎬",
+    }
+
+
+def get_normalized_vr_jobs() -> List[Dict[str, Any]]:
+    raw_jobs = db.get_vr_jobs(DEFAULT_VR_JOBS)
+    normalized_jobs = [normalize_vr_job_record(job) for job in raw_jobs]
+    return [job for job in normalized_jobs if job.get("videoId")]
+
+
+def build_recommendation_bundle(scores: Dict[str, int], jobs: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    jobs = jobs if jobs is not None else get_normalized_vr_jobs()
+    return get_recommendations_3_plus_1(scores=scores, all_jobs=jobs)
+
+
+def build_allowed_jobs_text(recommendations: Dict[str, Any]) -> str:
+    allowed = recommendations.get("top_4", [])
+    if not allowed:
+        return "No allowed jobs available."
+    return "; ".join(f"{item.get('title')} ({item.get('riasec_code')})" for item in allowed)
+
+
+def trim_recommendation_for_response(recommendations: Dict[str, Any]) -> Dict[str, Any]:
+    fields = ("id", "title", "videoId", "riasec_code", "description", "icon", "relevance_score")
+
+    def project(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        return [{k: item.get(k) for k in fields} for item in items]
+
+    return {
+        "student_code": recommendations.get("student_code"),
+        "primary_trait": recommendations.get("primary_trait"),
+        "secondary_trait": recommendations.get("secondary_trait"),
+        "priority": project(recommendations.get("priority", [])),
+        "backup": project(recommendations.get("backup", [])),
+        "top_4": project(recommendations.get("top_4", [])),
+        "all_sorted_jobs": project(recommendations.get("all_sorted_jobs", [])),
+    }
+
+
 class UserDataUpdate(BaseModel):
     key: str
     value: Any
+
+
+class RecommendationRequest(BaseModel):
+    scores: Dict[str, int]
 
 # ================== AUTH API ==================
 @app.post("/api/auth/register", response_model=Token)
@@ -301,7 +401,8 @@ async def register(user: UserCreate):
     user_data = {
         "username": user.username,
         "full_name": user.full_name,
-        "role": user.role, # In prod, force 'user' unless admin creates
+        # Prevent privilege escalation through public self-registration.
+        "role": "user",
         "hashed_password": hashed_password,
         "created_at": datetime.now().isoformat()
     }
@@ -349,12 +450,104 @@ async def get_user_data(current_user: dict = Depends(get_current_active_user)):
 
 @app.get("/api/vr-jobs", response_model=List[VRJob])
 async def get_vr_jobs():
-    return db.get_vr_jobs(DEFAULT_VR_JOBS)
+    return get_normalized_vr_jobs()
 
 @app.post("/api/vr-jobs")
 async def update_vr_jobs(jobs: List[VRJob], current_user: dict = Depends(get_admin_user)):
-    db.update_vr_jobs([job.model_dump(by_alias=True) for job in jobs])
+    normalized_jobs = [normalize_vr_job_record(job.model_dump(by_alias=True)) for job in jobs]
+    db.update_vr_jobs(normalized_jobs)
     return {"status": "success", "count": len(jobs)}
+
+
+@app.post("/api/recommendations")
+async def get_recommendations(payload: RecommendationRequest):
+    recommendations = build_recommendation_bundle(payload.scores)
+    return {"recommendations": trim_recommendation_for_response(recommendations)}
+
+
+@app.get("/api/vr-jobs/template")
+async def download_vr_template(current_user: dict = Depends(get_admin_user)):
+    from openpyxl import Workbook
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "VR Jobs Template"
+    headers = ["Job Title", "Video URL", "Description", "RIASEC_Code", "Icon_URL"]
+    sheet.append(headers)
+    sheet.append(["Lập trình viên", "https://www.youtube.com/watch?v=M2K7_Gfq8sA", "Mô tả ngắn", "IRC", "💻"])
+
+    buffer = io.BytesIO()
+    workbook.save(buffer)
+    buffer.seek(0)
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=vr_jobs_template.xlsx"}
+    )
+
+
+@app.post("/api/vr-jobs/import")
+async def import_vr_jobs(file: UploadFile = File(...), current_user: dict = Depends(get_admin_user)):
+    if not file.filename or not file.filename.lower().endswith(".xlsx"):
+        raise HTTPException(status_code=400, detail="Only .xlsx files are supported")
+
+    try:
+        import pandas as pd
+        df = pd.read_excel(file.file)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid Excel file: {exc}")
+
+    required_columns = ["Job Title", "Video URL", "Description", "RIASEC_Code", "Icon_URL"]
+    missing_columns = [column for column in required_columns if column not in df.columns]
+    if missing_columns:
+        raise HTTPException(status_code=400, detail=f"Missing required columns: {', '.join(missing_columns)}")
+
+    jobs = get_normalized_vr_jobs()
+    jobs_by_title = {job["title"].strip().lower(): job for job in jobs}
+    result = {"created": 0, "updated": 0, "skipped": 0, "errors": []}
+
+    for index, row in df.iterrows():
+        raw_title = row.get("Job Title", "")
+        title = "" if pd.isna(raw_title) else str(raw_title).strip()
+        if not title:
+            result["skipped"] += 1
+            result["errors"].append(f"Row {index + 2}: Missing Job Title")
+            continue
+
+        raw_code = row.get("RIASEC_Code", "")
+        riasec_code = None if pd.isna(raw_code) else normalize_riasec_code(raw_code)
+        if not riasec_code:
+            result["skipped"] += 1
+            result["errors"].append(f"Row {index + 2}: Missing or invalid RIASEC_Code")
+            continue
+
+        raw_video_url = row.get("Video URL", "")
+        video_url = "" if pd.isna(raw_video_url) else str(raw_video_url).strip()
+
+        row_job = normalize_vr_job_record({
+            "title": title,
+            "Video URL": video_url,
+            "Description": "" if pd.isna(row.get("Description", "")) else row.get("Description", ""),
+            "RIASEC_Code": riasec_code,
+            "Icon_URL": "" if pd.isna(row.get("Icon_URL", "")) else row.get("Icon_URL", "🎬"),
+        })
+        if not row_job["videoId"]:
+            result["skipped"] += 1
+            result["errors"].append(f"Row {index + 2}: Missing or invalid Video URL")
+            continue
+
+        existing = jobs_by_title.get(title.lower())
+        if existing:
+            row_job["id"] = existing["id"]
+            jobs_by_title[title.lower()] = row_job
+            result["updated"] += 1
+        else:
+            jobs_by_title[title.lower()] = row_job
+            result["created"] += 1
+
+    db.update_vr_jobs(list(jobs_by_title.values()))
+    return {"status": "success", **result}
 
 @app.get("/api/submissions", response_model=List[Submission])
 async def get_submissions(current_user: dict = Depends(get_admin_user)):
@@ -367,7 +560,7 @@ async def add_submission(sub: Submission):
     return {"status": "success"}
 
 @app.get("/api/health")
-async def health_check():
+async def api_health_check():
     return {
         "status": "ok",
         "db_type": "MongoDB Atlas" if db.is_mongo else "Local File",
@@ -497,9 +690,6 @@ def health_check():
     """Health check endpoint"""
     return {"status": "ok", "message": "CareerGo - Hành trình hướng nghiệp số backend is running"}
 
-# ================== TEMPLATES ==================
-templates = Jinja2Templates(directory="backend/templates")
-
 @app.get("/")
 def serve_index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html", context={"active_page": "home"})
@@ -543,9 +733,6 @@ def serve_login(request: Request):
 def serve_signup(request: Request):
     return templates.TemplateResponse(request=request, name="signup.html", context={"active_page": "signup"})
 
-# ================== MOUNT STATIC FILES ==================
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
 @app.post("/start-conversation")
 def start_conversation(data: StartConversationRequest, background_tasks: BackgroundTasks):
     """Start a new conversation session"""
@@ -553,11 +740,14 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
     # Calculate RIASEC scores
     try:
         riasec_result = calculate_riasec(json.dumps(data.answers_json))
-        # Calculate recommended job locally
-        recommended_job = recommend_jobs(riasec_result["top_3_list"])
+        jobs = get_normalized_vr_jobs()
+        recommendations = build_recommendation_bundle(riasec_result["full_scores"], jobs=jobs)
+        recommended_job = ", ".join(item["title"] for item in recommendations.get("priority", []))
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Lỗi tính toán RIASEC: {str(e)}")
     
+    allowed_jobs_text = build_allowed_jobs_text(recommendations)
+
     # Prepare Dify payload with added RIASEC type
     scores_for_dify = riasec_result["full_scores"].copy()
     scores_for_dify["riasec_type"] = "-".join(riasec_result["top_3_list"])
@@ -570,9 +760,14 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
             "school": data.school,
             "answer": json.dumps(scores_for_dify, ensure_ascii=False),
             "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
-            "top_3_types": ",".join(riasec_result["top_3_list"])
+            "top_3_types": ",".join(riasec_result["top_3_list"]),
+            "allowed_jobs": allowed_jobs_text
         },
-        "query": data.initial_question,
+        "query": (
+            f"{data.initial_question}\n\n"
+            f"ALLOWED JOBS: {allowed_jobs_text}\n"
+            "Only recommend jobs from the allowed list above. Do not invent job titles."
+        ),
         "response_mode": "blocking",
         "user": data.name.strip() or "student"
     }
@@ -605,9 +800,9 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
         "school": data.school,
         "riasec_scores": riasec_result["full_scores"],
         "top_3_types": riasec_result["top_3_list"],
-        "riasec_scores": riasec_result["full_scores"],
-        "top_3_types": riasec_result["top_3_list"],
         "top_1_type": riasec_result["top_1_type"],
+        "recommendations": trim_recommendation_for_response(recommendations),
+        "allowed_jobs_text": allowed_jobs_text,
         "answers_json": data.answers_json,
         "messages": [
             {"role": "user", "content": data.initial_question},
@@ -620,6 +815,7 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
         "conversation_id": conversation_id,
         "riasec_scores": riasec_result["full_scores"],
         "top_3_types": riasec_result["top_3_list"],
+        "recommendations": trim_recommendation_for_response(recommendations),
         "ai_response": ai_message
     }
 
@@ -645,9 +841,14 @@ def chat(data: ChatMessage):
             "school": conv["school"],
             "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
             "top_3_types": ",".join(conv["top_3_types"]),
-            "answer": json.dumps(scores_for_dify, ensure_ascii=False)
+            "answer": json.dumps(scores_for_dify, ensure_ascii=False),
+            "allowed_jobs": conv.get("allowed_jobs_text", "")
         },
-        "query": data.message,
+        "query": (
+            f"{data.message}\n\n"
+            f"ALLOWED JOBS: {conv.get('allowed_jobs_text', '')}\n"
+            "Only recommend jobs from the allowed list above. Do not invent job titles."
+        ),
         "response_mode": "blocking",
         "conversation_id": conv["dify_conversation_id"],
         "user": conv["name"].strip() or "student"
@@ -676,6 +877,7 @@ def run_riasec(data: RIASECRequest):
     # Calculate RIASEC scores
     try:
         riasec_result = calculate_riasec(json.dumps(data.answers_json))
+        recommendations = build_recommendation_bundle(riasec_result["full_scores"])
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Lỗi tính toán RIASEC: {str(e)}")
 
@@ -691,7 +893,8 @@ def run_riasec(data: RIASECRequest):
             "school": data.school,
             "answer": json.dumps(scores_for_dify, ensure_ascii=False),
             "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
-            "top_3_types": ",".join(riasec_result["top_3_list"])
+            "top_3_types": ",".join(riasec_result["top_3_list"]),
+            "allowed_jobs": build_allowed_jobs_text(recommendations)
         },
         "query": (
             "Dựa trên thông tin học sinh và kết quả trắc nghiệm RIASEC, "
@@ -710,10 +913,10 @@ def run_riasec(data: RIASECRequest):
         "text": text_output,
         "riasec_scores": riasec_result["full_scores"],
         "top_3_types": riasec_result["top_3_list"],
-        "top_1_type": riasec_result["top_1_type"]
+        "top_1_type": riasec_result["top_1_type"],
+        "recommendations": trim_recommendation_for_response(recommendations)
     }
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-

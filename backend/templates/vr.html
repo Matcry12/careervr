@@ -12,13 +12,28 @@
 
     <div id="vrControls" style="text-align: center; margin-bottom: 2rem; display: none;">
         <div id="devTools" class="admin-only"
-            style="display: none; margin-top: 1rem; gap: 1rem; justify-content: center;">
+            style="display: none; margin-top: 1rem; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button class="btn btn-primary" onclick="addNewVRJob()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">+
                 Thêm nghề mới</button>
+            <button class="btn btn-secondary" onclick="downloadVRTemplate()"
+                style="padding: 0.5rem 1rem; font-size: 0.9rem; border-color: #10b981; color: #10b981;">⬇ Tải mẫu
+                Excel</button>
+            <label class="btn btn-secondary"
+                style="padding: 0.5rem 1rem; font-size: 0.9rem; border-color: #4d7cff; color: #4d7cff; cursor: pointer;">
+                📤 Chọn file Excel
+                <input id="vrImportFile" type="file" accept=".xlsx" style="display: none;">
+            </label>
+            <button class="btn btn-secondary" onclick="handleImport()"
+                style="padding: 0.5rem 1rem; font-size: 0.9rem; border-color: #f59e0b; color: #f59e0b;">Import</button>
             <button class="btn btn-secondary" onclick="resetVRData()"
                 style="padding: 0.5rem 1rem; font-size: 0.9rem; border-color: #ffd700; color: #ffd700;">⚡ Dev Fill
                 (Reset)</button></a>
+            <span
+                style="font-size: 0.8rem; color: #9fb7ff; display: inline-flex; align-items: center; gap: 0.3rem;">❔
+                Nhập mã RIASEC 3 ký tự (ví dụ: RIA), nên để chữ đầu là nhóm nghề chính.</span>
         </div>
+        <div id="vrImportErrors" class="admin-only"
+            style="max-width: 900px; margin: 0.8rem auto 0; text-align: left; font-size: 0.85rem;"></div>
     </div>
 
     <div id="vrGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
@@ -64,6 +79,12 @@
             <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">YouTube Video ID:</label>
             <input type="text" id="devJobVideoId" placeholder="VD: BZgv0k_0IQs"
                 style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Mã RIASEC (3 ký tự):</label>
+            <input type="text" id="devJobRiasec" placeholder="VD: RIA"
+                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff; text-transform: uppercase;">
         </div>
 
         <div style="margin-bottom: 1rem;">

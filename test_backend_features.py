@@ -42,7 +42,7 @@ def test_vr_jobs(admin_token, user_token):
         print(f"❌ Public Get VR Jobs Failed: {res.status_code}")
 
     # 2. User Post (Should Fail)
-    new_jobs = [{"id": "test_job", "title": "Test Job", "videoId": "123", "description": "Desc", "icon": "T"}]
+    new_jobs = [{"id": "test_job", "title": "Test Job", "videoId": "123", "riasec_code": "RIC", "description": "Desc", "icon": "T"}]
     res = requests.post(f"{BASE_URL}/api/vr-jobs", json=new_jobs, headers={"Authorization": f"Bearer {user_token}"})
     if res.status_code in [401, 403]:
         print("✅ User Post VR Jobs Correctly Rejected (403/401)")
