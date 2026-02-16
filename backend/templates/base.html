@@ -32,25 +32,24 @@
     <!-- HEADER -->
     <header>
         <div class="logo">CareerGo</div>
-        <nav>
+        <button id="navToggle" class="nav-toggle" type="button" aria-label="Mở menu" aria-expanded="false"
+            aria-controls="mainNav">
+            ☰
+        </button>
+        <nav id="mainNav">
             <a href="/" class="nav-link {% if active_page == 'home' %}active{% endif %}">Trang chủ</a>
             <a href="/test" class="nav-link auth-only {% if active_page == 'test' %}active{% endif %}">RIASEC Test</a>
             <a href="/results" class="nav-link auth-only {% if active_page == 'results' %}active{% endif %}">Kết quả</a>
             <a href="/community" class="nav-link auth-only {% if active_page == 'community' %}active{% endif %}">Cộng
                 đồng</a>
-            <a href="/chatbot" class="nav-link auth-only {% if active_page == 'chatbot' %}active{% endif %}">💬 AI
+            <a href="/chatbot" class="nav-link auth-only {% if active_page == 'chatbot' %}active{% endif %}">AI
                 Chatbot</a>
             <a href="/vr-mode" class="nav-link auth-only {% if active_page == 'vr' %}active{% endif %}">Trải nghiệm nghề
                 nghiệp</a>
-            <a href="/dashboard" class="nav-link admin-only {% if active_page == 'dashboard' %}active{% endif %}"
-                style="display: none;">Thống
+            <a href="/dashboard" class="nav-link admin-only {% if active_page == 'dashboard' %}active{% endif %}">Thống
                 kê</a>
-
-            <a href="/profile" class="nav-link auth-only {% if active_page == 'profile' %}active{% endif %}">👤 Hồ
-                sơ</a>
-            <span id="navAuth" style="margin-left: 1rem;">
-                <!-- JS will populate: Login or Hi User/Logout -->
-            </span>
+            <a href="/profile" class="nav-link auth-only {% if active_page == 'profile' %}active{% endif %}">Hồ sơ</a>
+            <span id="navAuth" class="nav-auth"></span>
         </nav>
     </header>
 

@@ -27,13 +27,53 @@ let currentUser = null;
 let GLOBAL_RECOMMENDATION_JOBS = {};
 let GLOBAL_RECOMMENDED_IDS = [];
 
+// ===== UI HELPERS =====
+function clearFieldError(fieldId) {
+    const err = document.getElementById(`${fieldId}Error`);
+    if (err) err.textContent = '';
+}
+
+function setFieldError(fieldId, message) {
+    const err = document.getElementById(`${fieldId}Error`);
+    if (err) err.textContent = message || '';
+}
+
+function setStatus(id, type, message) {
+    const el = $(id);
+    if (!el) return;
+    el.classList.remove('status-info', 'status-success', 'status-error');
+    if (type) el.classList.add(`status-${type}`);
+    el.textContent = message || '';
+}
+
+function initMobileNav() {
+    const toggle = $('navToggle');
+    const nav = $('mainNav');
+    if (!toggle || !nav) return;
+
+    const closeMenu = () => {
+        nav.classList.remove('nav-open');
+        toggle.setAttribute('aria-expanded', 'false');
+    };
+
+    toggle.addEventListener('click', () => {
+        nav.classList.toggle('nav-open');
+        toggle.setAttribute('aria-expanded', nav.classList.contains('nav-open') ? 'true' : 'false');
+    });
+
+    nav.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMenu();
+    });
+}
+
 // ===== AUTH FUNCTIONS =====
 async function checkAuth() {
     const navAuth = $('navAuth');
 
     // If no token, show Login link
     if (!token) {
-        if (navAuth) navAuth.innerHTML = '<a href="/login" class="nav-link" style="color: #4d7cff;">Login</a>';
+        if (navAuth) navAuth.innerHTML = '<a href="/login" class="nav-link">Đăng nhập</a>';
         return;
     }
 
@@ -46,11 +86,10 @@ async function checkAuth() {
             currentUser = await res.json();
             if (navAuth) {
                 navAuth.innerHTML = `
-                    <span style="color: #9fb7ff; margin-right: 0.5rem; font-size: 0.9rem;">Hi, ${escapeHtml(currentUser.username)}</span>
-                    <button onclick="logout()" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border: 1px solid #4d7cff; color: #4d7cff;">Logout</button>
+                    <span class="nav-user">Hi, ${escapeHtml(currentUser.username)}</span>
+                    <button onclick="logout()" class="btn btn-secondary nav-logout-btn">Logout</button>
                 `;
             }
-            document.body.classList.add('is-logged-in');
             document.body.classList.add('is-logged-in');
             updateAdminUI();
 
@@ -75,12 +114,25 @@ function logout() {
 }
 
 async function handleLogin() {
-    const username = $('loginUsername').value;
+    const username = $('loginUsername').value.trim();
     const password = $('loginPassword').value;
+    clearFieldError('loginUsername');
+    clearFieldError('loginPassword');
+    setStatus('loginStatus', null, '');
+
+    if (!username) {
+        setFieldError('loginUsername', 'Vui lòng nhập tên đăng nhập.');
+        return;
+    }
+    if (!password) {
+        setFieldError('loginPassword', 'Vui lòng nhập mật khẩu.');
+        return;
+    }
 
     const formData = new URLSearchParams();
     formData.append('username', username);
     formData.append('password', password);
+    setStatus('loginStatus', 'info', 'Đang đăng nhập...');
 
     try {
         const res = await fetch(`${API_BASE}/api/auth/token`, {
@@ -92,22 +144,35 @@ async function handleLogin() {
         if (res.ok) {
             const data = await res.json();
             localStorage.setItem('access_token', data.access_token);
-            window.location.href = '/dashboard';
+            window.location.href = '/test';
         } else {
-            alert("Đăng nhập thất bại. Kiểm tra lại thông tin!");
+            setStatus('loginStatus', 'error', 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
         }
     } catch (e) {
-        alert("Lỗi kết nối server");
+        setStatus('loginStatus', 'error', 'Không thể kết nối máy chủ. Vui lòng thử lại.');
     }
 }
 
 async function handleRegister() {
-    const username = $('regUsername').value;
-    const fullname = $('regFullname').value;
+    const username = $('regUsername').value.trim();
+    const fullname = $('regFullname').value.trim();
     const password = $('regPassword').value;
-    // Checkbox for admin role (Demo only)
-    const isAdmin = document.getElementById('regAdmin')?.checked;
-    const role = isAdmin ? 'admin' : 'user';
+
+    clearFieldError('regUsername');
+    clearFieldError('regFullname');
+    clearFieldError('regPassword');
+    setStatus('signupStatus', null, '');
+
+    if (!username) {
+        setFieldError('regUsername', 'Vui lòng nhập tên đăng nhập.');
+        return;
+    }
+    if (password.length < 6) {
+        setFieldError('regPassword', 'Mật khẩu tối thiểu 6 ký tự.');
+        return;
+    }
+
+    setStatus('signupStatus', 'info', 'Đang tạo tài khoản...');
 
     try {
         const res = await fetch(`${API_BASE}/api/auth/register`, {
@@ -117,20 +182,20 @@ async function handleRegister() {
                 username,
                 password,
                 full_name: fullname,
-                role: role
+                role: 'user'
             })
         });
 
         if (res.ok) {
             const data = await res.json();
             localStorage.setItem('access_token', data.access_token);
-            window.location.href = '/dashboard';
+            window.location.href = '/test';
         } else {
             const err = await res.json();
-            alert("Đăng ký thất bại: " + (err.detail || "Unknown error"));
+            setStatus('signupStatus', 'error', "Đăng ký thất bại: " + (err.detail || "Lỗi không xác định"));
         }
     } catch (e) {
-        alert("Lỗi kết nối server");
+        setStatus('signupStatus', 'error', 'Không thể kết nối máy chủ. Vui lòng thử lại.');
     }
 }
 
@@ -201,24 +266,25 @@ function renderRecommendationSections(recommendations) {
         return;
     }
 
-    const renderCard = (job, label, borderColor) => `
-      <div class="major-card" style="border: 1px solid ${borderColor}; cursor: pointer;" onclick="openJobFromResults('${job.id}')">
-        <div class="major-badge" style="background: rgba(15,31,58,0.35); border-color: ${borderColor}; color: ${borderColor};">
+    const renderCard = (job, label, type) => `
+      <div class="major-card clickable ${type}" onclick="openJobFromResults('${job.id}')" tabindex="0" role="button"
+        onkeydown="if(event.key==='Enter'){openJobFromResults('${job.id}')}">
+        <div class="major-badge ${type}">
           ${label}
         </div>
         <h3>${escapeHtml(job.title || '')}</h3>
         <div class="major-code">RIASEC: <strong>${escapeHtml(job.riasec_code || '---')}</strong></div>
-        <p style="color: #9fb7ff;">${escapeHtml(job.description || 'Nhấn để xem video mô phỏng nghề nghiệp.')}</p>
+        <p class="muted">${escapeHtml(job.description || 'Nhấn để xem video mô phỏng nghề nghiệp.')}</p>
       </div>
     `;
 
-    const priorityHtml = priority.map((job, idx) => renderCard(job, `Ưu tiên #${idx + 1}`, '#22c55e')).join('');
-    const backupHtml = backup.map(job => renderCard(job, 'Dự phòng', '#f59e0b')).join('');
+    const priorityHtml = priority.map((job, idx) => renderCard(job, `Ưu tiên #${idx + 1}`, 'priority')).join('');
+    const backupHtml = backup.map(job => renderCard(job, 'Dự phòng', 'backup')).join('');
 
     container.innerHTML = `
-      <div style="grid-column: 1 / -1; margin-bottom: 0.5rem;"><h3 style="color:#22c55e;">Nhóm ưu tiên</h3></div>
+      <h3 class="major-section-label priority">Nhóm ưu tiên</h3>
       ${priorityHtml || '<div class="empty-state">Chưa có nghề ưu tiên.</div>'}
-      <div style="grid-column: 1 / -1; margin: 1.5rem 0 0.5rem;"><h3 style="color:#f59e0b;">Nhóm dự phòng</h3></div>
+      <h3 class="major-section-label backup">Nhóm dự phòng</h3>
       ${backupHtml || '<div class="empty-state">Chưa có nghề dự phòng.</div>'}
     `;
 }
@@ -284,4 +350,3 @@ const RIASEC_QUESTIONS = [
     { q: "Gia đình ủng hộ và tôn trọng lựa chọn nghề nghiệp của tôi.", r: "S" },
     { q: "Tôi sẵn sàng lập kế hoạch cụ thể để theo đuổi nghề đã chọn.", r: "E" }
 ];
-

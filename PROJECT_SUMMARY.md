@@ -13,7 +13,7 @@ Main goal: help students discover suitable majors/career directions from RIASEC 
 
 ## 2. Tech stack
 - Backend: FastAPI (`backend/main.py`)
-- Frontend: Jinja templates + vanilla JS (`backend/static/script.js`) + CSS (`backend/static/style.css`)
+- Frontend: Jinja templates + vanilla JS modules (`backend/static/js/*.js`) + CSS (`backend/static/style.css`)
 - Auth: JWT + passlib/bcrypt
 - Data: MongoDB (preferred) with JSON-file fallback (`backend/database.py`)
 - Deployment: Vercel Python function (`api/index.py`, `vercel.json`)
@@ -39,7 +39,7 @@ Main goal: help students discover suitable majors/career directions from RIASEC 
    - saves `last_riasec_result` to profile if logged in
 4. `/results` page renders:
    - RIASEC radar chart
-   - recommended majors (frontend scoring against `MAJORS_DB`)
+   - backend-driven recommendations (`/api/recommendations`) with priority/backup grouping
 5. `/chatbot`:
    - starts session via `POST /start-conversation`
    - backend recalculates RIASEC, calls Dify, stores conversation in memory
@@ -47,6 +47,7 @@ Main goal: help students discover suitable majors/career directions from RIASEC 
 6. `/vr-mode`:
    - fetches jobs from `/api/vr-jobs`
    - admin can add/edit/delete VR jobs
+   - teacher/admin can download Excel template and import VR jobs with row-level feedback
 7. `/dashboard` (admin only):
    - charts and table from `/api/submissions`
 8. `/community`:
@@ -81,7 +82,7 @@ Main goal: help students discover suitable majors/career directions from RIASEC 
 ## 6. Data model (practical)
 - Users: username, full_name, role, hashed_password, optional school/class/history
 - Submission: student info + riasec array + scores + answers + suggestedMajors + combinations + timestamp
-- VR job: id, title, videoId, description, icon
+- VR job: id, title, videoId, description, icon, riasec_code
 - Community post: id, author, content, timestamp, comments[]
 
 ## 7. Environment/config
@@ -97,10 +98,8 @@ Notes:
 
 ## 8. Current limitations and risks
 - Conversation state is in-memory; resets on restart and does not scale across instances.
-- Recommendation logic is duplicated (frontend + backend), creating drift risk.
-- Auth registration currently allows role value from client payload (can self-register admin in current logic).
-- Some code has duplication/artifacts from iterative edits (e.g., repeated mounts/fields/comments).
-- Planned recommendation-system upgrades in `Implementation.md` are **not implemented yet**.
+- Some inline style artifacts still exist in templates and JS-generated markup.
+- Accessibility has smoke-pass coverage; full screen-reader + automated axe pass is still recommended.
 
 ## 9. Testing status (repo contents)
 - There are API/integration test scripts:
@@ -115,8 +114,17 @@ Use this wording (copy/adapt):
 
 > This is a FastAPI + Jinja + vanilla JS monolith for career guidance (RIASEC + Dify chat + VR jobs + community + admin dashboard).  
 > Backend entry: `backend/main.py`. Persistence abstraction: `backend/database.py`.  
-> Frontend logic is centralized in `backend/static/script.js`.  
+> Frontend logic is modularized in `backend/static/js/` (`core.js`, `test-results-dashboard.js`, `chat.js`, `vr.js`, `community-profile.js`, `init.js`).  
 > RIASEC scoring is in `backend/riasec_calculator.py`.  
-> `Implementation.md` contains future recommendation/Excel-import plans not yet implemented.  
 > Please preserve existing routes and UI behavior unless I explicitly ask for breaking changes.
 
+## 11. UI/UX implementation snapshot (2026-02-16)
+- Responsive navigation with mobile menu toggle (`backend/templates/base.html`, `backend/static/js/core.js`).
+- Shared UI components/tokens in CSS (`backend/static/style.css`) for forms, status blocks, cards, chat bubbles, dashboard table.
+- Alert-heavy flows replaced by inline status/live-region feedback across auth/test/chat/community/profile/vr.
+- Results and VR recommendation hierarchy improved for scannability and click affordance.
+- Accessibility smoke fixes:
+  - focus-visible styling
+  - keyboard support for interactive VR cards
+  - modal dialog semantics + Escape close + focus return
+- QA artifact: `UI_UX_QA_REPORT.md`.

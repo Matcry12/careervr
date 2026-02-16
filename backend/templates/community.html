@@ -6,26 +6,23 @@
 
 {% block content %}
 <section class="page active" id="community">
-    <h1 style="text-align: center; margin-bottom: 2rem; margin-top: 2rem;">Cộng đồng CareerGo</h1>
-    <p
-        style="text-align: center; margin-bottom: 2rem; color: #9fb7ff; max-width: 700px; margin-left: auto; margin-right: auto;">
+    <h1 class="section-title">Cộng đồng CareerGo</h1>
+    <p class="section-subtitle">
         Nơi chia sẻ ý tưởng, đặt câu hỏi và thảo luận về định hướng nghề nghiệp.
     </p>
 
-    <!-- Create Post Section -->
     <div class="community-create-card">
-        <h3>✏️ Tạo bài viết mới</h3>
-        <input type="text" id="postAuthor" placeholder="Tên của bạn (hoặc nicknam)..." class="community-input">
+        <h3>Tạo bài viết mới</h3>
+        <input type="text" id="postAuthor" placeholder="Tên của bạn (hoặc nickname)..." class="community-input">
         <textarea id="postContent" rows="3" placeholder="Bạn đang nghĩ gì? Hãy chia sẻ thắc mắc hoặc ý tưởng..."
             class="community-input"></textarea>
         <div style="text-align: right; margin-top: 1rem;">
             <button class="btn btn-primary" onclick="createPost()">Đăng bài</button>
         </div>
+        <div id="communityStatus" class="status" role="status" aria-live="polite"></div>
     </div>
 
-    <!-- Posts Container -->
-    <div id="postsContainer" class="posts-container">
-        <!-- Dynamic posts will be loaded here -->
+    <div id="postsContainer" class="posts-container" aria-live="polite">
         <div class="spinner" style="margin: 2rem auto; display: block;"></div>
     </div>
 </section>

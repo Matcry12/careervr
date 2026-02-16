@@ -1,5 +1,6 @@
 // ===== VR EXPERIENCE LOGIC =====
 let GLOBAL_VR_JOBS = [];
+let LAST_FOCUSED_ELEMENT = null;
 
 async function fetchVRJobs() {
     try {
@@ -19,7 +20,7 @@ async function fetchVRJobs() {
 
 async function saveVRJobs(jobs) {
     if (!token) {
-        alert("Bạn phải đăng nhập Admin để thực hiện!");
+        setStatus('vrImportStatus', 'error', 'Bạn cần đăng nhập Admin để thực hiện thao tác này.');
         return;
     }
     try {
@@ -34,11 +35,12 @@ async function saveVRJobs(jobs) {
         if (res.ok) {
             GLOBAL_VR_JOBS = jobs;
             renderVRJobs();
+            setStatus('vrImportStatus', 'success', 'Đã lưu danh sách nghề thành công.');
         } else {
-            alert("Lỗi khi lưu dữ liệu (Admin rights required)!");
+            setStatus('vrImportStatus', 'error', 'Không thể lưu dữ liệu. Vui lòng kiểm tra quyền Admin.');
         }
     } catch (e) {
-        alert("Lỗi kết nối Server: " + e.message);
+        setStatus('vrImportStatus', 'error', "Lỗi kết nối: " + e.message);
     }
 }
 
@@ -59,30 +61,32 @@ function renderVRJobs() {
     });
 
     container.innerHTML = jobs.map(job => `
-        <div style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 1.5rem; border-radius: 12px; transition: transform 0.2s; position: relative;" class="vr-card">
+        <div class="vr-card">
           ${recommendedOrder.includes(job.id) ? `
-            <div style="position: absolute; top: 10px; left: 10px; background: rgba(34,197,94,0.18); border: 1px solid rgba(34,197,94,0.6); color: #86efac; padding: 4px 8px; border-radius: 999px; font-size: 0.75rem; z-index: 10;">
-              Highly Recommended
+            <div class="vr-recommended">
+              Gợi ý ưu tiên
             </div>
           ` : ''}
           ${isAdmin ? `
-            <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 0.5rem; z-index: 10;">
-                <button onclick="editVRJob('${job.id}')" style="background: rgba(0,0,0,0.5); border: 1px solid #4d7cff; color: #fff; border-radius: 4px; cursor: pointer; padding: 2px 6px;">✏️</button>
-                <button onclick="deleteVRJob('${job.id}')" style="background: rgba(0,0,0,0.5); border: 1px solid #ff4d4f; color: #fff; border-radius: 4px; cursor: pointer; padding: 2px 6px;">🗑️</button>
+            <div class="vr-admin-actions-float">
+                <button onclick="editVRJob('${job.id}')" class="vr-admin-btn" aria-label="Sửa nghề">✏️</button>
+                <button onclick="deleteVRJob('${job.id}')" class="vr-admin-btn delete" aria-label="Xóa nghề">🗑️</button>
             </div>
           ` : ''}
           
-          <div style="cursor: pointer;" onclick="openVideoModal('${job.videoId}', '${escapeHtml(job.title)}')">
+          <div class="vr-card-main" role="button" tabindex="0"
+            onclick="openVideoModal('${job.videoId}', '${escapeHtml(job.title)}')"
+            onkeydown="if(event.key==='Enter' || event.key===' '){event.preventDefault();openVideoModal('${job.videoId}', '${escapeHtml(job.title)}')}">
               <div style="font-size: 2.5rem; margin-bottom: 1rem;">${job.icon || '🎬'}</div>
-              <h3 style="margin-bottom: 1rem; color: #4d7cff;">${job.title}</h3>
-              <div style="font-size: 0.8rem; color: #9fb7ff; margin-bottom: 0.5rem;">RIASEC: ${escapeHtml(job.riasec_code || '---')}</div>
+              <h3 style="margin-bottom: 1rem; color: #4d7cff;">${escapeHtml(job.title)}</h3>
+              <div class="muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">RIASEC: ${escapeHtml(job.riasec_code || '---')}</div>
               
-              <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; margin-bottom: 1rem;">
-                <img src="https://img.youtube.com/vi/${job.videoId}/mqdefault.jpg" style="position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
-                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(26,60,255,0.8); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">▶</div>
+              <div class="vr-thumb">
+                <img src="https://img.youtube.com/vi/${job.videoId}/mqdefault.jpg" alt="Thumbnail ${escapeHtml(job.title)}">
+                <div class="vr-play">▶</div>
               </div>
 
-              <p style="font-size: 0.9rem; color: #9fb7ff;">${job.description}</p>
+              <p class="muted" style="font-size: 0.9rem;">${escapeHtml(job.description || '')}</p>
           </div>
         </div>
     `).join('');
@@ -96,27 +100,32 @@ function openVideoModal(videoId, title) {
     const modal = $('videoModal');
     const iframe = $('videoFrame');
     const titleEl = $('videoTitle');
+    LAST_FOCUSED_ELEMENT = document.activeElement;
     iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
     titleEl.textContent = title;
     modal.classList.add('active');
+    const closeBtn = modal.querySelector('.icon-btn');
+    if (closeBtn) closeBtn.focus();
 }
 
 function closeVideoModal(e) {
-    if (e && e.target !== $('videoModal') && !e.target.classList.contains('loading-modal')) return;
-    if (e && e.target.closest && e.target.closest('.loading-modal') && e.target !== $('videoModal')) return;
-    if (e && e.target !== $('videoModal')) {
-        if (e.target.innerText !== '×' && !e.target.closest('button')) return;
-    }
+    if (e && e.target && e.target !== $('videoModal') && !e.target.closest('button')) return;
     const modal = $('videoModal');
     const iframe = $('videoFrame');
     iframe.src = "";
     modal.classList.remove('active');
+    if (LAST_FOCUSED_ELEMENT && typeof LAST_FOCUSED_ELEMENT.focus === 'function') {
+        LAST_FOCUSED_ELEMENT.focus();
+    }
 }
 window.closeVideoModal = () => {
     const modal = $('videoModal');
     const iframe = $('videoFrame');
     iframe.src = "";
     modal.classList.remove('active');
+    if (LAST_FOCUSED_ELEMENT && typeof LAST_FOCUSED_ELEMENT.focus === 'function') {
+        LAST_FOCUSED_ELEMENT.focus();
+    }
 }
 
 
@@ -125,10 +134,16 @@ function resetVRData() {
     if (confirm('Bạn có chắc chắn muốn Reset dữ liệu VR về mặc định không?')) {
         localStorage.removeItem(VR_JOBS_KEY);
         renderVRJobs();
+        setStatus('vrImportStatus', 'info', 'Đã reset dữ liệu cục bộ.');
     }
 }
 
-function openDevModal() { $('devJobModal').classList.add('active'); }
+function openDevModal() {
+    LAST_FOCUSED_ELEMENT = document.activeElement;
+    $('devJobModal').classList.add('active');
+    const firstField = $('devJobTitle');
+    if (firstField) firstField.focus();
+}
 function closeDevModal() {
     $('devJobModal').classList.remove('active');
     $('devJobId').value = '';
@@ -137,6 +152,10 @@ function closeDevModal() {
     $('devJobRiasec').value = '';
     $('devJobDesc').value = '';
     $('devJobIcon').value = '';
+    setStatus('vrModalStatus', null, '');
+    if (LAST_FOCUSED_ELEMENT && typeof LAST_FOCUSED_ELEMENT.focus === 'function') {
+        LAST_FOCUSED_ELEMENT.focus();
+    }
 }
 
 function addNewVRJob() {
@@ -173,7 +192,7 @@ function saveDevJob() {
     const icon = $('devJobIcon').value;
 
     if (!title || !videoId || riasec_code.length !== 3) {
-        alert("Vui lòng nhập Tiêu đề, Video ID và mã RIASEC hợp lệ (3 ký tự).");
+        setStatus('vrModalStatus', 'error', 'Vui lòng nhập Tiêu đề, Video ID và mã RIASEC hợp lệ (3 ký tự).');
         return;
     }
 
@@ -196,7 +215,7 @@ function saveDevJob() {
 
 async function downloadVRTemplate() {
     if (!token) {
-        alert("Bạn phải đăng nhập Admin để tải mẫu.");
+        setStatus('vrImportStatus', 'error', 'Bạn cần đăng nhập Admin để tải mẫu.');
         return;
     }
     try {
@@ -213,22 +232,25 @@ async function downloadVRTemplate() {
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
+        setStatus('vrImportStatus', 'success', 'Đã tải file mẫu thành công.');
     } catch (e) {
-        alert("Không thể tải mẫu: " + e.message);
+        setStatus('vrImportStatus', 'error', "Không thể tải mẫu: " + e.message);
     }
 }
 
 async function handleImport() {
     if (!token) {
-        alert("Bạn phải đăng nhập Admin để import.");
+        setStatus('vrImportStatus', 'error', 'Bạn cần đăng nhập Admin để import.');
         return;
     }
 
     const input = $('vrImportFile');
     if (!input || !input.files || !input.files[0]) {
-        alert("Vui lòng chọn file .xlsx trước khi tải lên.");
+        setStatus('vrImportStatus', 'error', 'Vui lòng chọn file .xlsx trước khi tải lên.');
         return;
     }
+    setStatus('vrImportStatus', 'info', 'Đang import dữ liệu...');
+    setStatus('vrImportErrors', null, '');
 
     const formData = new FormData();
     formData.append('file', input.files[0]);
@@ -244,17 +266,17 @@ async function handleImport() {
             throw new Error(data.detail || `HTTP ${res.status}`);
         }
         const msg = `Import thành công: tạo mới ${data.created}, cập nhật ${data.updated}, bỏ qua ${data.skipped}.`;
-        alert(msg);
+        setStatus('vrImportStatus', 'success', msg);
         const errorsEl = $('vrImportErrors');
         if (errorsEl) {
             errorsEl.innerHTML = (data.errors || []).length
-                ? (data.errors || []).map(err => `<div style="color:#fca5a5;">• ${escapeHtml(err)}</div>`).join('')
-                : '<div style="color:#86efac;">Không có lỗi.</div>';
+                ? (data.errors || []).map(err => `<div>• ${escapeHtml(err)}</div>`).join('')
+                : '';
         }
         input.value = '';
         fetchVRJobs();
     } catch (e) {
-        alert("Import thất bại: " + e.message);
+        setStatus('vrImportStatus', 'error', "Import thất bại: " + e.message);
     }
 }
 
@@ -278,3 +300,12 @@ function devAutoFill() {
     window.scrollTo(0, document.body.scrollHeight);
 }
 
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if ($('videoModal')?.classList.contains('active')) {
+        closeVideoModal();
+    }
+    if ($('devJobModal')?.classList.contains('active')) {
+        closeDevModal();
+    }
+});

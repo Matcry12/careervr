@@ -4,41 +4,34 @@
 
 {% block content %}
 <section class="page active" id="signup">
-    <div class="auth-container"
-        style="max-width: 400px; margin: 4rem auto; padding: 2rem; background: rgba(15, 31, 58, 0.8); border-radius: 12px; border: 1px solid rgba(30, 42, 68, 0.5);">
-        <h2 style="text-align: center; margin-bottom: 2rem;">Đăng ký tài khoản</h2>
+    <div class="auth-container">
+        <h2 class="section-title" style="margin-top: 0;">Đăng ký tài khoản</h2>
 
-        <form onsubmit="event.preventDefault(); handleRegister();">
-            <div style="margin-bottom: 1.5rem;">
-                <label for="regUsername" style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Tên đăng
-                    nhập</label>
-                <input type="text" id="regUsername" required class="community-input" placeholder="username">
+        <form id="signupForm" onsubmit="event.preventDefault(); handleRegister();">
+            <div class="field">
+                <label for="regUsername">Tên đăng nhập</label>
+                <input type="text" id="regUsername" required class="input" placeholder="username">
+                <div class="field-error" id="regUsernameError"></div>
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-                <label for="regFullname" style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Họ và
-                    tên</label>
-                <input type="text" id="regFullname" class="community-input" placeholder="Nguyễn Văn A">
+            <div class="field">
+                <label for="regFullname">Họ và tên</label>
+                <input type="text" id="regFullname" class="input" placeholder="Nguyễn Văn A">
+                <div class="field-error" id="regFullnameError"></div>
             </div>
 
-            <div style="margin-bottom: 2rem;">
-                <label for="regPassword" style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Mật khẩu</label>
-                <input type="password" id="regPassword" required class="community-input" placeholder="••••••••">
-            </div>
-
-            <!-- Hidden role field, default to user -->
-            <input type="hidden" id="regRole" value="user">
-            <div style="margin-bottom: 1rem;">
-                <label style="color: #9fb7ff; font-size: 0.9rem;">
-                    <input type="checkbox" id="regAdmin"> Đăng ký với quyền Admin (Demo Only)
-                </label>
+            <div class="field">
+                <label for="regPassword">Mật khẩu</label>
+                <input type="password" id="regPassword" required class="input" placeholder="••••••••">
+                <div class="field-error" id="regPasswordError"></div>
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%;">Đăng ký</button>
+            <div id="signupStatus" class="status" role="status" aria-live="polite"></div>
         </form>
 
-        <p style="text-align: center; margin-top: 1.5rem; color: #9fb7ff;">
-            Đã có tài khoản? <a href="/login" style="color: #4d7cff;">Đăng nhập</a>
+        <p class="auth-footer">
+            Đã có tài khoản? <a href="/login">Đăng nhập</a>
         </p>
     </div>
 </section>

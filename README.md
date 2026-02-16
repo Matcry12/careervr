@@ -8,6 +8,12 @@ Nền tảng hướng nghiệp toàn diện dành cho học sinh THPT Việt Nam
 - **AI Career Advisor**: Chatbot thông minh (Powered by Dify AI) tư vấn lộ trình học tập và nghề nghiệp.
 - **Trải nghiệm Nghề nghiệp**: Khám phá video mô phỏng thực tế các ngành nghề hot.
 - **Dashboard cá nhân**: Theo dõi kết quả và thống kê.
+- **UI/UX mới**:
+  - Điều hướng responsive với menu mobile.
+  - Form validation và trạng thái phản hồi inline (không phụ thuộc alert).
+  - Khu vực gợi ý nghề rõ ràng theo nhóm `Ưu tiên` và `Dự phòng`.
+  - VR admin import theo panel có trạng thái import/lỗi theo hàng.
+  - Cải thiện accessibility cơ bản: focus-visible, keyboard modal close, live regions.
 - **Chế độ Dev (Test Mode)**: Hỗ trợ điền nhanh trắc nghiệm để kiểm tra tính năng (Kích hoạt bằng `Shift + D`).
 
 ## 🛠️ Cài đặt & Chạy Local
@@ -69,7 +75,10 @@ Dự án đã được cấu hình sẵn để triển khai lên Vercel.
 careervr/
 ├── backend/
 │   ├── data/                 # Dữ liệu JSON (Jobs, Submissions)
-│   ├── static/               # Frontend (HTML, CSS, JS, Images)
+│   ├── static/
+│   │   ├── style.css         # Design tokens + UI component styles
+│   │   └── js/               # Frontend JS modules (core/chat/vr/test/community/init)
+│   ├── templates/            # Jinja pages
 │   ├── main.py               # FastAPI App Entry point
 │   └── riasec_calculator.py  # Logic tính toán điểm
 ├── requirements.txt          # Python dependencies

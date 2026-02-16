@@ -15,7 +15,7 @@ async function updateChatContext() {
     if (!ctx) return;
 
     if (!current) {
-        ctx.innerHTML = '❌ Chưa có dữ liệu. Vui lòng <strong onclick="goPage(\'test\')">làm trắc nghiệm</strong> trước.';
+        ctx.innerHTML = 'Chưa có dữ liệu. Vui lòng <a href="/test" class="nav-link">làm trắc nghiệm</a> trước.';
         return;
     }
 
@@ -26,7 +26,7 @@ async function updateChatContext() {
     }
 
     ctx.innerHTML = `
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+  <div class="chat-context-grid">
     <div>
       <strong>👤 Học sinh:</strong> ${current.name || 'Ẩn danh'}
     </div>
@@ -34,7 +34,7 @@ async function updateChatContext() {
       <strong>📚 Lớp / Trường:</strong> ${current.class || '-'} / ${current.school || '-'}
     </div>
     <div>
-      <strong>🎯 RIASEC:</strong> <span style="background: rgba(26, 60, 255, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">${current.riasec.join('-')}</span>
+      <strong>🎯 RIASEC:</strong> <span class="chat-context-badge">${current.riasec.join('-')}</span>
     </div>
     <div>
       <strong>⏱️ Ngày:</strong> ${(current.time && !isNaN(new Date(current.time))) ? new Date(current.time).toLocaleDateString('vi-VN') : 'Mới nhất'}
@@ -45,6 +45,7 @@ async function updateChatContext() {
 }
 
 function escapeHtml(text) {
+    text = (text ?? '').toString();
     return text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -67,13 +68,13 @@ function formatMarkdownText(text) {
 function addChatMessage(sender, text, isLoading = false) {
     const messagesBox = $('messagesBox');
     const msg = document.createElement('div');
-    msg.style.cssText = 'color: #9fb7ff; font-size: 0.95rem; line-height: 1.8; margin-bottom: 1rem; white-space: pre-wrap; word-wrap: break-word;';
+    msg.className = `chat-message ${sender === 'user' ? 'user' : 'ai'} ${isLoading ? 'loading' : ''}`;
 
     if (sender === 'user') {
-        msg.innerHTML = `<strong style="color: #cfe0ff;">👤 Bạn:</strong> ${escapeHtml(text)}`;
+        msg.innerHTML = `<strong>Bạn:</strong> ${escapeHtml(text)}`;
     } else {
         const formattedText = formatMarkdownText(text);
-        msg.innerHTML = `<div style="color: #4d7cff;"><strong>🤖 AI:</strong></div><div style="margin-top: 0.5rem; color: #9fb7ff;">${isLoading ? '<em>Đang suy nghĩ...</em>' : formattedText}</div>`;
+        msg.innerHTML = `<strong>AI:</strong><div style="margin-top: 0.35rem;">${isLoading ? 'Đang suy nghĩ...' : formattedText}</div>`;
     }
 
     messagesBox.appendChild(msg);
@@ -83,9 +84,10 @@ function addChatMessage(sender, text, isLoading = false) {
 async function requestCounsel() {
     const current = readCurrent();
     if (!current) {
-        alert('Vui lòng làm trắc nghiệm trước');
+        setStatus('chatStatus', 'error', 'Vui lòng làm trắc nghiệm trước khi yêu cầu tư vấn.');
         return;
     }
+    setStatus('chatStatus', null, '');
 
     const $consultBtn = $('consultBtn');
     const $loadingOverlay = $('loadingOverlay');
@@ -145,9 +147,11 @@ async function requestCounsel() {
         addChatMessage('user', "Hãy giới thiệu về các hướng nghiệp phù hợp cho tôi dựa trên kết quả RIASEC của tôi");
         addChatMessage('ai', aiResponse);
         $consultBtn.textContent = "🔄 Bắt đầu lại cuộc hội thoại";
+        setStatus('chatStatus', 'success', 'Đã bắt đầu cuộc hội thoại mới.');
     } catch (err) {
         console.error('❌ Fetch error:', err);
-        addChatMessage('ai', `❌ <strong>Lỗi:</strong> ${err.message}`);
+        addChatMessage('ai', 'Xin lỗi, tôi chưa thể phản hồi lúc này. Vui lòng thử lại sau vài giây.');
+        setStatus('chatStatus', 'error', 'Không thể bắt đầu tư vấn. Vui lòng thử lại.');
     } finally {
         $consultBtn.disabled = false;
         $loadingOverlay.classList.remove('active');
@@ -161,7 +165,7 @@ async function sendChatMessage() {
 
     const conversationId = sessionStorage.getItem('conversation_id');
     if (!conversationId) {
-        alert('Vui lòng nhấn "Yêu cầu tư vấn" để bắt đầu cuộc trò chuyện');
+        setStatus('chatStatus', 'info', 'Vui lòng nhấn "Yêu cầu tư vấn" để bắt đầu cuộc trò chuyện.');
         return;
     }
 
@@ -183,19 +187,20 @@ async function sendChatMessage() {
 
         if (!response.ok) {
             if (response.status === 404) {
-                throw new Error("Cuộc hội thoại đã hết hạn.");
+                throw new Error("Cuộc hội thoại đã hết hạn. Hãy bắt đầu lại.");
             }
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(`Máy chủ đang bận (${response.status}).`);
         }
 
         const data = await response.json();
         const aiResponse = data.ai_response || 'Không có phản hồi từ AI';
         addChatMessage('ai', aiResponse);
+        setStatus('chatStatus', null, '');
     } catch (err) {
         console.error('❌ Chat error:', err);
-        addChatMessage('ai', `❌ <strong>Lỗi:</strong> ${err.message}`);
+        addChatMessage('ai', 'Xin lỗi, tôi chưa xử lý được câu hỏi này. Bạn thử diễn đạt ngắn hơn hoặc gửi lại.');
+        setStatus('chatStatus', 'error', err.message);
     } finally {
         $loadingOverlay.classList.remove('active');
     }
 }
-

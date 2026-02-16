@@ -7,25 +7,22 @@
 {% block content %}
 <section class="page active" id="test">
     <div class="test-container">
-        <h1 style="text-align: center; margin-bottom: 3rem;">Trắc nghiệm RIASEC</h1>
+        <h1 class="section-title">Trắc nghiệm RIASEC</h1>
 
-        <div class="test-section" style="background: rgba(26, 60, 255, 0.1); border-color: rgba(26, 60, 255, 0.3);">
-            <h2 style="font-size: 1.25rem;">Thông tin cá nhân</h2>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-                <div>
+        <div class="test-section panel-soft">
+            <h2>Thông tin cá nhân</h2>
+            <div class="form-grid-3">
+                <div class="field">
                     <label for="name">Họ và tên</label>
-                    <input type="text" id="name" placeholder="Nguyễn Văn A"
-                        style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                    <input class="input" type="text" id="name" placeholder="Nguyễn Văn A">
                 </div>
-                <div>
+                <div class="field">
                     <label for="class">Lớp</label>
-                    <input type="text" id="class" placeholder="10A1"
-                        style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                    <input class="input" type="text" id="class" placeholder="10A1">
                 </div>
-                <div>
+                <div class="field">
                     <label for="school">Trường</label>
-                    <input type="text" id="school" placeholder="THPT ..."
-                        style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                    <input class="input" type="text" id="school" placeholder="THPT ...">
                 </div>
             </div>
         </div>
@@ -53,14 +50,13 @@
 
         <form id="testForm">
             <div id="questionsContainer"></div>
-            <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
-                <button type="button" onclick="submitTest()" class="btn btn-primary"
-                    style="padding: 0.8rem 2rem; font-size: 1.1rem;">🚀 Nộp bài & Xem kết quả</button>
+            <div class="test-actions">
+                <button type="button" onclick="submitTest()" class="btn btn-primary">Nộp bài và xem kết quả</button>
                 <button type="button" class="btn btn-secondary" onclick="resetTest()">Làm lại</button>
-                <button type="button" id="btnDevFill" class="btn btn-secondary admin-only"
-                    style="border-color: #ffd700; color: #ffd700; display: none;" onclick="devAutoFill()">⚡ Dev
+                <button type="button" id="btnDevFill" class="btn btn-secondary admin-only" onclick="devAutoFill()">Dev
                     Fill</button>
             </div>
+            <div id="testFormStatus" class="status" role="status" aria-live="polite"></div>
         </form>
     </div>
 </section>

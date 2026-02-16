@@ -107,9 +107,10 @@ async function createPost() {
     const content = contentInput.value.trim();
 
     if (!content) {
-        alert("Vui lòng nhập nội dung bài viết!");
+        setStatus('communityStatus', 'error', 'Vui lòng nhập nội dung bài viết.');
         return;
     }
+    setStatus('communityStatus', 'info', 'Đang đăng bài...');
 
     const $loadingOverlay = $('loadingOverlay');
     if ($loadingOverlay) $loadingOverlay.classList.add('active');
@@ -126,12 +127,13 @@ async function createPost() {
             contentInput.value = '';
             // Reload posts
             await loadPosts();
+            setStatus('communityStatus', 'success', 'Đăng bài thành công.');
         } else {
-            alert("Đăng bài thất bại!");
+            setStatus('communityStatus', 'error', 'Đăng bài thất bại. Vui lòng thử lại.');
         }
     } catch (e) {
         console.error(e);
-        alert("Lỗi kết nối!");
+        setStatus('communityStatus', 'error', 'Lỗi kết nối máy chủ.');
     } finally {
         if ($loadingOverlay) $loadingOverlay.classList.remove('active');
     }
@@ -155,10 +157,11 @@ async function addComment(postId) {
         if (res.ok) {
             contentInput.value = '';
             await loadPosts(); // Simplest way to refresh UI
+            setStatus('communityStatus', 'success', 'Đã thêm bình luận.');
         }
     } catch (e) {
         console.error(e);
-        alert("Lỗi kết nối!");
+        setStatus('communityStatus', 'error', 'Không thể gửi bình luận. Vui lòng thử lại.');
     }
 }
 
@@ -224,7 +227,7 @@ async function saveProfile() {
         });
 
         if (res.ok) {
-            alert("✅ Đã lưu hồ sơ thành công!");
+            setStatus('profileStatus', 'success', 'Đã lưu hồ sơ thành công.');
             // Refresh currentUser logic
             const updatedUser = await res.json();
             currentUser = updatedUser;
@@ -234,12 +237,15 @@ async function saveProfile() {
             const navAuth = $('navAuth');
             if (navAuth) {
                 navAuth.innerHTML = `
-                    <span style="color: #9fb7ff; margin-right: 0.5rem; font-size: 0.9rem;">Hi, ${escapeHtml(currentUser.username)}</span>
-                    <button onclick="logout()" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border: 1px solid #4d7cff; color: #4d7cff;">Logout</button>
+                    <span class="nav-user">Hi, ${escapeHtml(currentUser.username)}</span>
+                    <button onclick="logout()" class="btn btn-secondary nav-logout-btn">Logout</button>
                 `;
             }
         } else {
-            alert("❌ Lỗi khi lưu hồ sơ.");
+            setStatus('profileStatus', 'error', 'Lưu hồ sơ thất bại.');
         }
-    } catch (e) { console.error(e); alert("Lỗi kết nối."); }
+    } catch (e) {
+        console.error(e);
+        setStatus('profileStatus', 'error', 'Lỗi kết nối. Vui lòng thử lại.');
+    }
 }

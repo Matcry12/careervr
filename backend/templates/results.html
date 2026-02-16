@@ -11,47 +11,45 @@
                 <h1>Kết quả của bạn</h1>
                 <div class="riasec-badge" id="riasecDisplay">...</div>
 
-                <div style="max-width: 500px; margin: 0 auto 2rem auto; position: relative;">
+                <div class="results-chart-wrap">
                     <canvas id="riasecChart"></canvas>
                 </div>
 
-                <div id="scoreDetails" style="display: none;"></div>
+                <div id="scoreDetails" class="score-grid" style="display: none;"></div>
 
-                <p id="resultTime" style="color: #9fb7ff; margin-top: 1rem;">-</p>
+                <p id="resultTime" class="muted" style="margin-top: 1rem;">-</p>
             </div>
 
-            <h2 style="margin: 2rem 0 1.5rem 0;">Các ngành gợi ý</h2>
+            <h2 class="section-title">Các ngành gợi ý</h2>
             <div class="major-grid" id="majorContainer"></div>
 
-            <div style="text-align: center; margin-top: 3rem;">
+            <div class="center-actions">
                 <button class="btn btn-primary" onclick="goPage('test')">Làm lại trắc nghiệm</button>
             </div>
         </div>
 
         <!-- Empty State (Hidden by default, toggled by JS) -->
-        <div id="resultsEmpty" class="empty-state" style="display: none; text-align: center; padding: 4rem 2rem;">
-            <div style="font-size: 4rem; margin-bottom: 1.5rem;">📝</div>
-            <h3 style="margin-bottom: 1rem; color: #fff;">Bạn chưa làm bài trắc nghiệm</h3>
-            <p style="color: #9fb7ff; margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+        <div id="resultsEmpty" class="empty-state" style="display: none;">
+            <div class="results-empty-icon">📝</div>
+            <h3>Bạn chưa làm bài trắc nghiệm</h3>
+            <p class="section-subtitle">
                 Hãy hoàn thành bài test RIASEC để nhận gợi ý nghề nghiệp phù hợp nhất với tính cách của bạn.
             </p>
-            <button onclick="goPage('test')" class="btn btn-primary" style="padding: 0.8rem 2rem;">🚀 Bắt đầu
-                ngay</button>
+            <button onclick="goPage('test')" class="btn btn-primary">Bắt đầu ngay</button>
         </div>
     </div>
 </section>
 {% endblock %}
 
 {% block modals %}
-<div id="videoModal" class="loading-overlay" onclick="closeVideoModal(event)">
-    <div class="loading-modal" style="width: 90%; max-width: 900px; padding: 1rem; background: #0b1220;">
-        <div style="text-align: right; margin-bottom: 0.5rem;">
-            <button onclick="closeVideoModal()"
-                style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+<div id="videoModal" class="loading-overlay" onclick="closeVideoModal(event)" role="dialog" aria-modal="true"
+    aria-labelledby="videoTitle" tabindex="-1">
+    <div class="loading-modal modal-card">
+        <div class="modal-close-row">
+            <button onclick="closeVideoModal()" class="icon-btn" aria-label="Đóng video">&times;</button>
         </div>
-        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
-            <iframe id="videoFrame" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                frameborder="0"
+        <div class="video-frame-wrap">
+            <iframe id="videoFrame" src="" class="video-frame" frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen>
             </iframe>
