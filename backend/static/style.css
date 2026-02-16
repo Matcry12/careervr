@@ -701,6 +701,16 @@ nav a:hover {
   display: none !important;
 }
 
+body.is-admin .admin-only {
+  display: block !important;
+}
+
+body.is-admin a.admin-only,
+body.is-admin button.admin-only,
+body.is-admin span.admin-only {
+  display: inline-block !important;
+}
+
 .auth-only {
   display: none !important;
 }

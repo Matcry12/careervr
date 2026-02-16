@@ -1526,6 +1526,16 @@ function renderVRJobs() {
             `;
         grid.appendChild(card);
     });
+
+    // Ensure VR admin controls are visible/hidden based on current role.
+    const controls = $('vrControls');
+    const devTools = $('devTools');
+    const roleHint = $('vrRoleHint');
+    const role = String(currentUser?.role || '').toLowerCase();
+    const isAdmin = role === 'admin';
+    if (controls) controls.style.display = 'block';
+    if (devTools) devTools.style.display = isAdmin ? 'flex' : 'none';
+    if (roleHint) roleHint.style.display = isAdmin ? 'none' : 'block';
 }
 
 // ===== EDITOR FUNCTIONS =====
@@ -1844,6 +1854,14 @@ function updateAdminUI() {
     if (document.querySelector('#vrGrid') && typeof renderVRJobs === 'function') {
         renderVRJobs();
     }
+
+    // Explicit toggle for VR control panel (avoid hidden-by-default dead state)
+    const controls = $('vrControls');
+    const devTools = $('devTools');
+    const roleHint = $('vrRoleHint');
+    if (controls) controls.style.display = 'block';
+    if (devTools) devTools.style.display = (role === 'admin') ? 'flex' : 'none';
+    if (roleHint) roleHint.style.display = (role === 'admin') ? 'none' : 'block';
 }
 
 // ===== PROFILE FUNCTIONS =====

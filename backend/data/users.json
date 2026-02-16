@@ -131,5 +131,12 @@
     "role": "admin",
     "hashed_password": "$2b$12$3lc.WFIHWBVEF8gndbqznuN10T.p/ryYavGCJiAKusvwR4Fp3r5K6",
     "created_at": "2026-02-16T09:13:22.846899"
+  },
+  {
+    "username": "anhtriet123",
+    "full_name": "anhtriet",
+    "role": "user",
+    "hashed_password": "$2b$12$okxzN/hYPA6hiVH5XWrOb.l2pD5UHd2HnASF6He0q7leLqXpv2OnS",
+    "created_at": "2026-02-16T10:15:18.011882"
   }
 ]
