@@ -162,7 +162,20 @@ async def get_current_active_user(current_user: dict = Depends(get_current_user)
     return current_user
 
 async def get_admin_user(current_user: dict = Depends(get_current_user)):
+<<<<<<< HEAD
     if current_user.get("role") != "admin":
+=======
+    role = str(current_user.get("role", "")).strip().lower()
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    return current_user
+
+# --- AUTH ENDPOINTS ---
+@app.post("/api/auth/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = db.get_user(form_data.username)
+    if not user or not verify_password(form_data.password, user.get("hashed_password")):
+>>>>>>> bb48cea (Trying to fix login logic)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
@@ -178,9 +191,61 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+<<<<<<< HEAD
 # ===== PERSISTENCE SETUP =====
 # ===== PERSISTENCE SETUP =====
 # (Managed by database.py now)
+=======
+@app.post("/api/auth/register", response_model=Token)
+async def register_user(user: UserRegister):
+    username = (user.username or "").strip()
+    if not username:
+        raise HTTPException(400, "Username is required")
+    if db.get_user(username):
+        raise HTTPException(400, "Username already registered")
+    
+    user_dict = {
+        "username": username,
+        "full_name": user.full_name or "",
+        "school": user.school,
+        "class": user.class_,
+        "role": "user",
+        "hashed_password": get_password_hash(user.password)
+    }
+
+    db.create_user(user_dict)
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+# --- DIFY HELPERS ---
+def call_dify_api(payload):
+    headers = {
+        "Authorization": f"Bearer {os.getenv('DIFY_API_KEY')}",
+        "Content-Type": "application/json"
+    }
+    url = os.getenv("DIFY_API_URL", "https://api.dify.ai/v1/chat-messages")
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logging.error(f"Dify Error: {e}")
+        return {"answer": "Xin lỗi, hiện tại AI đang gặp sự cố kết nối."}
+
+def send_log_to_sheet(data):
+    script_url = os.getenv("GOOGLE_SCRIPT_URL")
+    logging.info(f"Logging: {data}")
+    if script_url:
+        try:
+           requests.post(script_url, json=data)
+        except: pass
+
+# --- STATE ---
+conversations = {}
+>>>>>>> bb48cea (Trying to fix login logic)
 
 # Models
 class VRJob(BaseModel):

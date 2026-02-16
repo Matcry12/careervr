@@ -2,10 +2,6 @@ import sys
 import os
 from datetime import datetime
 from passlib.context import CryptContext
-from dotenv import load_dotenv
-
-# Ensure this script uses the same DB/env configuration as the running app.
-load_dotenv()
 
 # Add current directory to path so we can import backend modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
