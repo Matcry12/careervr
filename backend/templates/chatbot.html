@@ -7,10 +7,28 @@
 <section class="page active" id="chatbot">
     <div class="results-container" style="padding-bottom: 3rem;">
         <h1 class="section-title">Tư vấn AI hướng nghiệp</h1>
+        <div class="journey-stepper" aria-label="Hành trình hướng nghiệp">
+            <div class="journey-step"><span class="step-dot">1</span><span>Trắc nghiệm</span></div>
+            <div class="journey-step"><span class="step-dot">2</span><span>Kết quả</span></div>
+            <div class="journey-step"><span class="step-dot">3</span><span>VR</span></div>
+            <div class="journey-step active"><span class="step-dot">4</span><span>AI Chat</span></div>
+        </div>
+        <div class="journey-next panel">
+            <strong>Bước tiếp theo</strong>
+            <p class="muted">Dùng AI để hỏi về ngành học, lộ trình kỹ năng, và sau đó đối chiếu lại với kết quả/VR.</p>
+            <div class="center-actions">
+                <button class="btn btn-secondary" onclick="goPage('results')">Xem lại Kết quả</button>
+                <button class="btn btn-secondary" onclick="goPage('vr-mode')">Mở Trải nghiệm VR</button>
+            </div>
+        </div>
 
         <div class="test-section panel-soft">
             <h3>Hồ sơ của bạn</h3>
             <div id="chatContext" class="muted">Chưa có dữ liệu. Vui lòng làm trắc nghiệm trước.</div>
+        </div>
+
+        <div id="chatSessionBanner" class="status status-info" role="status" aria-live="polite">
+            Chưa bắt đầu phiên tư vấn. Nhấn "Yêu cầu tư vấn" để mở phiên.
         </div>
 
         <div id="chatContainer" class="chat-shell">
@@ -22,8 +40,9 @@
             </div>
 
             <div class="chat-input-row">
-                <input type="text" id="chatInput" class="input" placeholder="Hỏi AI về hướng nghiệp của bạn...">
-                <button class="btn btn-primary" onclick="sendChatMessage()">Gửi</button>
+                <input type="text" id="chatInput" class="input" placeholder="Nhấn 'Yêu cầu tư vấn' để bắt đầu."
+                    disabled>
+                <button id="chatSendBtn" class="btn btn-primary" onclick="sendChatMessage()" disabled>Gửi</button>
             </div>
         </div>
 
@@ -33,9 +52,6 @@
         </div>
 
         <div id="chatStatus" class="status" role="status" aria-live="polite"></div>
-        <div id="loadingIndicator" class="muted" style="text-align: center; margin-top: 1rem; display: none;">
-            <span>⏳ Đang chờ AI phản hồi...</span>
-        </div>
     </div>
 </section>
 {% endblock %}

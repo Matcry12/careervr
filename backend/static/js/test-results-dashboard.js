@@ -4,12 +4,42 @@ const readDB = () => JSON.parse(localStorage.getItem(DB_KEY) || '[]');
 const writeDB = (arr) => localStorage.setItem(DB_KEY, JSON.stringify(arr));
 const readCurrent = () => JSON.parse(localStorage.getItem(RIASEC_KEY) || 'null');
 const writeCurrent = (obj) => localStorage.setItem(RIASEC_KEY, JSON.stringify(obj));
+const TEST_AUTOSAVE_KEY = 'careervr_test_autosave_v1';
+const TEST_CHUNK_SIZE = 10;
+const TEST_TOTAL = 50;
+const TEST_TOTAL_CHUNKS = Math.ceil(TEST_TOTAL / TEST_CHUNK_SIZE);
+let CURRENT_TEST_CHUNK = 1;
 
 // ===== PAGE NAVIGATION =====
 function goPage(pageId) {
-    if (pageId === 'landing') window.location.href = '/';
-    else if (pageId === 'health') window.location.href = '/health-page';
-    else window.location.href = '/' + pageId;
+    if (typeof hasUnsavedProfileChanges === 'function' && hasUnsavedProfileChanges()) {
+        const ok = window.confirm('Bạn có thay đổi chưa lưu ở hồ sơ. Rời trang mà không lưu?');
+        if (!ok) return;
+    }
+
+    if (pageId === 'dashboard') {
+        const role = String(currentUser?.role || '').toLowerCase();
+        if (role !== 'admin') {
+            window.location.href = token ? '/test' : '/login';
+            return;
+        }
+    }
+
+    const routes = {
+        landing: '/',
+        home: '/',
+        test: '/test',
+        results: '/results',
+        chatbot: '/chatbot',
+        vr: '/vr-mode',
+        'vr-mode': '/vr-mode',
+        dashboard: '/dashboard',
+        community: '/community',
+        profile: '/profile',
+        login: '/login',
+        signup: '/signup'
+    };
+    window.location.href = routes[pageId] || '/';
 }
 
 // ===== INIT TEST PAGE =====
@@ -19,13 +49,14 @@ function initTest() {
     container.innerHTML = '';
 
     RIASEC_QUESTIONS.forEach((q, idx) => {
+        const chunk = Math.floor(idx / TEST_CHUNK_SIZE) + 1;
         const html = `
-    <div class="question-item">
+    <div class="question-item" data-chunk="${chunk}">
       <label>Câu ${idx + 1}. ${q.q}</label>
       <div class="answer-options">
         ${[1, 2, 3, 4, 5].map(v => `
           <div class="answer-option">
-            <input type="radio" name="q${idx}" value="${v}" id="q${idx}_${v}" onchange="updateProgress(); updateRealTimeScore()">
+            <input type="radio" name="q${idx}" value="${v}" id="q${idx}_${v}" onchange="updateProgress(); updateRealTimeScore(); saveTestAutosave()">
             <label for="q${idx}_${v}">${v}</label>
           </div>
         `).join('')}
@@ -34,12 +65,111 @@ function initTest() {
   `;
         container.innerHTML += html;
     });
+
+    ['name', 'class', 'school'].forEach(id => {
+        const el = $(id);
+        if (el) el.addEventListener('input', saveTestAutosave);
+    });
+
+    restoreTestAutosave();
+    showTestChunk(getSuggestedChunkFromCurrentAnswers());
+    updateProgress();
+    updateRealTimeScore();
+}
+
+function getSuggestedChunkFromCurrentAnswers() {
+    for (let i = 0; i < TEST_TOTAL; i++) {
+        const checked = document.querySelector(`input[name="q${i}"]:checked`);
+        if (!checked) return Math.floor(i / TEST_CHUNK_SIZE) + 1;
+    }
+    return 1;
+}
+
+function showTestChunk(chunk) {
+    const nextChunk = Math.max(1, Math.min(TEST_TOTAL_CHUNKS, Number(chunk) || 1));
+    CURRENT_TEST_CHUNK = nextChunk;
+
+    document.querySelectorAll('.question-item').forEach(item => {
+        const itemChunk = Number(item.dataset.chunk || 1);
+        item.style.display = itemChunk === CURRENT_TEST_CHUNK ? '' : 'none';
+    });
+
+    const indicator = $('chunkIndicator');
+    if (indicator) indicator.textContent = `Phần ${CURRENT_TEST_CHUNK} / ${TEST_TOTAL_CHUNKS}`;
+
+    const prevBtn = $('btnChunkPrev');
+    const nextBtn = $('btnChunkNext');
+    if (prevBtn) prevBtn.disabled = CURRENT_TEST_CHUNK <= 1;
+    if (nextBtn) {
+        nextBtn.disabled = CURRENT_TEST_CHUNK >= TEST_TOTAL_CHUNKS;
+        nextBtn.textContent = CURRENT_TEST_CHUNK >= TEST_TOTAL_CHUNKS ? 'Đang ở phần cuối' : 'Phần tiếp theo';
+    }
+}
+
+function nextTestChunk() {
+    showTestChunk(CURRENT_TEST_CHUNK + 1);
+}
+
+function prevTestChunk() {
+    showTestChunk(CURRENT_TEST_CHUNK - 1);
+}
+
+function setAutosaveLabel(text) {
+    const el = $('testAutosaveStatus');
+    if (el) el.textContent = text;
+}
+
+function saveTestAutosave() {
+    const answers = [];
+    for (let i = 0; i < TEST_TOTAL; i++) {
+        const checked = document.querySelector(`input[name="q${i}"]:checked`);
+        answers.push(checked ? Number(checked.value) : 0);
+    }
+
+    const payload = {
+        at: new Date().toISOString(),
+        chunk: CURRENT_TEST_CHUNK,
+        name: $('name')?.value || '',
+        class: $('class')?.value || '',
+        school: $('school')?.value || '',
+        answers
+    };
+    localStorage.setItem(TEST_AUTOSAVE_KEY, JSON.stringify(payload));
+    setAutosaveLabel(`Đã tự lưu bản nháp lúc ${new Date(payload.at).toLocaleTimeString('vi-VN')}`);
+}
+
+function restoreTestAutosave() {
+    const raw = localStorage.getItem(TEST_AUTOSAVE_KEY);
+    if (!raw) {
+        setAutosaveLabel('Chưa có bản nháp tự động.');
+        return;
+    }
+
+    try {
+        const draft = JSON.parse(raw);
+        if ($('name') && typeof draft.name === 'string' && !$('name').value) $('name').value = draft.name;
+        if ($('class') && typeof draft.class === 'string' && !$('class').value) $('class').value = draft.class;
+        if ($('school') && typeof draft.school === 'string' && !$('school').value) $('school').value = draft.school;
+
+        const answers = Array.isArray(draft.answers) ? draft.answers : [];
+        answers.forEach((val, idx) => {
+            if (!val) return;
+            const radio = document.getElementById(`q${idx}_${val}`);
+            if (radio) radio.checked = true;
+        });
+
+        const when = draft?.at ? new Date(draft.at).toLocaleString('vi-VN') : 'không rõ thời gian';
+        setAutosaveLabel(`Đã khôi phục bản nháp (${when}).`);
+        if (draft?.chunk) CURRENT_TEST_CHUNK = Number(draft.chunk) || 1;
+    } catch (_) {
+        setAutosaveLabel('Không đọc được bản nháp tự động.');
+    }
 }
 
 // ===== PROGRESS TRACKING =====
 function updateProgress() {
     const answered = document.querySelectorAll('input[type="radio"]:checked').length;
-    const total = 50;
+    const total = TEST_TOTAL;
     const percent = (answered / total) * 100;
 
     $('progressFill').style.width = percent + '%';
@@ -47,6 +177,9 @@ function updateProgress() {
 
     if (answered === total) {
         $('estimatedTime').textContent = '✅ Sẵn sàng nộp';
+    } else {
+        const remaining = total - answered;
+        $('estimatedTime').textContent = `~${Math.max(1, Math.ceil(remaining / 6))} phút còn lại`;
     }
 }
 
@@ -78,7 +211,7 @@ function updateRealTimeScore() {
 // Helper to sum scores without validation
 function calculateSimpleScores() {
     const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < TEST_TOTAL; i++) {
         const val = parseInt(document.querySelector(`input[name="q${i}"]:checked`)?.value) || 0;
         if (val === 0) continue;
 
@@ -105,8 +238,8 @@ function calculateSimpleScores() {
 // ===== CALCULATE RIASEC (FINAL) =====
 function calculateRIASEC() {
     const answered = document.querySelectorAll('input[type="radio"]:checked').length;
-    if (answered < 50) {
-        setStatus('testFormStatus', 'error', `Vui lòng trả lời hết 50 câu (hiện tại ${answered}/50).`);
+    if (answered < TEST_TOTAL) {
+        setStatus('testFormStatus', 'error', `Vui lòng trả lời hết ${TEST_TOTAL} câu (hiện tại ${answered}/${TEST_TOTAL}).`);
         return null;
     }
     setStatus('testFormStatus', null, '');
@@ -116,9 +249,9 @@ function calculateRIASEC() {
     const top3 = sorted.slice(0, 3).map(x => x[0]);
 
     const answers = [];
-    for (let i = 0; i < 50; i++) answers.push(parseInt(document.querySelector(`input[name="q${i}"]:checked`)?.value) || 0);
+    for (let i = 0; i < TEST_TOTAL; i++) answers.push(parseInt(document.querySelector(`input[name="q${i}"]:checked`)?.value) || 0);
 
-    return { scores, top3, answered: 50, raw_answers: answers };
+    return { scores, top3, answered: TEST_TOTAL, raw_answers: answers };
 }
 
 // ===== SHOW RESULTS =====
@@ -264,6 +397,24 @@ async function showDashboard() {
     $content.innerHTML = '<div class="empty-state">Đang tải dữ liệu...</div>';
 
     try {
+        const role = String(currentUser?.role || '').toLowerCase();
+        if (!token) {
+            $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">
+                <h3>Bạn chưa đăng nhập</h3>
+                <p>Vui lòng đăng nhập với tài khoản Admin để xem thống kê.</p>
+                <button onclick="goPage('login')" class="btn btn-primary">Đăng nhập</button>
+            </div>`;
+            return;
+        }
+        if (role && role !== 'admin') {
+            $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">
+                <h3>Trang dành cho Admin</h3>
+                <p>Tài khoản hiện tại không có quyền xem dữ liệu thống kê.</p>
+                <button onclick="goPage('test')" class="btn btn-primary">Đi tới bài trắc nghiệm</button>
+            </div>`;
+            return;
+        }
+
         const headers = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
@@ -508,9 +659,36 @@ async function showDashboard() {
 
 
         const rows = [...db].reverse();
+        const topRiasec = Object.entries(riasecCounts).sort((a, b) => b[1] - a[1])[0] || ['-', 0];
+        const topCombo = finalCombos[0] || ['-', 0];
+        const weeklySubmissions = Object.values(days).reduce((sum, n) => sum + n, 0);
+        const latestDate = rows[0]?.time ? new Date(rows[0].time).toLocaleDateString('vi-VN') : 'Chưa có';
         // ... Table HTML generation continues below ...
 
         const html = `
+        <div class="dashboard-insight-grid">
+            <div class="dashboard-insight-card">
+                <div class="dashboard-insight-label">Tổng bài nộp</div>
+                <div class="dashboard-insight-value">${db.length}</div>
+                <div class="muted">Cập nhật gần nhất: ${latestDate}</div>
+            </div>
+            <div class="dashboard-insight-card">
+                <div class="dashboard-insight-label">RIASEC phổ biến</div>
+                <div class="dashboard-insight-value">${escapeHtml(topRiasec[0])}</div>
+                <div class="muted">${topRiasec[1]} lượt xuất hiện</div>
+            </div>
+            <div class="dashboard-insight-card">
+                <div class="dashboard-insight-label">Tổ hợp phổ biến</div>
+                <div class="dashboard-insight-value">${escapeHtml(topCombo[0])}</div>
+                <div class="muted">${topCombo[1]} hồ sơ</div>
+            </div>
+            <div class="dashboard-insight-card">
+                <div class="dashboard-insight-label">Xu hướng 7 ngày</div>
+                <div class="dashboard-insight-value">${weeklySubmissions}</div>
+                <div class="muted">Bài nộp trong tuần gần nhất</div>
+            </div>
+        </div>
+
         <div class="dashboard-table-wrap">
         <h3 style="margin-bottom: 1rem; color: #4d7cff;">Danh sách kết quả chi tiết (Toàn hệ thống)</h3>
         <table class="dashboard-table">
@@ -560,8 +738,12 @@ function resetTest() {
     if (!confirm('Xoá hết dữ liệu nhập liệu?')) return;
     document.getElementById('testForm').reset();
     $('progressFill').style.width = '0%';
-    $('progressText').textContent = '0 / 50 câu';
+    $('progressText').textContent = `0 / ${TEST_TOTAL} câu`;
     $('estimatedTime').textContent = '~10 phút';
+    CURRENT_TEST_CHUNK = 1;
+    showTestChunk(1);
+    localStorage.removeItem(TEST_AUTOSAVE_KEY);
+    setAutosaveLabel('Đã xóa bản nháp tự động.');
 
     localStorage.removeItem(RIASEC_KEY); // Removes 'current'
     sessionStorage.removeItem('conversation_id');
@@ -580,6 +762,27 @@ function clearAllData() {
     if (content) {
         content.insertAdjacentHTML('afterbegin', '<div class="status status-info">Dữ liệu hiện lưu tập trung trên server và không thể xóa toàn bộ từ giao diện này.</div>');
     }
+}
+
+function openClearDataModal() {
+    const modal = $('clearDataModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    const confirmBtn = modal.querySelector('.btn.btn-primary');
+    if (confirmBtn) confirmBtn.focus();
+}
+
+function closeClearDataModal(e) {
+    const modal = $('clearDataModal');
+    if (!modal) return;
+    if (e && e.target && e.target !== modal && !e.target.closest('button')) return;
+    modal.classList.remove('active');
+}
+window.closeClearDataModal = closeClearDataModal;
+
+function confirmDashboardClearData() {
+    closeClearDataModal();
+    clearAllData();
 }
 
 function buildCombinationSuggestion(top3 = []) {
@@ -625,6 +828,8 @@ async function submitTest() {
             school: $('school').value
         };
         writeCurrent(resultObj);
+        localStorage.removeItem(TEST_AUTOSAVE_KEY);
+        setAutosaveLabel('Đã nộp bài. Bản nháp tự động đã được xóa.');
 
         // Persist to user account if logged in
         saveUserData('last_riasec_result', resultObj);

@@ -32,16 +32,10 @@
                     <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                 </div>
                 <div id="profileStatus" class="status" role="status" aria-live="polite"></div>
+                <p id="profileDirtyHint" class="helper-text"></p>
+                <p id="profileLastSaved" class="muted"></p>
             </form>
         </div>
     </div>
 </section>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        loadProfile();
-    });
-</script>
 {% endblock %}

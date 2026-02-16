@@ -46,6 +46,40 @@ function setStatus(id, type, message) {
     el.textContent = message || '';
 }
 
+function togglePasswordVisibility(inputId, buttonId) {
+    const input = $(inputId);
+    const btn = $(buttonId);
+    if (!input || !btn) return;
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.textContent = showing ? 'Hiện' : 'Ẩn';
+}
+
+function updateLandingCTA() {
+    const btn = $('landingSecondaryBtn');
+    const hint = $('landingCtaHint');
+    if (!btn || !hint) return;
+
+    const role = String(currentUser?.role || '').toLowerCase();
+    if (role === 'admin') {
+        btn.textContent = 'Xem thống kê';
+        btn.onclick = () => goPage('dashboard');
+        hint.textContent = 'Bạn đang ở vai trò Admin. Có thể mở trang thống kê.';
+        return;
+    }
+
+    if (token) {
+        btn.textContent = 'Tiếp tục làm trắc nghiệm';
+        btn.onclick = () => goPage('test');
+        hint.textContent = 'Tài khoản học sinh không có quyền truy cập trang thống kê Admin.';
+        return;
+    }
+
+    btn.textContent = 'Đăng nhập để bắt đầu';
+    btn.onclick = () => goPage('login');
+    hint.textContent = 'Đăng nhập để lưu kết quả và mở đầy đủ tính năng.';
+}
+
 function initMobileNav() {
     const toggle = $('navToggle');
     const nav = $('mainNav');
@@ -74,6 +108,7 @@ async function checkAuth() {
     // If no token, show Login link
     if (!token) {
         if (navAuth) navAuth.innerHTML = '<a href="/login" class="nav-link">Đăng nhập</a>';
+        updateLandingCTA();
         return;
     }
 
@@ -92,6 +127,7 @@ async function checkAuth() {
             }
             document.body.classList.add('is-logged-in');
             updateAdminUI();
+            updateLandingCTA();
 
             // Auto-fill logic
             if ($('questionsContainer')) autoFillTest();
@@ -103,6 +139,7 @@ async function checkAuth() {
         }
     } catch (e) {
         console.error("Auth check failed", e);
+        updateLandingCTA();
     }
 }
 
@@ -277,13 +314,17 @@ function renderRecommendationSections(recommendations) {
 
     const renderCard = (job, label, type) => `
       <div class="major-card clickable ${type}" onclick="openJobFromResults('${job.id}')" tabindex="0" role="button"
-        onkeydown="if(event.key==='Enter'){openJobFromResults('${job.id}')}">
+        onkeydown="if(event.key==='Enter' || event.key===' '){event.preventDefault();openJobFromResults('${job.id}')}">
         <div class="major-badge ${type}">
           ${label}
         </div>
         <h3>${escapeHtml(job.title || '')}</h3>
         <div class="major-code">RIASEC: <strong>${escapeHtml(job.riasec_code || '---')}</strong></div>
         <p class="muted">${escapeHtml(job.description || 'Nhấn để xem video mô phỏng nghề nghiệp.')}</p>
+        <div class="major-actions">
+          <button class="btn btn-secondary" type="button"
+            onclick="event.stopPropagation();openJobFromResults('${job.id}')">Xem mô phỏng nghề</button>
+        </div>
       </div>
     `;
 

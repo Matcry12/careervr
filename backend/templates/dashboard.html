@@ -32,7 +32,25 @@
     </div>
     <div id="dashboardContent"></div>
     <div class="center-actions" style="margin-bottom: 3rem;">
-        <button id="btnClearData" class="btn btn-secondary admin-only" onclick="clearAllData()">Xóa tất cả dữ liệu</button>
+        <button id="btnClearData" class="btn btn-secondary admin-only" onclick="openClearDataModal()">Xóa tất cả dữ liệu</button>
     </div>
 </section>
+{% endblock %}
+
+{% block modals %}
+<div id="clearDataModal" class="loading-overlay" onclick="closeClearDataModal(event)" role="dialog" aria-modal="true"
+    aria-labelledby="clearDataTitle" tabindex="-1">
+    <div class="loading-modal panel dashboard-danger-modal">
+        <h2 id="clearDataTitle" class="section-title" style="margin: 0 0 1rem;">Xác nhận thao tác nhạy cảm</h2>
+        <p class="dashboard-danger-text">
+            Hệ thống hiện lưu dữ liệu tập trung trên server. Thao tác này không xóa toàn bộ server ngay từ giao diện,
+            nhưng vẫn là hành động quản trị nhạy cảm.
+        </p>
+        <p class="dashboard-danger-text">Bạn có chắc muốn tiếp tục bước xác nhận?</p>
+        <div class="center-actions" style="justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="closeClearDataModal()">Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="confirmDashboardClearData()">Xác nhận</button>
+        </div>
+    </div>
+</div>
 {% endblock %}

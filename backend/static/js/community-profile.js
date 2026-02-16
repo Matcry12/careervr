@@ -1,4 +1,9 @@
 // ===== COMMUNITY LOGIC =====
+let COMMUNITY_SORT = 'newest';
+const PROFILE_LAST_SAVED_KEY = 'careervr_profile_last_saved_v1';
+let PROFILE_INITIAL_STATE = null;
+let PROFILE_DIRTY_BOUND = false;
+
 function timeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -13,6 +18,27 @@ function timeAgo(dateString) {
     return `${days} ngày trước`;
 }
 
+function sortCommunityPosts(posts) {
+    const cloned = [...posts];
+    if (COMMUNITY_SORT === 'oldest') {
+        return cloned.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    }
+    if (COMMUNITY_SORT === 'most_commented') {
+        return cloned.sort((a, b) => {
+            const ca = (a.comments || []).length;
+            const cb = (b.comments || []).length;
+            if (cb !== ca) return cb - ca;
+            return new Date(b.timestamp) - new Date(a.timestamp);
+        });
+    }
+    return cloned.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+}
+
+function changeCommunitySort(value) {
+    COMMUNITY_SORT = value || 'newest';
+    loadPosts();
+}
+
 async function loadPosts() {
     const container = $('postsContainer');
     if (!container) return; // Not on community page
@@ -20,7 +46,7 @@ async function loadPosts() {
     try {
         const res = await fetch(`${API_BASE}/api/community/posts`);
         if (!res.ok) throw new Error("Failed to load posts");
-        const posts = await res.json();
+        const posts = sortCommunityPosts(await res.json());
 
         if (posts.length === 0) {
             container.innerHTML = '<div class="empty-state">Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!</div>';
@@ -52,8 +78,8 @@ async function loadPosts() {
             </div>
             
             <div class="comment-form">
-               <input type="text" id="comment-author-${post.id}" placeholder="Tên..." style="width: 25%;" class="community-input" value="${getDefaultName()}">
-               <input type="text" id="comment-content-${post.id}" placeholder="Viết bình luận..." style="flex: 1;" class="community-input">
+               <input type="text" id="comment-author-${post.id}" placeholder="Tên..." class="community-input comment-author-input" value="${getDefaultName()}">
+               <input type="text" id="comment-content-${post.id}" placeholder="Viết bình luận..." class="community-input comment-content-input">
                <button class="btn btn-primary btn-small" onclick="addComment('${post.id}')">Gửi</button>
             </div>
           </div>
@@ -77,7 +103,11 @@ function getDefaultName() {
 }
 
 function updateCommunityProfileLock() {
-    if (!currentUser) return;
+    const postAuthorHelp = $('postAuthorHelp');
+    if (!currentUser) {
+        if (postAuthorHelp) postAuthorHelp.textContent = 'Bạn có thể nhập tên hiển thị hoặc đăng nhập để dùng tên từ hồ sơ.';
+        return;
+    }
     const name = currentUser.full_name || currentUser.username;
 
     // Lock Post Author
@@ -88,6 +118,9 @@ function updateCommunityProfileLock() {
         postAuthor.style.backgroundColor = 'rgba(15, 31, 58, 0.4)';
         postAuthor.style.cursor = 'not-allowed';
         postAuthor.title = 'Chỉnh sửa tên trong Hồ sơ cá nhân';
+    }
+    if (postAuthorHelp) {
+        postAuthorHelp.textContent = 'Tên đang lấy từ Hồ sơ cá nhân. Muốn đổi tên, hãy cập nhật ở trang Hồ sơ.';
     }
 
     // Lock Comment Authors
@@ -167,7 +200,8 @@ async function addComment(postId) {
 
 // ===== ADMIN UI =====
 function updateAdminUI() {
-    if (currentUser && currentUser.role === 'admin') {
+    const role = String(currentUser?.role || '').toLowerCase();
+    if (role === 'admin') {
         document.body.classList.add('is-admin');
         // Show Admin elements
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
@@ -209,6 +243,9 @@ function loadProfile() {
     if ($('profileName')) $('profileName').value = currentUser.full_name || '';
     if ($('profileClass')) $('profileClass').value = currentUser.class || currentUser.class_name || '';
     if ($('profileSchool')) $('profileSchool').value = currentUser.school || '';
+    PROFILE_INITIAL_STATE = getProfileFormState();
+    initProfileDirtyTracking();
+    updateProfileDirtyUI();
 }
 
 async function saveProfile() {
@@ -227,10 +264,14 @@ async function saveProfile() {
         });
 
         if (res.ok) {
-            setStatus('profileStatus', 'success', 'Đã lưu hồ sơ thành công.');
+            const now = new Date();
+            setStatus('profileStatus', 'success', `Đã lưu hồ sơ thành công lúc ${now.toLocaleTimeString('vi-VN')}.`);
             // Refresh currentUser logic
             const updatedUser = await res.json();
             currentUser = updatedUser;
+            PROFILE_INITIAL_STATE = getProfileFormState();
+            localStorage.setItem(PROFILE_LAST_SAVED_KEY, now.toISOString());
+            updateProfileDirtyUI();
             updateAdminUI(); // Refresh header name if changed
             // Also update header explicitly if needed, but checkAuth handles it generally. 
             // Let's just re-run checkAuth to be safe or manually update nav
@@ -248,4 +289,74 @@ async function saveProfile() {
         console.error(e);
         setStatus('profileStatus', 'error', 'Lỗi kết nối. Vui lòng thử lại.');
     }
+}
+
+function getProfileFormState() {
+    return {
+        name: ($('profileName')?.value || '').trim(),
+        class_name: ($('profileClass')?.value || '').trim(),
+        school: ($('profileSchool')?.value || '').trim()
+    };
+}
+
+function hasUnsavedProfileChanges() {
+    if (!$('profileForm') || !PROFILE_INITIAL_STATE) return false;
+    const now = getProfileFormState();
+    return now.name !== PROFILE_INITIAL_STATE.name
+        || now.class_name !== PROFILE_INITIAL_STATE.class_name
+        || now.school !== PROFILE_INITIAL_STATE.school;
+}
+window.hasUnsavedProfileChanges = hasUnsavedProfileChanges;
+
+function updateProfileDirtyUI() {
+    const hint = $('profileDirtyHint');
+    const lastSaved = $('profileLastSaved');
+    if (hint) {
+        hint.textContent = hasUnsavedProfileChanges()
+            ? 'Bạn có thay đổi chưa lưu. Hãy bấm "Lưu thay đổi" trước khi rời trang.'
+            : 'Tất cả thay đổi đã được lưu.';
+    }
+    if (lastSaved) {
+        const raw = localStorage.getItem(PROFILE_LAST_SAVED_KEY);
+        if (!raw) {
+            lastSaved.textContent = '';
+            return;
+        }
+        const when = new Date(raw);
+        lastSaved.textContent = `Lưu gần nhất: ${isNaN(when) ? '-' : when.toLocaleString('vi-VN')}`;
+    }
+}
+
+function initProfileDirtyTracking() {
+    const form = $('profileForm');
+    if (!form || PROFILE_DIRTY_BOUND) return;
+    PROFILE_DIRTY_BOUND = true;
+
+    ['profileName', 'profileClass', 'profileSchool'].forEach(id => {
+        const el = $(id);
+        if (el) {
+            el.addEventListener('input', () => {
+                updateProfileDirtyUI();
+                if (hasUnsavedProfileChanges()) {
+                    setStatus('profileStatus', 'info', 'Bạn có thay đổi chưa lưu.');
+                }
+            });
+        }
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+        if (!hasUnsavedProfileChanges()) return;
+        e.preventDefault();
+        e.returnValue = '';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!hasUnsavedProfileChanges()) return;
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        const href = link.getAttribute('href') || '';
+        if (!href || href.startsWith('#') || link.target === '_blank') return;
+        if (window.confirm('Bạn có thay đổi chưa lưu ở hồ sơ. Rời trang mà không lưu?')) return;
+        e.preventDefault();
+    }, true);
 }

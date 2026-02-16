@@ -5,26 +5,53 @@
 {% block content %}
 <section class="page active" id="vr-mode">
     <h1 class="section-title">Trải nghiệm Nghề nghiệp</h1>
+    <div class="journey-stepper" aria-label="Hành trình hướng nghiệp">
+        <div class="journey-step"><span class="step-dot">1</span><span>Trắc nghiệm</span></div>
+        <div class="journey-step"><span class="step-dot">2</span><span>Kết quả</span></div>
+        <div class="journey-step active"><span class="step-dot">3</span><span>VR</span></div>
+        <div class="journey-step"><span class="step-dot">4</span><span>AI Chat</span></div>
+    </div>
     <p class="section-subtitle">
         Khám phá môi trường làm việc thực tế qua các video mô phỏng nghề nghiệp. Chọn một nghề để trải nghiệm!
     </p>
+    <div class="journey-next panel">
+        <strong>Bước tiếp theo</strong>
+        <p class="muted">Sau khi xem video nghề phù hợp, bạn có thể quay lại kết quả hoặc tiếp tục hỏi AI để lập kế hoạch học tập.</p>
+        <div class="center-actions">
+            <button class="btn btn-secondary" onclick="goPage('results')">Quay lại Kết quả</button>
+            <button class="btn btn-secondary" onclick="goPage('chatbot')">Tiếp tục với AI Chat</button>
+        </div>
+    </div>
 
     <div id="vrControls" class="vr-admin-panel" style="display: none;">
         <div id="devTools" class="admin-only panel panel-soft">
             <h3>Quản lý nội dung nghề nghiệp</h3>
-            <div class="vr-admin-actions">
-                <button class="btn btn-primary" onclick="addNewVRJob()">Thêm nghề mới</button>
-                <button class="btn btn-secondary" onclick="downloadVRTemplate()">Tải mẫu Excel</button>
-                <label class="btn btn-secondary upload-label">
-                📤 Chọn file Excel
-                <input id="vrImportFile" type="file" accept=".xlsx" style="display: none;">
-                </label>
-                <button class="btn btn-secondary" onclick="handleImport()">Import</button>
-                <button class="btn btn-secondary" onclick="resetVRData()">Reset thử nghiệm</button>
+            <div class="vr-admin-groups">
+                <div class="vr-admin-group">
+                    <h4>Thêm thủ công</h4>
+                    <div class="vr-admin-actions">
+                        <button class="btn btn-primary" onclick="addNewVRJob()">Thêm nghề mới</button>
+                        <button class="btn btn-secondary" onclick="resetVRData()">Reset thử nghiệm</button>
+                    </div>
+                    <p class="helper-text">Nhập mã RIASEC 3 ký tự (ví dụ: RIA), ưu tiên ký tự đầu là nhóm nghề chính.</p>
+                </div>
+
+                <div class="vr-admin-group">
+                    <h4>Import Excel</h4>
+                    <div class="vr-admin-actions">
+                        <button class="btn btn-secondary" onclick="downloadVRTemplate()">Tải mẫu Excel</button>
+                        <label class="btn btn-secondary upload-label">
+                        📤 Chọn file Excel
+                        <input id="vrImportFile" type="file" accept=".xlsx" style="display: none;">
+                        </label>
+                        <button id="btnVrImport" class="btn btn-secondary" onclick="handleImport()" disabled>Import</button>
+                    </div>
+                    <p id="vrSelectedFile" class="helper-text">Chưa chọn file import.</p>
+                    <div id="vrImportStatus" class="status" role="status" aria-live="polite"></div>
+                    <div id="vrImportErrors" class="status status-error" role="status" aria-live="polite"></div>
+                    <div id="vrLastImport" class="vr-last-import muted" role="status" aria-live="polite"></div>
+                </div>
             </div>
-            <p class="helper-text">Nhập mã RIASEC 3 ký tự (ví dụ: RIA), ưu tiên ký tự đầu là nhóm nghề chính.</p>
-            <div id="vrImportStatus" class="status" role="status" aria-live="polite"></div>
-            <div id="vrImportErrors" class="status status-error" role="status" aria-live="polite"></div>
         </div>
         <p id="vrRoleHint" class="helper-text" style="text-align: center; margin-top: 0.5rem;">
             Công cụ thêm/import chỉ hiển thị cho tài khoản quản trị (Admin).
@@ -89,6 +116,7 @@
         </div>
 
         <div class="center-actions" style="justify-content: flex-end;">
+            <button id="btnDeleteJob" onclick="deleteVRJob()" class="btn btn-secondary" style="display: none;">Xóa</button>
             <button onclick="closeDevModal()" class="btn btn-secondary">Hủy</button>
             <button onclick="saveDevJob()" class="btn btn-primary">Lưu thay đổi</button>
         </div>

@@ -354,26 +354,28 @@ const writeCurrent = (obj) => localStorage.setItem(RIASEC_KEY, JSON.stringify(ob
 
 // ===== PAGE NAVIGATION =====
 function goPage(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-
-    const page = document.getElementById(pageId);
-    if (page) page.classList.add('active');
-
-    // Update nav active state if needed (optional)
-    // Smooth scroll to top
-    window.scrollTo(0, 0);
-
-    // Specific page inits
-    if (pageId === 'vr') {
-        if (typeof fetchVRJobs === 'function') fetchVRJobs();
-    }
+    const routes = {
+        landing: '/',
+        home: '/',
+        test: '/test',
+        results: '/results',
+        chatbot: '/chatbot',
+        vr: '/vr-mode',
+        'vr-mode': '/vr-mode',
+        dashboard: '/dashboard',
+        community: '/community',
+        profile: '/profile',
+        login: '/login',
+        signup: '/signup'
+    };
+    window.location.href = routes[pageId] || '/';
 }
 
 // ===== VR IMPORT / EXPORT =====
 async function downloadVRTemplate() {
     try {
-        const res = await fetch(`${API_BASE}/api/vr-jobs/template`);
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${API_BASE}/api/vr-jobs/template`, { headers });
         if (!res.ok) throw new Error("Download failed");
 
         const blob = await res.blob();
@@ -412,8 +414,11 @@ async function handleVRImport(input) {
 
         if (res.ok) {
             const data = await res.json();
-            alert(`✅ Nhập thành công! ${data.imported} nghề mới.`);
-            getVRJobs(); // Refresh
+            const created = Number(data.created || 0);
+            const updated = Number(data.updated || 0);
+            const skipped = Number(data.skipped || 0);
+            alert(`✅ Nhập thành công! Tạo mới: ${created}, cập nhật: ${updated}, bỏ qua: ${skipped}.`);
+            fetchVRJobs(); // Refresh
         } else {
             const err = await res.json();
             alert("❌ Lỗi: " + (err.detail || "Unknown"));
@@ -425,6 +430,15 @@ async function handleVRImport(input) {
         btn.disabled = false;
         input.value = ''; // Reset
     }
+}
+
+function handleImport() {
+    const input = $('vrImportFile');
+    if (!input || !input.files || !input.files[0]) {
+        alert("Vui lòng chọn file Excel trước khi import.");
+        return;
+    }
+    handleVRImport(input);
 }
 
 // ===== FUZZY MATCHING LOGIC (JS Version) =====
@@ -1386,19 +1400,8 @@ async function sendChatMessage() {
 }
 
 // ===== VR EXPERIENCE LOGIC =====
-let GLOBAL_VR_JOBS = [];
-
-async function fetchVRJobs() {
-    try {
-        const res = await fetch(`${API_BASE}/api/vr-jobs`);
-        if (res.ok) {
-            GLOBAL_VR_JOBS = await res.json();
-            renderVRJobs();
-        }
-    } catch (e) {
-        console.error("Error fetching VR jobs:", e);
-    }
-}
+// Source of truth for VR jobs in frontend runtime.
+window.VR_JOBS = window.VR_JOBS || [];
 
 async function saveVRJobs(jobs) {
     if (!token) {
@@ -1415,7 +1418,7 @@ async function saveVRJobs(jobs) {
             body: JSON.stringify(jobs)
         });
         if (res.ok) {
-            GLOBAL_VR_JOBS = jobs;
+            window.VR_JOBS = jobs;
             renderVRJobs();
         } else {
             alert("Lỗi khi lưu dữ liệu (Admin rights required)!");
@@ -1549,12 +1552,9 @@ function openDevJobModal(jobId) {
     $('devJobVideoId').value = job.videoId;
     $('devJobDesc').value = job.description;
     $('devJobIcon').value = job.icon;
-    $('devJobRIASEC').value = job.riasec_code || "";
-    $('devJobMajors').value = (job.related_majors || []).join(', ');
+    $('devJobRiasec').value = job.riasec_code || "";
 
     $('devJobModal').classList.add('active');
-
-    // Show delete button
     const delBtn = $('btnDeleteJob');
     if (delBtn) delBtn.style.display = 'inline-block';
 }
@@ -1569,51 +1569,30 @@ async function saveDevJob() {
     const videoId = $('devJobVideoId').value;
     const desc = $('devJobDesc').value;
     const icon = $('devJobIcon').value;
-    const riasec = $('devJobRIASEC').value.toUpperCase();
-    const majors = $('devJobMajors').value.split(',').map(s => s.trim()).filter(s => s);
+    const riasec = ($('devJobRiasec').value || '').toUpperCase().replace(/[^RIASEC]/g, '');
 
-    if (!title || !videoId) {
-        alert("Vui lòng nhập Tiêu đề và Video ID!");
+    if (!title || !videoId || riasec.length !== 3) {
+        alert("Vui lòng nhập Tiêu đề, Video ID và mã RIASEC hợp lệ (3 ký tự).");
         return;
     }
 
     const payload = {
-        id: id,
+        id: id && id !== 'new' ? id : `job_${Date.now()}`,
         title: title,
         videoId: videoId,
         description: desc,
-        icon: icon,
-        riasec_code: riasec,
-        related_majors: majors
+        icon: icon || "🎬",
+        riasec_code: riasec
     };
 
-    const method = (id.startsWith('new_') || id === 'new') ? 'POST' : 'PUT';
-    const url = method === 'POST' ? `${API_BASE}/api/vr-jobs` : `${API_BASE}/api/vr-jobs/${id}`;
-
-    // If new, ensure ID is stripped or let backend handle it.
-    // Backend handles `job_uuid` generation if ID collision or if logic dictates.
-    // For strict API: POST usually doesn't need ID in URL.
-
-    try {
-        const res = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-            alert("✅ Lưu thành công!");
-            closeDevModal();
-            fetchVRJobs();
-        } else {
-            alert("❌ Lỗi lưu dữ liệu: " + res.statusText);
-        }
-    } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
-    }
+    const jobs = [...(window.VR_JOBS || [])];
+    const idx = jobs.findIndex(j => j.id === id);
+    if (idx >= 0) jobs[idx] = payload;
+    else jobs.push(payload);
+    await saveVRJobs(jobs);
+    window.VR_JOBS = jobs;
+    closeDevModal();
+    alert("✅ Lưu thành công!");
 }
 
 async function addNewVRJob() {
@@ -1623,8 +1602,7 @@ async function addNewVRJob() {
     $('devJobVideoId').value = "";
     $('devJobDesc').value = "";
     $('devJobIcon').value = "🆕";
-    $('devJobRIASEC').value = "";
-    $('devJobMajors').value = "";
+    $('devJobRiasec').value = "";
 
     $('devJobModal').classList.add('active');
     const delBtn = $('btnDeleteJob');
@@ -1635,19 +1613,11 @@ async function deleteVRJob() {
     const id = $('devJobId').value;
     if (!confirm('Xoá nghề này? (Không thể hoàn tác)')) return;
 
-    try {
-        const res = await fetch(`${API_BASE}/api/vr-jobs/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            alert("✅ Đã xoá!");
-            closeDevModal();
-            fetchVRJobs();
-        } else {
-            alert("❌ Lỗi xoá!");
-        }
-    } catch (e) { console.error(e); }
+    const jobs = (window.VR_JOBS || []).filter(j => j.id !== id);
+    await saveVRJobs(jobs);
+    window.VR_JOBS = jobs;
+    closeDevModal();
+    alert("✅ Đã xoá!");
 }
 
 function resetVRData() {

@@ -16,11 +16,15 @@
 
             <div class="field">
                 <label for="loginPassword">Mật khẩu</label>
-                <input type="password" id="loginPassword" required class="input" placeholder="••••••••">
+                <div class="password-row">
+                    <input type="password" id="loginPassword" required class="input" placeholder="••••••••">
+                    <button type="button" id="toggleLoginPassword" class="btn btn-secondary password-toggle"
+                        onclick="togglePasswordVisibility('loginPassword', 'toggleLoginPassword')">Hiện</button>
+                </div>
                 <div class="field-error" id="loginPasswordError"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Đăng nhập</button>
+            <button type="submit" class="btn btn-primary auth-submit-btn">Đăng nhập</button>
             <div id="loginStatus" class="status" role="status" aria-live="polite"></div>
         </form>
 

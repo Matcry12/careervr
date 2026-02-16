@@ -19,7 +19,7 @@ Goal: lock UI contract before implementation.
   - each page has clear primary action + empty/error/loading behavior defined
 
 ### UX-0002 - Define component style contract
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-0001
@@ -34,7 +34,7 @@ Goal: lock UI contract before implementation.
 Goal: responsive, consistent, accessible base.
 
 ### UX-1001 - Responsive header/nav redesign
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-0002
@@ -47,7 +47,7 @@ Goal: responsive, consistent, accessible base.
   - mobile menu opens/closes accessibly
 
 ### UX-1002 - Global typography and spacing normalization
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-0002
@@ -57,7 +57,7 @@ Goal: responsive, consistent, accessible base.
   - consistent type scale and section spacing on all pages
 
 ### UX-1003 - Accessibility baseline pass
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P0`
 - Owner: Frontend/QA
 - Depends on: UX-1001, UX-1002
@@ -72,7 +72,7 @@ Goal: responsive, consistent, accessible base.
 Goal: smoother flow from test -> results -> chat -> VR.
 
 ### UX-2001 - Test page fatigue reduction
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-1002
@@ -84,7 +84,7 @@ Goal: smoother flow from test -> results -> chat -> VR.
   - clearer chunking/sectioning and progress context
 
 ### UX-2002 - Results page hierarchy and interaction polish
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-1002
@@ -97,7 +97,7 @@ Goal: smoother flow from test -> results -> chat -> VR.
   - recommendation click affordance is explicit
 
 ### UX-2003 - Chatbot conversation UX improvements
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P1`
 - Owner: Frontend
 - Depends on: UX-1002
@@ -110,7 +110,7 @@ Goal: smoother flow from test -> results -> chat -> VR.
   - errors are user-actionable (not raw HTTP)
 
 ### UX-2004 - VR recommendation emphasis cleanup
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P1`
 - Owner: Frontend
 - Depends on: UX-2002
@@ -128,7 +128,7 @@ Goal: smoother flow from test -> results -> chat -> VR.
 Goal: clearer operational workflows.
 
 ### UX-3001 - Teacher import panel redesign
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-1002
@@ -140,7 +140,7 @@ Goal: clearer operational workflows.
   - download/select/import/error summary shown in one panel
 
 ### UX-3002 - Import feedback and error rendering improvements
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-3001
@@ -149,7 +149,7 @@ Goal: clearer operational workflows.
   - row-level errors readable and grouped
 
 ### UX-3003 - Dashboard readability pass
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P1`
 - Owner: Frontend
 - Depends on: UX-1002
@@ -166,7 +166,7 @@ Goal: clearer operational workflows.
 Goal: reduce friction in auth/profile/community forms.
 
 ### UX-4001 - Auth forms inline validation messaging
-- Status: `DONE`
+- Status: `IN_PROGRESS`
 - Priority: `P1`
 - Owner: Frontend
 - Depends on: UX-1003
@@ -178,7 +178,7 @@ Goal: reduce friction in auth/profile/community forms.
   - field-level errors shown inline before submit
 
 ### UX-4002 - Profile save feedback and lock behavior refinement
-- Status: `DONE`
+- Status: `TODO`
 - Priority: `P1`
 - Owner: Frontend
 - Depends on: UX-1003
@@ -194,7 +194,7 @@ Goal: reduce friction in auth/profile/community forms.
 Goal: stable release with UX validation evidence.
 
 ### UX-5001 - Responsive regression test pass
-- Status: `DONE`
+- Status: `TODO`
 - Priority: `P0`
 - Owner: QA
 - Depends on: U1-U4
@@ -202,7 +202,7 @@ Goal: stable release with UX validation evidence.
   - no critical layout breaks on mobile/tablet/desktop
 
 ### UX-5002 - Accessibility smoke checks
-- Status: `DONE`
+- Status: `TODO`
 - Priority: `P0`
 - Owner: QA
 - Depends on: U1-U4
@@ -219,3 +219,22 @@ Goal: stable release with UX validation evidence.
   - `PROJECT_SUMMARY.md`
 - Acceptance:
   - docs describe new UI patterns and admin import flow
+
+---
+
+## Milestone U9 - Frontend Stabilization
+Goal: eliminate mixed runtime paths and prevent recurring UI regressions.
+
+### UX-9001 - Frontend runtime consolidation
+- Status: `IN_PROGRESS`
+- Priority: `P0`
+- Owner: Frontend
+- Depends on: UX-1002
+- Files:
+  - `backend/templates/base.html`
+  - `backend/static/script.js`
+  - `backend/static/js/*.js`
+- Acceptance:
+  - one runtime path is selected and enforced
+  - duplicate/legacy frontend logic is removed
+  - key flows avoid inline-style HTML generation

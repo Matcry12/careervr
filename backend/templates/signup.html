@@ -20,19 +20,18 @@
                 <div class="field-error" id="regFullnameError"></div>
             </div>
 
-<<<<<<< HEAD
             <div class="field">
                 <label for="regPassword">Mật khẩu</label>
-                <input type="password" id="regPassword" required class="input" placeholder="••••••••">
+                <div class="password-row">
+                    <input type="password" id="regPassword" required class="input" placeholder="••••••••">
+                    <button type="button" id="toggleRegPassword" class="btn btn-secondary password-toggle"
+                        onclick="togglePasswordVisibility('regPassword', 'toggleRegPassword')">Hiện</button>
+                </div>
+                <p class="field-help">Mật khẩu tối thiểu 6 ký tự, nên có cả chữ và số.</p>
                 <div class="field-error" id="regPasswordError"></div>
-=======
-            <div style="margin-bottom: 2rem;">
-                <label for="regPassword" style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Mật khẩu</label>
-                <input type="password" id="regPassword" required class="community-input" placeholder="••••••••">
->>>>>>> bb48cea (Trying to fix login logic)
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Đăng ký</button>
+            <button type="submit" class="btn btn-primary auth-submit-btn">Đăng ký</button>
             <div id="signupStatus" class="status" role="status" aria-live="polite"></div>
         </form>
 

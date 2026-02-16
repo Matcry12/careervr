@@ -13,7 +13,16 @@
 
     <div class="community-create-card">
         <h3>Tạo bài viết mới</h3>
+        <div class="community-toolbar">
+            <label for="communitySort" class="muted">Sắp xếp bài viết</label>
+            <select id="communitySort" class="community-input community-sort-select" onchange="changeCommunitySort(this.value)">
+                <option value="newest">Mới nhất</option>
+                <option value="oldest">Cũ nhất</option>
+                <option value="most_commented">Nhiều bình luận</option>
+            </select>
+        </div>
         <input type="text" id="postAuthor" placeholder="Tên của bạn (hoặc nickname)..." class="community-input">
+        <p id="postAuthorHelp" class="helper-text"></p>
         <textarea id="postContent" rows="3" placeholder="Bạn đang nghĩ gì? Hãy chia sẻ thắc mắc hoặc ý tưởng..."
             class="community-input"></textarea>
         <div style="text-align: right; margin-top: 1rem;">

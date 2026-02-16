@@ -1,6 +1,60 @@
 // ===== VR EXPERIENCE LOGIC =====
 let GLOBAL_VR_JOBS = [];
 let LAST_FOCUSED_ELEMENT = null;
+const VR_LAST_IMPORT_KEY = 'careervr_last_import_result_v1';
+
+function renderLastImportSummary() {
+    const box = $('vrLastImport');
+    if (!box) return;
+
+    const raw = localStorage.getItem(VR_LAST_IMPORT_KEY);
+    if (!raw) {
+        box.textContent = 'Chưa có lịch sử import gần đây.';
+        return;
+    }
+
+    try {
+        const data = JSON.parse(raw);
+        const when = data?.at ? new Date(data.at).toLocaleString('vi-VN') : 'Không rõ thời gian';
+        const created = Number(data?.created || 0);
+        const updated = Number(data?.updated || 0);
+        const skipped = Number(data?.skipped || 0);
+        box.textContent = `Lần import gần nhất (${when}): Tạo mới ${created}, Cập nhật ${updated}, Bỏ qua ${skipped}.`;
+    } catch (_) {
+        box.textContent = 'Không đọc được lịch sử import gần đây.';
+    }
+}
+
+function updateVRImportSelectionState() {
+    const input = $('vrImportFile');
+    const fileLabel = $('vrSelectedFile');
+    const importBtn = $('btnVrImport');
+    if (!input || !fileLabel || !importBtn) return;
+
+    const file = input.files && input.files[0] ? input.files[0] : null;
+    const isValid = !!file && /\.xlsx$/i.test(file.name || '');
+    importBtn.disabled = !isValid;
+
+    if (!file) {
+        fileLabel.textContent = 'Chưa chọn file import.';
+        return;
+    }
+
+    if (!isValid) {
+        fileLabel.textContent = `File không hợp lệ: ${file.name}. Vui lòng chọn file .xlsx`;
+        return;
+    }
+
+    fileLabel.textContent = `Đã chọn: ${file.name}`;
+}
+
+function initVRImportUI() {
+    const input = $('vrImportFile');
+    if (!input) return;
+    input.addEventListener('change', updateVRImportSelectionState);
+    updateVRImportSelectionState();
+    renderLastImportSummary();
+}
 
 async function fetchVRJobs() {
     try {
@@ -50,6 +104,19 @@ function renderVRJobs() {
     if (!container) return;
 
     const isAdmin = document.body.classList.contains('is-admin');
+    if (!jobs.length) {
+        container.innerHTML = `
+            <div class="vr-empty-state">
+                <h3>Chưa có video nghề nghiệp</h3>
+                <p class="muted">Danh sách nghề hiện đang trống. ${isAdmin ? 'Bạn có thể thêm nghề mới hoặc import từ file Excel.' : 'Vui lòng quay lại sau hoặc liên hệ quản trị viên để cập nhật nội dung.'}</p>
+                ${isAdmin ? '<div class="vr-empty-actions"><button class="btn btn-primary" onclick="addNewVRJob()">Thêm nghề mới</button></div>' : ''}
+            </div>
+        `;
+        const controls = $('vrControls');
+        if (controls) controls.style.display = 'block';
+        return;
+    }
+
     const recommendedOrder = GLOBAL_RECOMMENDED_IDS || [];
     jobs.sort((a, b) => {
         const ia = recommendedOrder.indexOf(a.id);
@@ -77,16 +144,16 @@ function renderVRJobs() {
           <div class="vr-card-main" role="button" tabindex="0"
             onclick="openVideoModal('${job.videoId}', '${escapeHtml(job.title)}')"
             onkeydown="if(event.key==='Enter' || event.key===' '){event.preventDefault();openVideoModal('${job.videoId}', '${escapeHtml(job.title)}')}">
-              <div style="font-size: 2.5rem; margin-bottom: 1rem;">${job.icon || '🎬'}</div>
-              <h3 style="margin-bottom: 1rem; color: #4d7cff;">${escapeHtml(job.title)}</h3>
-              <div class="muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">RIASEC: ${escapeHtml(job.riasec_code || '---')}</div>
+              <div class="vr-icon">${job.icon || '🎬'}</div>
+              <h3 class="vr-title">${escapeHtml(job.title)}</h3>
+              <div class="muted vr-riasec">RIASEC: ${escapeHtml(job.riasec_code || '---')}</div>
               
               <div class="vr-thumb">
                 <img src="https://img.youtube.com/vi/${job.videoId}/mqdefault.jpg" alt="Thumbnail ${escapeHtml(job.title)}">
                 <div class="vr-play">▶</div>
               </div>
 
-              <p class="muted" style="font-size: 0.9rem;">${escapeHtml(job.description || '')}</p>
+              <p class="muted vr-desc">${escapeHtml(job.description || '')}</p>
           </div>
         </div>
     `).join('');
@@ -245,10 +312,19 @@ async function handleImport() {
     }
 
     const input = $('vrImportFile');
+    const importBtn = $('btnVrImport');
     if (!input || !input.files || !input.files[0]) {
         setStatus('vrImportStatus', 'error', 'Vui lòng chọn file .xlsx trước khi tải lên.');
+        updateVRImportSelectionState();
         return;
     }
+    if (!/\.xlsx$/i.test(input.files[0].name || '')) {
+        setStatus('vrImportStatus', 'error', 'File không hợp lệ. Vui lòng chọn file .xlsx');
+        updateVRImportSelectionState();
+        return;
+    }
+
+    if (importBtn) importBtn.disabled = true;
     setStatus('vrImportStatus', 'info', 'Đang import dữ liệu...');
     setStatus('vrImportErrors', null, '');
 
@@ -267,6 +343,13 @@ async function handleImport() {
         }
         const msg = `Import thành công: tạo mới ${data.created}, cập nhật ${data.updated}, bỏ qua ${data.skipped}.`;
         setStatus('vrImportStatus', 'success', msg);
+        localStorage.setItem(VR_LAST_IMPORT_KEY, JSON.stringify({
+            at: new Date().toISOString(),
+            created: Number(data.created || 0),
+            updated: Number(data.updated || 0),
+            skipped: Number(data.skipped || 0)
+        }));
+        renderLastImportSummary();
         const errorsEl = $('vrImportErrors');
         if (errorsEl) {
             errorsEl.innerHTML = (data.errors || []).length
@@ -274,9 +357,12 @@ async function handleImport() {
                 : '';
         }
         input.value = '';
+        updateVRImportSelectionState();
         fetchVRJobs();
     } catch (e) {
         setStatus('vrImportStatus', 'error', "Import thất bại: " + e.message);
+    } finally {
+        updateVRImportSelectionState();
     }
 }
 

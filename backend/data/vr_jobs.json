@@ -28,7 +28,7 @@
     "title": "Lập trình viên",
     "videoId": "M2K7_Gfq8sA",
     "riasec_code": "IRC",
-    "description": "Một ngày làm việc tại công ty công nghệ lớn.",
+    "description": "Mô tả ngắn",
     "icon": "💻"
   },
   {
@@ -38,5 +38,13 @@
     "riasec_code": "IEC",
     "description": "Tham gia phiên tòa giả định và tìm hiểu quy trình tranh tụng, tư vấn pháp lý.",
     "icon": "⚖️"
+  },
+  {
+    "id": "job_1771239173311",
+    "title": "a",
+    "videoId": "a",
+    "riasec_code": "SEC",
+    "description": "a",
+    "icon": "🆕"
   }
 ]

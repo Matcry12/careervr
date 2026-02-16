@@ -38,19 +38,210 @@
     "created_at": "2026-02-08T17:59:43.219958",
     "last_riasec_result": {
       "scores": {
-        "R": 28,
-        "I": 21,
-        "A": 18,
-        "S": 25,
-        "E": 30,
-        "C": 27
+        "R": 24,
+        "I": 20,
+        "A": 26,
+        "S": 30,
+        "E": 23,
+        "C": 28
       },
       "riasec": [
-        "E",
-        "R",
-        "C"
+        "S",
+        "C",
+        "A"
       ],
-      "date": "2026-02-09T15:24:09.072Z",
+      "answers": [
+        5,
+        5,
+        1,
+        4,
+        2,
+        3,
+        4,
+        1,
+        3,
+        1,
+        3,
+        4,
+        2,
+        4,
+        2,
+        3,
+        5,
+        4,
+        4,
+        3,
+        1,
+        5,
+        5,
+        4,
+        2,
+        1,
+        1,
+        5,
+        4,
+        3,
+        3,
+        2,
+        5,
+        4,
+        3,
+        4,
+        1,
+        2,
+        3,
+        5,
+        2,
+        4,
+        2,
+        2,
+        5,
+        1,
+        2,
+        1,
+        5,
+        1
+      ],
+      "recommendations": {
+        "student_code": "SCA",
+        "primary_trait": "S",
+        "secondary_trait": "C",
+        "priority": [
+          {
+            "id": "job_1771239173311",
+            "title": "a",
+            "videoId": "a",
+            "riasec_code": "SEC",
+            "description": "a",
+            "icon": "🆕",
+            "relevance_score": 70
+          },
+          {
+            "id": "job_2",
+            "title": "Bác sĩ phẫu thuật",
+            "videoId": "L_H6gA2Fq8A",
+            "riasec_code": "ISR",
+            "description": "Quan sát ca phẫu thuật tim trong môi trường phòng mổ vô trùng.",
+            "icon": "👨‍⚕️",
+            "relevance_score": 10
+          },
+          {
+            "id": "job_3",
+            "title": "Kiến trúc sư",
+            "videoId": "7J0i7Q3kZ8c",
+            "riasec_code": "AIR",
+            "description": "Tham quan công trình xây dựng và quy trình thiết kế nhà ở.",
+            "icon": "🏗️",
+            "relevance_score": 10
+          }
+        ],
+        "backup": [
+          {
+            "id": "job_5",
+            "title": "Luật sư",
+            "videoId": "M2K7_Gfq8sA",
+            "riasec_code": "IEC",
+            "description": "Tham gia phiên tòa giả định và tìm hiểu quy trình tranh tụng, tư vấn pháp lý.",
+            "icon": "⚖️",
+            "relevance_score": 10
+          }
+        ],
+        "top_4": [
+          {
+            "id": "job_1771239173311",
+            "title": "a",
+            "videoId": "a",
+            "riasec_code": "SEC",
+            "description": "a",
+            "icon": "🆕",
+            "relevance_score": 70
+          },
+          {
+            "id": "job_2",
+            "title": "Bác sĩ phẫu thuật",
+            "videoId": "L_H6gA2Fq8A",
+            "riasec_code": "ISR",
+            "description": "Quan sát ca phẫu thuật tim trong môi trường phòng mổ vô trùng.",
+            "icon": "👨‍⚕️",
+            "relevance_score": 10
+          },
+          {
+            "id": "job_3",
+            "title": "Kiến trúc sư",
+            "videoId": "7J0i7Q3kZ8c",
+            "riasec_code": "AIR",
+            "description": "Tham quan công trình xây dựng và quy trình thiết kế nhà ở.",
+            "icon": "🏗️",
+            "relevance_score": 10
+          },
+          {
+            "id": "job_5",
+            "title": "Luật sư",
+            "videoId": "M2K7_Gfq8sA",
+            "riasec_code": "IEC",
+            "description": "Tham gia phiên tòa giả định và tìm hiểu quy trình tranh tụng, tư vấn pháp lý.",
+            "icon": "⚖️",
+            "relevance_score": 10
+          }
+        ],
+        "all_sorted_jobs": [
+          {
+            "id": "job_1771239173311",
+            "title": "a",
+            "videoId": "a",
+            "riasec_code": "SEC",
+            "description": "a",
+            "icon": "🆕",
+            "relevance_score": 70
+          },
+          {
+            "id": "job_2",
+            "title": "Bác sĩ phẫu thuật",
+            "videoId": "L_H6gA2Fq8A",
+            "riasec_code": "ISR",
+            "description": "Quan sát ca phẫu thuật tim trong môi trường phòng mổ vô trùng.",
+            "icon": "👨‍⚕️",
+            "relevance_score": 10
+          },
+          {
+            "id": "job_3",
+            "title": "Kiến trúc sư",
+            "videoId": "7J0i7Q3kZ8c",
+            "riasec_code": "AIR",
+            "description": "Tham quan công trình xây dựng và quy trình thiết kế nhà ở.",
+            "icon": "🏗️",
+            "relevance_score": 10
+          },
+          {
+            "id": "job_5",
+            "title": "Luật sư",
+            "videoId": "M2K7_Gfq8sA",
+            "riasec_code": "IEC",
+            "description": "Tham gia phiên tòa giả định và tìm hiểu quy trình tranh tụng, tư vấn pháp lý.",
+            "icon": "⚖️",
+            "relevance_score": 10
+          },
+          {
+            "id": "job_4",
+            "title": "Lập trình viên",
+            "videoId": "M2K7_Gfq8sA",
+            "riasec_code": "IRC",
+            "description": "Một ngày làm việc tại công ty công nghệ lớn.",
+            "icon": "💻",
+            "relevance_score": 10
+          },
+          {
+            "id": "job_1",
+            "title": "Phi công",
+            "videoId": "W0ixQ59o-iI",
+            "riasec_code": "RIE",
+            "description": "Trải nghiệm buồng lái máy bay và quy trình cất cánh.",
+            "icon": "✈️",
+            "relevance_score": 0
+          }
+        ]
+      },
+      "date": "2026-02-16T11:01:31.194Z",
       "name": "Nguyen anh triet",
       "class": "12A Dev",
       "school": "THPT Dev Mode"

@@ -1,14 +1,17 @@
 // ===== INIT =====
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     initMobileNav();
-    checkAuth();
+    await checkAuth();
 
     // Page specific inits
     if ($('questionsContainer')) initTest();
     if ($('chatContext')) updateChatContext();
     if ($('majorContainer')) showResults();
     if ($('dashboardContent')) showDashboard();
-    if ($('vrGrid')) fetchVRJobs();
+    if ($('vrGrid')) {
+        initVRImportUI();
+        fetchVRJobs();
+    }
 
 
     // Community Page Init
