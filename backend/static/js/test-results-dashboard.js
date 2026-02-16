@@ -72,7 +72,7 @@ function updateRealTimeScore() {
         .slice(0, 3)
         .map(([k, v]) => `<div>${k}: ${v}</div>`).join('');
 
-    tempEl.innerHTML = `<div style="margin-bottom:0.5rem; color:#ffd700;">📊 Điểm tạm thời</div>` + scoreHtml;
+    tempEl.innerHTML = `<div class="muted" style="margin-bottom:0.5rem; color:#ffd700;">Điểm tạm thời</div>` + scoreHtml;
 }
 
 // Helper to sum scores without validation
@@ -106,9 +106,10 @@ function calculateSimpleScores() {
 function calculateRIASEC() {
     const answered = document.querySelectorAll('input[type="radio"]:checked').length;
     if (answered < 50) {
-        alert(`Vui lòng trả lời hết 50 câu! (Mới xong ${answered}/50)`);
+        setStatus('testFormStatus', 'error', `Vui lòng trả lời hết 50 câu (hiện tại ${answered}/50).`);
         return null;
     }
+    setStatus('testFormStatus', null, '');
 
     const scores = calculateSimpleScores();
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
@@ -158,8 +159,6 @@ async function showResults() {
         const DETAILS_EL = $('scoreDetails');
         if (DETAILS_EL) {
             DETAILS_EL.style.display = 'grid'; // Ensure visible
-            DETAILS_EL.style.gap = '1rem';
-            DETAILS_EL.style.gridTemplateColumns = 'repeat(auto-fit, minmax(150px, 1fr))';
         }
 
         const scoreHtml = Object.entries(current.scores)
@@ -167,16 +166,15 @@ async function showResults() {
             .map(([type, score]) => {
                 const percent = Math.min((score / 45) * 100, 100);
                 return `
-        <div style="background: rgba(15, 31, 58, 0.6); border: 1px solid rgba(30, 42, 68, 0.5); padding: 0.75rem; border-radius: 8px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+        <div class="score-card">
+          <div class="score-head">
             <span style="font-weight: 600; color: ${colors[type]};">${names[type]}</span>
             <span style="color: #fff;">${score} điểm</span>
           </div>
-          <div style="height: 6px; background: rgba(30, 42, 68, 0.5); border-radius: 4px; overflow: hidden;">
-            <div style="height: 100%; width: ${percent}%; background: ${colors[type]}; transition: width 0.5s;"></div>
+          <div class="score-bar">
+            <div class="score-fill" style="width: ${percent}%; background: ${colors[type]};"></div>
           </div>
-        </div>
-        `;
+        </div>`;
             }).join('');
 
         if (DETAILS_EL) DETAILS_EL.innerHTML = scoreHtml;
@@ -254,7 +252,7 @@ async function showResults() {
         console.error("Rec Error:", e);
         const container = $('majorContainer');
         if (container) {
-            container.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">Lỗi tải gợi ý nghề nghiệp: ${e.message}</div>`;
+            container.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">Lỗi tải gợi ý nghề nghiệp: ${escapeHtml(e.message)}</div>`;
         }
     }
 }
@@ -263,7 +261,7 @@ async function showResults() {
 async function showDashboard() {
     const $content = $('dashboardContent');
     if (!$content) return;
-    $content.innerHTML = '<div style="color: #9fb7ff; text-align: center;">⏳ Đang tải dữ liệu...</div>';
+    $content.innerHTML = '<div class="empty-state">Đang tải dữ liệu...</div>';
 
     try {
         const headers = {};
@@ -274,13 +272,11 @@ async function showDashboard() {
         const res = await fetch(`${API_BASE}/api/submissions`, { headers });
 
         if (res.status === 401 || res.status === 403) {
-            $content.innerHTML = `
-                <div class="empty-state" style="color: #ff4d4f; padding: 2rem;">
-                    <h3 style="margin-bottom: 1rem;">⛔ Quyền truy cập bị từ chối</h3>
-                    <p>Trang này chỉ dành cho Quản trị viên (Admin).</p>
-                    <button onclick="goPage('landing')" class="btn btn-primary" style="margin-top: 1.5rem;">Về trang chủ</button>
-                </div>
-            `;
+            $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">
+                <h3>Quyền truy cập bị từ chối</h3>
+                <p>Trang này chỉ dành cho Quản trị viên (Admin).</p>
+                <button onclick="goPage('landing')" class="btn btn-primary">Về trang chủ</button>
+            </div>`;
             return;
         }
         if (!res.ok) {
@@ -515,60 +511,47 @@ async function showDashboard() {
         // ... Table HTML generation continues below ...
 
         const html = `
-        <div style="overflow-x: auto; background: rgba(15, 31, 58, 0.8); border: 1px solid rgba(30, 42, 68, 0.5); border-radius: 12px; padding: 1rem;">
-        <h3 style="margin-bottom: 1rem; color: #4d7cff;">📋 Danh sách kết quả chi tiết (Toàn hệ thống)</h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 1000px;">
-            <thead style="background: rgba(26, 60, 255, 0.2); color: #fff;">
+        <div class="dashboard-table-wrap">
+        <h3 style="margin-bottom: 1rem; color: #4d7cff;">Danh sách kết quả chi tiết (Toàn hệ thống)</h3>
+        <table class="dashboard-table">
+            <thead>
             <tr>
-                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">STT</th>
-                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">Ngày</th>
-                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">Họ tên</th>
-                <th style="padding: 0.75rem; text-align: center; border: 1px solid rgba(30, 42, 68, 0.5);">RIASEC</th>
-                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5); width: 25%;">Các ngành gợi ý</th>
-                <th style="padding: 0.75rem; text-align: left; border: 1px solid rgba(30, 42, 68, 0.5);">Tổ hợp xét tuyển</th>
+                <th>STT</th>
+                <th>Ngày</th>
+                <th>Họ tên</th>
+                <th>RIASEC</th>
+                <th>Các ngành gợi ý</th>
+                <th>Tổ hợp xét tuyển</th>
             </tr>
             </thead>
             <tbody>
-            ${rows.map((row, index) => {
-            const s = row.scores || {};
-            return `
-                <tr style="border-bottom: 1px solid rgba(30, 42, 68, 0.3);">
-                <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">${index + 1}</td>
-                <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5);">
-                    ${(row.time && !isNaN(new Date(row.time))) ? new Date(row.time).toLocaleDateString('vi-VN') : 'Mới nhất'}
+            ${rows.map((row, index) => `
+                <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td>${(row.time && !isNaN(new Date(row.time))) ? new Date(row.time).toLocaleDateString('vi-VN') : 'Mới nhất'}</td>
+                <td>
+                    ${escapeHtml(row.name || 'Ẩn danh')}<br>
+                    <span class="muted" style="font-size: 0.82rem;">${escapeHtml(row.class || '-')}</span>
                 </td>
-                <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); font-weight: 500;">
-                    ${row.name || 'Ẩn danh'}<br>
-                    <span style="font-size: 0.8rem; color: #9fb7ff;">${row.class || '-'}</span>
+                <td style="text-align: center;">
+                    <span class="badge">${escapeHtml((row.riasec || []).join('-'))}</span>
                 </td>
-                
-                <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); text-align: center;">
-                    <span class="badge" style="background: rgba(26, 60, 255, 0.1); border-color: rgba(77, 124, 255, 0.5);">
-                    ${(row.riasec || []).join('-')}
-                    </span>
+                <td style="font-size: 0.85rem;">
+                    ${row.suggestedMajors ? escapeHtml(row.suggestedMajors) : '<span class="muted">Chưa có dữ liệu</span>'}
                 </td>
-                
-                <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); font-size: 0.85rem;">
-                    ${row.suggestedMajors || '<i style="color: #666">Chưa có dữ liệu</i>'}
-                </td>
-                
-                <td style="padding: 0.75rem; border: 1px solid rgba(30, 42, 68, 0.5); font-size: 0.85rem;">
-                    ${row.combinations || '<i style="color: #666">-</i>'}
+                <td style="font-size: 0.85rem;">
+                    ${row.combinations ? escapeHtml(row.combinations) : '<span class="muted">-</span>'}
                 </td>
                 </tr>
-                `;
-        }).join('')}
+            `).join('')}
             </tbody>
         </table>
-        <div style="margin-top: 1rem; text-align: right;">
-            <span style="font-size: 0.85rem; color: #9fb7ff;">Tổng số bản ghi: <strong>${db.length}</strong></span>
-        </div>
-        </div>
-    `;
+        <div class="dashboard-meta">Tổng số bản ghi: <strong>${db.length}</strong></div>
+        </div>`;
         $content.innerHTML = html;
 
     } catch (e) {
-        $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">Lỗi tải dữ liệu: ${e.message}</div>`;
+        $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">Lỗi tải dữ liệu: ${escapeHtml(e.message)}</div>`;
     }
 }
 
@@ -583,17 +566,20 @@ function resetTest() {
     localStorage.removeItem(RIASEC_KEY); // Removes 'current'
     sessionStorage.removeItem('conversation_id');
     const msgBox = $('messagesBox');
-    if (msgBox) msgBox.innerHTML = '<div style="color: #9fb7ff; font-size: 0.9rem;"><strong>🤖 AI:</strong> Xin chào! Tôi sẵn sàng tư vấn cho bạn dựa trên kết quả RIASEC. Nhấn nút "Bắt đầu tư vấn" bên dưới để bắt đầu.</div>';
+    if (msgBox) msgBox.innerHTML = '<div class="chat-message ai">Xin chào! Tôi sẵn sàng tư vấn cho bạn dựa trên kết quả RIASEC. Nhấn nút "Bắt đầu tư vấn" bên dưới để bắt đầu.</div>';
 
     const tempEl = $('tempScoreDisplay');
     if (tempEl) {
         tempEl.remove();
     }
-    alert("Đã làm mới dữ liệu cục bộ! (Dữ liệu trên Server vẫn được giữ)");
+    setStatus('testFormStatus', 'success', 'Đã làm mới dữ liệu cục bộ (dữ liệu trên server vẫn giữ nguyên).');
 }
 
 function clearAllData() {
-    alert("Dữ liệu hiện được lưu trữ tập trung trên Server nên không thể xoá sạch từ đây.");
+    const content = $('dashboardContent');
+    if (content) {
+        content.insertAdjacentHTML('afterbegin', '<div class="status status-info">Dữ liệu hiện lưu tập trung trên server và không thể xóa toàn bộ từ giao diện này.</div>');
+    }
 }
 
 function buildCombinationSuggestion(top3 = []) {
@@ -613,6 +599,7 @@ function buildCombinationSuggestion(top3 = []) {
 async function submitTest() {
     try {
         if (!confirm('Bạn có chắc chắn muốn nộp bài?')) return;
+        setStatus('testFormStatus', 'info', 'Đang xử lý kết quả...');
 
         const result = calculateRIASEC();
         if (!result) return;
@@ -669,8 +656,7 @@ async function submitTest() {
         goPage('results');
 
     } catch (err) {
-        alert('Lỗi hệ thống: ' + err.message);
+        setStatus('testFormStatus', 'error', 'Lỗi hệ thống: ' + err.message);
         console.error(err);
     }
 }
-

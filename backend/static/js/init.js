@@ -1,5 +1,6 @@
 // ===== INIT =====
 window.addEventListener('load', () => {
+    initMobileNav();
     checkAuth();
 
     // Page specific inits

@@ -4,38 +4,34 @@
 
 {% block content %}
 <section class="page active" id="profile">
-    <div class="test-container" style="max-width: 600px; margin: 4rem auto;">
-        <h1 style="text-align: center; margin-bottom: 2rem;">Hồ sơ cá nhân</h1>
+    <div class="test-container" style="max-width: 700px; margin: 3rem auto;">
+        <h1 class="section-title">Hồ sơ cá nhân</h1>
 
-        <div class="test-section"
-            style="background: rgba(26, 60, 255, 0.05); border: 1px solid rgba(26, 60, 255, 0.2);">
+        <div class="test-section panel-soft">
             <form id="profileForm" onsubmit="event.preventDefault(); saveProfile();">
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="profileName" style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Họ và
-                        tên</label>
-                    <input type="text" id="profileName" placeholder="Nhập họ tên của bạn"
-                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                <div class="field">
+                    <label for="profileName">Họ và tên</label>
+                    <input class="input" type="text" id="profileName" placeholder="Nhập họ tên của bạn">
+                    <div class="field-error" id="profileNameError"></div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <div>
-                        <label for="profileClass"
-                            style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Lớp</label>
-                        <input type="text" id="profileClass" placeholder="VD: 12A1"
-                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label for="profileClass">Lớp</label>
+                        <input class="input" type="text" id="profileClass" placeholder="VD: 12A1">
+                        <div class="field-error" id="profileClassError"></div>
                     </div>
-                    <div>
-                        <label for="profileSchool"
-                            style="display: block; margin-bottom: 0.5rem; color: #9fb7ff;">Trường</label>
-                        <input type="text" id="profileSchool" placeholder="VD: THPT Nguyễn Du"
-                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #2a3b66; background: #081225; color: #fff;">
+                    <div class="field">
+                        <label for="profileSchool">Trường</label>
+                        <input class="input" type="text" id="profileSchool" placeholder="VD: THPT Nguyễn Du">
+                        <div class="field-error" id="profileSchoolError"></div>
                     </div>
                 </div>
 
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="padding: 0.8rem 3rem; font-size: 1.1rem;">💾
-                        Lưu thay đổi</button>
+                <div class="center-actions" style="margin-top: 1.25rem;">
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                 </div>
+                <div id="profileStatus" class="status" role="status" aria-live="polite"></div>
             </form>
         </div>
     </div>
