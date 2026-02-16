@@ -2,6 +2,10 @@ import sys
 import os
 from datetime import datetime
 from passlib.context import CryptContext
+from dotenv import load_dotenv
+
+# Ensure this script uses the same DB/env configuration as the running app.
+load_dotenv()
 
 # Add current directory to path so we can import backend modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -15,6 +19,10 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 def create_or_promote_admin(username, password):
+    if not username or not password:
+        print("❌ Username and password are required.")
+        return
+
     print(f"Checking user: {username}...")
     user = db.get_user(username)
     
@@ -22,10 +30,10 @@ def create_or_promote_admin(username, password):
     
     if user:
         print(f"User '{username}' exists. Promoting to ADMIN and updating password.")
-        # Update Role
-        db.update_user_history(username, "role", "admin")
-        # Update Password
-        db.update_user_history(username, "hashed_password", hashed_password)
+        db.update_user_profile(username, {
+            "role": "admin",
+            "hashed_password": hashed_password
+        })
         print("✅ User promoted to Admin successfully.")
     else:
         print(f"User '{username}' does not exist. Creating new ADMIN account.")

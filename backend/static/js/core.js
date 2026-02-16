@@ -146,7 +146,12 @@ async function handleLogin() {
             localStorage.setItem('access_token', data.access_token);
             window.location.href = '/test';
         } else {
-            setStatus('loginStatus', 'error', 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+            let detail = 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+            try {
+                const err = await res.json();
+                if (err?.detail) detail = `${detail} (${err.detail})`;
+            } catch (_) { }
+            setStatus('loginStatus', 'error', detail);
         }
     } catch (e) {
         setStatus('loginStatus', 'error', 'Không thể kết nối máy chủ. Vui lòng thử lại.');
@@ -191,8 +196,12 @@ async function handleRegister() {
             localStorage.setItem('access_token', data.access_token);
             window.location.href = '/test';
         } else {
-            const err = await res.json();
-            setStatus('signupStatus', 'error', "Đăng ký thất bại: " + (err.detail || "Lỗi không xác định"));
+            let msg = "Đăng ký thất bại: Lỗi không xác định";
+            try {
+                const err = await res.json();
+                msg = "Đăng ký thất bại: " + (err.detail || "Lỗi không xác định");
+            } catch (_) { }
+            setStatus('signupStatus', 'error', msg);
         }
     } catch (e) {
         setStatus('signupStatus', 'error', 'Không thể kết nối máy chủ. Vui lòng thử lại.');

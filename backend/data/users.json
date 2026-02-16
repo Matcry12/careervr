@@ -117,5 +117,19 @@
     "created_at": "2026-02-08T22:27:15.302447",
     "school": "Test High School",
     "class": "12A1"
+  },
+  {
+    "username": "anhtriet",
+    "full_name": "Admin User",
+    "role": "admin",
+    "hashed_password": "$2b$12$Bvpsvsc5F.xs3h5DGcKkce/NX8hLfQghCXWv3Hnjd79LFJil41mu.",
+    "created_at": "2026-02-16T09:08:30.965720"
+  },
+  {
+    "username": "bug1771233202",
+    "full_name": "Admin User",
+    "role": "admin",
+    "hashed_password": "$2b$12$3lc.WFIHWBVEF8gndbqznuN10T.p/ryYavGCJiAKusvwR4Fp3r5K6",
+    "created_at": "2026-02-16T09:13:22.846899"
   }
 ]
