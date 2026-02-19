@@ -553,6 +553,8 @@ def raise_for_db_write_result(result: Optional[Dict[str, Any]], action: str = "d
 
     reason = str(result.get("reason") or "unknown_error")
     detail = f"{action} failed: {reason}"
+    if reason == "username_exists":
+        raise HTTPException(status_code=400, detail="Username already registered")
     if reason == "post_not_found":
         raise HTTPException(status_code=404, detail=detail)
     if reason == "vercel_local_write_disabled":

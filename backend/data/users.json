@@ -1186,5 +1186,12 @@
     "role": "user",
     "hashed_password": "$2b$12$bS3qHH81KMcL46WuIN.yq.52d0NIy2nqjlifsAgyg/eK4q2ftdNIG",
     "created_at": "2026-02-18T13:41:33.597732"
+  },
+  {
+    "username": "debug_1771515673",
+    "full_name": "x",
+    "role": "user",
+    "hashed_password": "$2b$12$FOMzgz9kVa4btKi1bAdBK.6yUG5CtU/B4LQIhJBxJSt2zqC/Vozw6",
+    "created_at": "now"
   }
 ]

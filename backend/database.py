@@ -15,6 +15,7 @@ class Database:
     def __init__(self):
         self.db = None
         self.is_mongo = False
+        self.db_name = os.getenv("MONGODB_DB_NAME", "careervr")
         
         # 1. Try MongoDB Connection
         mongo_uri = os.getenv("MONGODB_URI")
@@ -22,7 +23,7 @@ class Database:
             try:
                 client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000, tlsAllowInvalidCertificates=True) # Short timeout
                 client.admin.command('ping')
-                self.db = client[os.getenv("MONGODB_DB_NAME", "careervr")]
+                self.db = client[self.db_name]
                 self.is_mongo = True
                 logger.info("✅ Connected to MongoDB Atlas")
             except Exception as e:
@@ -45,7 +46,13 @@ class Database:
         return payload
 
     def _writes_disabled(self) -> bool:
-        return (not self.is_mongo) and bool(os.getenv("VERCEL"))
+        if self.is_mongo:
+            return False
+        # Escape hatch for local/dev debugging when deployment-like env flags are present.
+        allow_local_writes = str(os.getenv("ALLOW_LOCAL_WRITES", "")).strip().lower() in {"1", "true", "yes", "on"}
+        if allow_local_writes:
+            return False
+        return bool(os.getenv("VERCEL"))
 
     def _disabled_write_result(self) -> Dict[str, Any]:
         return self._write_result(False, "vercel_local_write_disabled")
@@ -154,9 +161,9 @@ class Database:
             return self._save_local(self.submissions_file, current)
 
     def _save_local(self, path: Path, data: Any) -> Dict[str, Any]:
-        # STRICT PROTECTION: Never write on Vercel if not Mongo
-        if os.getenv("VERCEL"):
-            return self._write_result(False, "vercel_local_write_disabled")
+        # STRICT PROTECTION: Never write in deployment-mode without explicit local-write override.
+        if self._writes_disabled():
+            return self._disabled_write_result()
             
         try:
             # Ensure dir exists only when we actually try to write
@@ -198,8 +205,11 @@ class Database:
                 self.db.users.insert_one(user_data)
                 success = True
             except Exception as e:
-                 logger.error(f"Mongo Create User Error: {e}")
-                 return self._write_result(False, "mongo_insert_error", error=str(e))
+                 msg = str(e)
+                 logger.error(f"Mongo Create User Error: {msg}")
+                 if "E11000" in msg or "duplicate key" in msg.lower():
+                     return self._write_result(False, "username_exists", error=msg)
+                 return self._write_result(False, "mongo_insert_error", error=msg)
 
         if not success:
             current = []
