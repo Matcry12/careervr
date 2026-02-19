@@ -9,21 +9,59 @@
         "id": "c1",
         "author": "Admin",
         "content": "Cảm ơn bạn đã phản hồi!",
-        "timestamp": "2023-10-27T10:30:00"
+        "timestamp": "2023-10-27T10:30:00",
+        "helpful": false,
+        "author_role": "user",
+        "author_username": null,
+        "reports": []
       },
       {
         "id": "1527ceeb-eb73-415a-af8c-012500102127",
         "author": "Nguyen anh triet",
         "content": "the har",
-        "timestamp": "2026-02-08T22:48:50.600016"
+        "timestamp": "2026-02-08T22:48:50.600016",
+        "helpful": false,
+        "author_role": "user",
+        "author_username": null,
+        "reports": []
       }
-    ]
+    ],
+    "title": "Mình thấy bài trắc nghiệm RIASEC rất chính xác! Cảm ơn CareerGo.",
+    "category": "general",
+    "author_role": "user",
+    "author_username": null,
+    "owner_actor": "author:l_v_n_a",
+    "helpful_comment_id": null,
+    "reports": [],
+    "is_pinned": true,
+    "pinned_at": "2026-02-18T13:50:01.737998",
+    "liked_by": [],
+    "likes_count": 0
   },
   {
     "id": "post_2",
     "author": "Nguyễn Thị B",
     "content": "Có ai muốn tìm hiểu về ngành IT không? Mình có một số tài liệu hay.",
     "timestamp": "2023-10-26T14:15:00",
-    "comments": []
+    "comments": [],
+    "title": "Có ai muốn tìm hiểu về ngành IT không? Mình có một số tài liệu hay.",
+    "category": "general",
+    "author_role": "user",
+    "author_username": null,
+    "owner_actor": "author:nguy_n_th_b",
+    "helpful_comment_id": null,
+    "reports": [
+      {
+        "actor_id": "user:matcry",
+        "reason": "spam",
+        "detail": "",
+        "timestamp": "2026-02-18T13:54:40.310962",
+        "status": "open"
+      }
+    ],
+    "is_pinned": true,
+    "pinned_at": "2026-02-18T13:00:02.926534",
+    "liked_by": [],
+    "likes_count": 0
   }
 ]

@@ -2,7 +2,7 @@
 
 {% block title %}RIASEC Test - CareerGo{% endblock %}
 
-{% block loading_text %}Thinking...{% endblock %}
+{% block loading_text %}Đang xử lý...{% endblock %}
 
 {% block content %}
 <section class="page active" id="test">
@@ -13,13 +13,14 @@
             <div class="journey-step"><span class="step-dot">2</span><span>Kết quả</span></div>
             <div class="journey-step"><span class="step-dot">3</span><span>VR</span></div>
             <div class="journey-step"><span class="step-dot">4</span><span>AI Chat</span></div>
+            <div class="journey-step"><span class="step-dot">5</span><span>Cộng đồng</span></div>
         </div>
         <div class="journey-next panel">
             <strong>Bước tiếp theo</strong>
             <p class="muted">Hoàn thành 50 câu và nộp bài để xem kết quả nghề nghiệp phù hợp.</p>
             <div class="center-actions">
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('questionsContainer')?.scrollIntoView({ behavior: 'smooth' })">Bắt đầu trả lời ngay</button>
                 <button type="button" class="btn btn-secondary" onclick="goPage('results')">Xem kết quả gần nhất</button>
-                <button type="button" class="btn btn-secondary" onclick="goPage('profile')">Cập nhật hồ sơ</button>
             </div>
         </div>
 
@@ -42,19 +43,12 @@
         </div>
 
         <div class="progress-section">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            <div class="progress-bar" role="progressbar" aria-labelledby="progressText" aria-valuemin="0" aria-valuemax="50" aria-valuenow="0">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
             <div class="progress-text">
                 <span id="progressText">0 / 50 câu</span>
                 <span id="estimatedTime">~10 phút</span>
-            </div>
-            <div class="test-chunk-toolbar">
-                <div id="chunkIndicator" class="muted">Phần 1 / 5</div>
-                <div class="chunk-actions">
-                    <button type="button" id="btnChunkPrev" class="btn btn-secondary" onclick="prevTestChunk()">Phần trước</button>
-                    <button type="button" id="btnChunkNext" class="btn btn-secondary" onclick="nextTestChunk()">Phần tiếp theo</button>
-                </div>
             </div>
             <div id="testAutosaveStatus" class="muted test-autosave-status">Chưa có bản nháp tự động.</div>
         </div>
@@ -72,11 +66,17 @@
 
         <form id="testForm">
             <div id="questionsContainer"></div>
+            <div class="test-chunk-toolbar test-chunk-toolbar-bottom">
+                <div id="chunkIndicator" class="muted" role="status" aria-live="polite">Phần 1 / 5</div>
+                <div class="chunk-actions">
+                    <button type="button" id="btnChunkPrev" class="btn btn-secondary" onclick="prevTestChunk()">Phần trước</button>
+                    <button type="button" id="btnChunkNext" class="btn btn-secondary" onclick="nextTestChunk()">Phần tiếp theo</button>
+                </div>
+            </div>
             <div class="test-actions">
                 <button type="button" onclick="submitTest()" class="btn btn-primary">Nộp bài và xem kết quả</button>
                 <button type="button" class="btn btn-secondary" onclick="resetTest()">Làm lại</button>
-                <button type="button" id="btnDevFill" class="btn btn-secondary admin-only" onclick="devAutoFill()">Dev
-                    Fill</button>
+                <button type="button" id="btnDevFill" class="btn btn-secondary admin-only" onclick="devAutoFill()">Điền nhanh (Dev)</button>
             </div>
             <div id="testFormStatus" class="status" role="status" aria-live="polite"></div>
         </form>

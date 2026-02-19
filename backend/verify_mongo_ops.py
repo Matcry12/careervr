@@ -16,7 +16,8 @@ def verify_ops():
         print("❌ Not connected to MongoDB. Check MONGODB_URI.")
         return
 
-    print(f"✅ Connected to: {db.db_name}")
+    db_name = getattr(getattr(db, "db", None), "name", os.getenv("MONGODB_DB_NAME", "careervr"))
+    print(f"✅ Connected to: {db_name}")
 
     # 1. Test Submission Write
     test_sub = {

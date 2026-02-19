@@ -10,17 +10,18 @@
             <div class="journey-step active"><span class="step-dot">2</span><span>Kết quả</span></div>
             <div class="journey-step"><span class="step-dot">3</span><span>VR</span></div>
             <div class="journey-step"><span class="step-dot">4</span><span>AI Chat</span></div>
+            <div class="journey-step"><span class="step-dot">5</span><span>Cộng đồng</span></div>
         </div>
         <div class="journey-next panel">
             <strong>Bước tiếp theo</strong>
             <p class="muted">Khám phá video mô phỏng nghề nghiệp hoặc hỏi AI để hiểu rõ hơn lựa chọn của bạn.</p>
             <div class="center-actions">
-                <button class="btn btn-secondary" onclick="goPage('vr-mode')">Mở Trải nghiệm VR</button>
+                <button class="btn btn-primary" onclick="goPage('vr-mode')">Mở Trải nghiệm VR</button>
                 <button class="btn btn-secondary" onclick="goPage('chatbot')">Hỏi AI hướng nghiệp</button>
             </div>
         </div>
         <!-- Results Content (Hidden by default) -->
-        <div id="resultsContent" style="display: none;">
+        <div id="resultsContent" class="is-hidden">
             <div class="result-header">
                 <h1>Kết quả của bạn</h1>
                 <div class="riasec-badge" id="riasecDisplay">...</div>
@@ -29,9 +30,30 @@
                     <canvas id="riasecChart"></canvas>
                 </div>
 
-                <div id="scoreDetails" class="score-grid" style="display: none;"></div>
+                <div id="scoreDetails" class="score-grid is-hidden"></div>
 
-                <p id="resultTime" class="muted" style="margin-top: 1rem;">-</p>
+                <p id="resultTime" class="muted mt-1">-</p>
+            </div>
+
+            <div id="resultsStory" class="results-story panel panel-soft">
+                <h3>Tóm tắt hồ sơ của bạn</h3>
+                <p id="resultsStoryProfile" class="muted">Đang phân tích điểm RIASEC...</p>
+                <div class="results-story-grid">
+                    <div class="results-story-card">
+                        <h4>Vì sao các nghề này phù hợp?</h4>
+                        <ul id="resultsStoryWhyFit" class="results-story-list">
+                            <li>Đang tổng hợp gợi ý nghề phù hợp từ hồ sơ của bạn.</li>
+                        </ul>
+                    </div>
+                    <div class="results-story-card">
+                        <h4>Nên làm gì tiếp theo?</h4>
+                        <ul id="resultsStoryNextSteps" class="results-story-list">
+                            <li>Mở VR để xem môi trường công việc thực tế.</li>
+                            <li>Hỏi AI để nhận lộ trình học tập cụ thể.</li>
+                            <li>Tham gia Cộng đồng để tham khảo kinh nghiệm.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             <h2 class="section-title">Các ngành gợi ý</h2>
@@ -40,6 +62,13 @@
                 <p class="muted">Nhóm ưu tiên là các nghề khớp cao nhất với hồ sơ hiện tại. Nhóm dự phòng là lựa chọn mở rộng để bạn tham khảo thêm trước khi quyết định.</p>
             </div>
             <div class="major-grid" id="majorContainer"></div>
+            <div class="community-suggest panel panel-soft">
+                <h3>Thảo luận cộng đồng gợi ý</h3>
+                <p class="helper-text">Các chủ đề liên quan hồ sơ RIASEC của bạn để tham khảo thêm góc nhìn thực tế.</p>
+                <div id="resultsCommunitySuggestions" class="community-suggest-grid">
+                    <div class="muted">Đang tải gợi ý...</div>
+                </div>
+            </div>
 
             <div class="center-actions">
                 <button class="btn btn-primary" onclick="goPage('test')">Làm lại trắc nghiệm</button>
@@ -47,7 +76,7 @@
         </div>
 
         <!-- Empty State (Hidden by default, toggled by JS) -->
-        <div id="resultsEmpty" class="empty-state" style="display: none;">
+        <div id="resultsEmpty" class="empty-state is-hidden">
             <div class="results-empty-icon">📝</div>
             <h3>Bạn chưa làm bài trắc nghiệm</h3>
             <p class="section-subtitle">
@@ -60,7 +89,7 @@
 {% endblock %}
 
 {% block modals %}
-<div id="videoModal" class="loading-overlay" onclick="closeVideoModal(event)" role="dialog" aria-modal="true"
+<div id="videoModal" class="loading-overlay" onclick="closeVideoModal(event)" role="dialog" aria-modal="true" aria-hidden="true"
     aria-labelledby="videoTitle" tabindex="-1">
     <div class="loading-modal modal-card">
         <div class="modal-close-row">
@@ -72,7 +101,7 @@
                 allowfullscreen>
             </iframe>
         </div>
-        <h3 id="videoTitle" style="margin-top: 1rem; color: #4d7cff;"></h3>
+        <h3 id="videoTitle" class="modal-video-title"></h3>
     </div>
 </div>
 {% endblock %}

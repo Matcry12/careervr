@@ -8,6 +8,14 @@ Nền tảng hướng nghiệp toàn diện dành cho học sinh THPT Việt Nam
 - **AI Career Advisor**: Chatbot thông minh (Powered by Dify AI) tư vấn lộ trình học tập và nghề nghiệp.
 - **Trải nghiệm Nghề nghiệp**: Khám phá video mô phỏng thực tế các ngành nghề hot.
 - **Dashboard cá nhân**: Theo dõi kết quả và thống kê.
+- **Community Hub (mới)**:
+  - Tạo bài có `title` + `category`, tìm kiếm/lọc/sắp xếp server-side.
+  - Like bài viết, đánh dấu bình luận hữu ích (chủ bài viết).
+  - Báo cáo nội dung (post/comment) + danh sách báo cáo cho Admin.
+  - Ghim bài viết (Admin), hiển thị ưu tiên ở đầu danh sách.
+  - Trust badge cho tác giả `Admin/Mentor`.
+  - Metrics widget (bài viết, bình luận, tương tác, tác giả hoạt động...).
+  - Suggested community discussions trên trang `Results` và `Chatbot`.
 - **UI/UX mới**:
   - Điều hướng responsive với menu mobile.
   - Form validation và trạng thái phản hồi inline (không phụ thuộc alert).
@@ -68,11 +76,40 @@ Dự án đã được cấu hình sẵn để triển khai lên Vercel.
 - **Local Dev**: Nếu không có `MONGODB_URI`, dữ liệu sẽ lưu vào `backend/data/*.json`.
 - **Vercel**: Bắt buộc dùng `MONGODB_URI` để lưu trữ bền vững. Nếu không, dữ liệu sẽ bị mất do tính chất Read-Only của Vercel.
 
+## 🗄️ Persistence Modes & Debug nhanh
+
+API health (`GET /api/health`) hiện trả thêm:
+- `write_mode`: `mongo` | `local` | `disabled`
+- `write_enabled`: `true/false`
+- `degraded`: `true/false`
+
+Ý nghĩa:
+- `mongo`: đang dùng MongoDB, ghi dữ liệu bình thường.
+- `local`: không có Mongo, backend ghi vào `backend/data/*.json` (local dev).
+- `disabled`: chạy môi trường kiểu Vercel nhưng không có Mongo, backend từ chối write một cách tường minh.
+
+Các lỗi write điển hình:
+- `503 Persistence is unavailable in current deployment mode`
+  - Nguyên nhân: `VERCEL=1` và không có Mongo hoạt động.
+- `500 <action> failed: <reason>`
+  - Nguyên nhân: lỗi ghi Mongo/local file hoặc payload không hợp lệ.
+
+Checklist khi debug lỗi DB:
+1. Gọi `GET /api/health`, kiểm tra `write_mode` và `write_enabled`.
+2. Nếu `write_mode=disabled`, cấu hình lại `MONGODB_URI` hợp lệ.
+3. Nếu local mode, kiểm tra quyền ghi thư mục `backend/data/`.
+4. Chạy script kiểm tra DB logic:
+   ```bash
+   python backend/verify_mongo_ops.py
+   python backend/qa_dbf_qa02.py
+   ```
+
 
 ## 📂 Cấu trúc dự án
 
 ```
 careervr/
+├── docs/                    # Plans, task boards, kanban, QA reports, summaries
 ├── backend/
 │   ├── data/                 # Dữ liệu JSON (Jobs, Submissions)
 │   ├── static/
@@ -85,6 +122,27 @@ careervr/
 ├── vercel.json               # Cấu hình Vercel
 └── README.md                 # Tài liệu hướng dẫn
 ```
+
+Chỉ mục tài liệu: `docs/README.md`
+
+## 🎬 Demo Script (Competition)
+
+Xem file: `docs/competition/DEMO_SCRIPT.md`
+
+Luồng demo khuyến nghị:
+1. Làm nhanh bài RIASEC -> mở `Results`.
+2. Trình bày gợi ý nghề + block "Thảo luận cộng đồng gợi ý".
+3. Chuyển sang `Chatbot` -> chứng minh AI context + gợi ý cộng đồng liên quan.
+4. Mở `Community`:
+   - tạo bài + bình luận,
+   - like,
+   - đánh dấu bình luận hữu ích,
+   - báo cáo nội dung,
+   - trust badge,
+   - metrics widget.
+5. Đăng nhập Admin:
+   - pin/unpin bài,
+   - xem danh sách báo cáo cần kiểm duyệt.
 
 ## 🧪 Chế độ Dev (Developer Mode)
 

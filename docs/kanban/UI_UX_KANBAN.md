@@ -6,7 +6,7 @@ Markers:
 - `[!]` Blocked
 - `[x]` Done
 
-Reference: `UI_UX_TASKS.md`
+Reference: `docs/tasks/UI_UX_TASKS.md`
 
 ---
 
@@ -25,19 +25,19 @@ Reference: `UI_UX_TASKS.md`
 - [-] `UX-2003` Chatbot conversation UX improvements
 - [-] `UX-2004` VR recommendation emphasis cleanup
 - [-] `UX-3001` Teacher import panel redesign
-- [-] `UX-3002` Import feedback and error rendering improvements
 - [-] `UX-3003` Dashboard readability pass
 - [-] `UX-4001` Auth forms inline validation messaging
-- [-] `UX-9001` Frontend runtime consolidation
 
 ## Blocked
 - No blocked items
 
 ## Done
 - [x] `UX-0001` Create page-by-page UX spec
+- [x] `UX-3002` Import feedback and error rendering improvements
+- [x] `UX-9001` Frontend runtime consolidation
 - [x] `UX-5003` Update docs with UX behavior changes
 - [x] UI audit and problem identification completed
-- [x] Planning artifacts created (`UI_UX_PLAN.md`, `UI_UX_TASKS.md`, `UI_UX_KANBAN.md`)
+- [x] Planning artifacts created (`docs/plans/UI_UX_PLAN.md`, `docs/tasks/UI_UX_TASKS.md`, `docs/kanban/UI_UX_KANBAN.md`)
 
 ---
 

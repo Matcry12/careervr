@@ -2,9 +2,9 @@
 
 Date: 2026-02-16  
 Scope compared:
-- `UI_UX_PLAN.md`
-- `UI_UX_TASKS.md`
-- `UI_UX_KANBAN.md`
+- `docs/plans/UI_UX_PLAN.md`
+- `docs/tasks/UI_UX_TASKS.md`
+- `docs/kanban/UI_UX_KANBAN.md`
 - active runtime implementation in `backend/templates/*`, `backend/static/style.css`, `backend/static/script.js`
 
 ## Executive Summary
@@ -82,7 +82,7 @@ The UI/UX planning artifacts currently overstate completion. The board marks all
 3. QA report reflects smoke-level checks, but current runtime evidence shows unresolved gaps in core acceptance criteria.
 
 ## Recommended Immediate Board Update
-1. Move all `PARTIAL` and `MISSING` items out of `DONE` in `UI_UX_TASKS.md` and `UI_UX_KANBAN.md`.
+1. Move all `PARTIAL` and `MISSING` items out of `DONE` in `docs/tasks/UI_UX_TASKS.md` and `docs/kanban/UI_UX_KANBAN.md`.
 2. Reopen `UX-5001` and `UX-5002` until post-fix verification is complete.
 3. Add one stabilization ticket:
 - `UX-9001` Frontend runtime consolidation

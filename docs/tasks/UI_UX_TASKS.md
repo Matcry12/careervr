@@ -140,7 +140,7 @@ Goal: clearer operational workflows.
   - download/select/import/error summary shown in one panel
 
 ### UX-3002 - Import feedback and error rendering improvements
-- Status: `IN_PROGRESS`
+- Status: `DONE`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-3001
@@ -216,7 +216,7 @@ Goal: stable release with UX validation evidence.
 - Depends on: U1-U4
 - Files:
   - `README.md`
-  - `PROJECT_SUMMARY.md`
+  - `docs/summary/PROJECT_SUMMARY.md`
 - Acceptance:
   - docs describe new UI patterns and admin import flow
 
@@ -226,7 +226,7 @@ Goal: stable release with UX validation evidence.
 Goal: eliminate mixed runtime paths and prevent recurring UI regressions.
 
 ### UX-9001 - Frontend runtime consolidation
-- Status: `IN_PROGRESS`
+- Status: `DONE`
 - Priority: `P0`
 - Owner: Frontend
 - Depends on: UX-1002

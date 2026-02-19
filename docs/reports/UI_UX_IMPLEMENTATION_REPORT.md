@@ -2,7 +2,7 @@
 
 Date: 2026-02-16
 Project: CareerVR
-Source plan: `UI_UX_PRECODING_TODO.md`
+Source plan: `docs/tasks/UI_UX_PRECODING_TODO.md`
 
 ## 1) Completion Status
 
@@ -93,9 +93,9 @@ Styles:
 - `backend/static/style.css`
 
 Planning/Tracking:
-- `UI_UX_PRECODING_TODO.md`
-- `UI_UX_DESIGN_MISSING_PLAN.md`
-- `UI_UX_GAP_REPORT.md`
+- `docs/tasks/UI_UX_PRECODING_TODO.md`
+- `docs/plans/UI_UX_DESIGN_MISSING_PLAN.md`
+- `docs/reports/UI_UX_GAP_REPORT.md`
 
 ## 4) Manual QA Checklist
 

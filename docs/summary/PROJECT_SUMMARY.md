@@ -127,4 +127,4 @@ Use this wording (copy/adapt):
   - focus-visible styling
   - keyboard support for interactive VR cards
   - modal dialog semantics + Escape close + focus return
-- QA artifact: `UI_UX_QA_REPORT.md`.
+- QA artifact: `docs/reports/UI_UX_QA_REPORT.md`.

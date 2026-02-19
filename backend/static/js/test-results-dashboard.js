@@ -174,6 +174,8 @@ function updateProgress() {
 
     $('progressFill').style.width = percent + '%';
     $('progressText').textContent = `${answered} / ${total} câu`;
+    const bar = document.querySelector('.progress-bar[role="progressbar"]');
+    if (bar) bar.setAttribute('aria-valuenow', String(answered));
 
     if (answered === total) {
         $('estimatedTime').textContent = '✅ Sẵn sàng nộp';
@@ -254,6 +256,69 @@ function calculateRIASEC() {
     return { scores, top3, answered: TEST_TOTAL, raw_answers: answers };
 }
 
+const RIASEC_STORY_COPY = {
+    R: 'Bạn thiên về trải nghiệm thực tế, thích làm việc trực tiếp và thấy rõ kết quả.',
+    I: 'Bạn có xu hướng phân tích, thích tìm hiểu bản chất vấn đề và học theo chiều sâu.',
+    A: 'Bạn có năng lực sáng tạo tốt, thích thể hiện ý tưởng và tìm cách làm mới.',
+    S: 'Bạn quan tâm tới con người, phù hợp môi trường hợp tác và hỗ trợ cộng đồng.',
+    E: 'Bạn có tinh thần chủ động, thích thuyết phục, dẫn dắt và tạo ảnh hưởng.',
+    C: 'Bạn làm việc có cấu trúc, chú ý chi tiết và phù hợp quy trình rõ ràng.'
+};
+
+function escapeHtmlLocal(text) {
+    return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function renderResultsStory(current, recommendations) {
+    const profileEl = $('resultsStoryProfile');
+    const whyEl = $('resultsStoryWhyFit');
+    const nextEl = $('resultsStoryNextSteps');
+    if (!profileEl || !whyEl || !nextEl) return;
+
+    const scoreEntries = Object.entries(current?.scores || {})
+        .filter(([_, v]) => typeof v === 'number')
+        .sort((a, b) => b[1] - a[1]);
+    const primary = scoreEntries[0]?.[0] || (Array.isArray(current?.riasec) ? current.riasec[0] : null);
+    const secondary = scoreEntries[1]?.[0] || (Array.isArray(current?.riasec) ? current.riasec[1] : null);
+
+    if (primary) {
+        const pName = names[primary] || primary;
+        const sName = secondary ? (names[secondary] || secondary) : '';
+        const lead = secondary
+            ? `Bạn nổi bật ở nhóm ${pName} và ${sName}.`
+            : `Bạn nổi bật ở nhóm ${pName}.`;
+        profileEl.textContent = `${lead} ${RIASEC_STORY_COPY[primary] || ''}`.trim();
+    } else {
+        profileEl.textContent = 'Hồ sơ của bạn đang được tổng hợp từ kết quả trắc nghiệm.';
+    }
+
+    const topJobs = (recommendations?.priority || []).slice(0, 2);
+    if (topJobs.length) {
+        whyEl.innerHTML = topJobs.map((job) => {
+            const title = escapeHtmlLocal(job?.title || 'Nghề gợi ý');
+            const code = escapeHtmlLocal(job?.riasec_code || '');
+            return `<li><strong>${title}</strong> được ưu tiên vì khớp cao với hồ sơ ${code || 'RIASEC'} của bạn.</li>`;
+        }).join('');
+    } else {
+        whyEl.innerHTML = `
+            <li>Hệ thống đang ưu tiên các nghề có mức độ khớp cao nhất với điểm RIASEC của bạn.</li>
+            <li>Bạn nên so sánh nhóm ưu tiên và nhóm dự phòng trước khi quyết định hướng đi.</li>
+        `;
+    }
+
+    const firstTitle = topJobs[0]?.title ? escapeHtmlLocal(topJobs[0].title) : null;
+    nextEl.innerHTML = `
+        <li>${firstTitle ? `Mở VR để xem môi trường làm việc của <strong>${firstTitle}</strong>.` : 'Mở VR để xem môi trường công việc thực tế.'}</li>
+        <li>Đặt câu hỏi cho AI về lộ trình kỹ năng phù hợp với điểm mạnh của bạn.</li>
+        <li>Tham gia Cộng đồng để tham khảo kinh nghiệm từ học sinh có định hướng tương tự.</li>
+    `;
+}
+
 // ===== SHOW RESULTS =====
 async function showResults() {
     let current = readCurrent();
@@ -275,6 +340,8 @@ async function showResults() {
     if (!current) {
         if ($content) $content.style.display = 'none';
         if ($empty) $empty.style.display = 'block';
+        const suggest = $('resultsCommunitySuggestions');
+        if (suggest) suggest.innerHTML = '<div class="muted">Làm trắc nghiệm để nhận thảo luận phù hợp.</div>';
         return;
     }
 
@@ -285,6 +352,7 @@ async function showResults() {
     const dateStr = (current.time || current.date);
     const safeDate = (dateStr && !isNaN(new Date(dateStr))) ? new Date(dateStr).toLocaleDateString('vi-VN') : 'Mới nhất';
     $('resultTime').textContent = `Ngày: ${safeDate}`;
+    renderResultsStory(current, current.recommendations || {});
 
     // Render Scores
     if (current.scores) {
@@ -381,13 +449,17 @@ async function showResults() {
 
         setGlobalRecommendations(current.recommendations || {});
         renderRecommendationSections(current.recommendations || {});
+        renderResultsStory(current, current.recommendations || {});
     } catch (e) {
         console.error("Rec Error:", e);
         const container = $('majorContainer');
         if (container) {
             container.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">Lỗi tải gợi ý nghề nghiệp: ${escapeHtml(e.message)}</div>`;
         }
+        renderResultsStory(current, {});
     }
+
+    await loadCommunitySuggestions('resultsCommunitySuggestions', (current.riasec || []).join(''));
 }
 
 // ===== SHOW DASHBOARD =====
@@ -768,6 +840,7 @@ function openClearDataModal() {
     const modal = $('clearDataModal');
     if (!modal) return;
     modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
     const confirmBtn = modal.querySelector('.btn.btn-primary');
     if (confirmBtn) confirmBtn.focus();
 }
@@ -777,6 +850,7 @@ function closeClearDataModal(e) {
     if (!modal) return;
     if (e && e.target && e.target !== modal && !e.target.closest('button')) return;
     modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
 }
 window.closeClearDataModal = closeClearDataModal;
 

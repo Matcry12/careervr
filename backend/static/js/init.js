@@ -9,6 +9,7 @@ window.addEventListener('load', async () => {
     if ($('majorContainer')) showResults();
     if ($('dashboardContent')) showDashboard();
     if ($('vrGrid')) {
+        initVRBrowseUI();
         initVRImportUI();
         fetchVRJobs();
     }

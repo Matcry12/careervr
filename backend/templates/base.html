@@ -19,9 +19,10 @@
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
+    <a class="skip-link" href="#mainContent">Bỏ qua điều hướng, tới nội dung chính</a>
 
     <!-- LOADING MODAL -->
-    <div id="loadingOverlay" class="loading-overlay">
+    <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" aria-busy="false">
         <div class="loading-modal">
             <div class="spinner"></div>
             <div class="loading-text">{% block loading_text %}Đang tải...{% endblock %}</div>
@@ -31,32 +32,32 @@
 
     <!-- HEADER -->
     <header>
-        <div class="logo">CareerGo</div>
+        <div class="logo">Career<span class="logo-go">Go</span></div>
         <button id="navToggle" class="nav-toggle" type="button" aria-label="Mở menu" aria-expanded="false"
             aria-controls="mainNav">
             ☰
         </button>
-        <nav id="mainNav">
-            <a href="/" class="nav-link {% if active_page == 'home' %}active{% endif %}">Trang chủ</a>
-            <a href="/test" class="nav-link auth-only {% if active_page == 'test' %}active{% endif %}">RIASEC Test</a>
-            <a href="/results" class="nav-link auth-only {% if active_page == 'results' %}active{% endif %}">Kết quả</a>
-            <a href="/community" class="nav-link auth-only {% if active_page == 'community' %}active{% endif %}">Cộng
+        <nav id="mainNav" aria-label="Điều hướng chính">
+            <a href="/" class="nav-link {% if active_page == 'home' %}active{% endif %}" {% if active_page == 'home' %}aria-current="page"{% endif %}>Trang chủ</a>
+            <a href="/test" class="nav-link auth-only {% if active_page == 'test' %}active{% endif %}" {% if active_page == 'test' %}aria-current="page"{% endif %}>RIASEC Test</a>
+            <a href="/results" class="nav-link auth-only {% if active_page == 'results' %}active{% endif %}" {% if active_page == 'results' %}aria-current="page"{% endif %}>Kết quả</a>
+            <a href="/community" class="nav-link auth-only {% if active_page == 'community' %}active{% endif %}" {% if active_page == 'community' %}aria-current="page"{% endif %}>Cộng
                 đồng</a>
-            <a href="/chatbot" class="nav-link auth-only {% if active_page == 'chatbot' %}active{% endif %}">AI
+            <a href="/chatbot" class="nav-link auth-only {% if active_page == 'chatbot' %}active{% endif %}" {% if active_page == 'chatbot' %}aria-current="page"{% endif %}>AI
                 Chatbot</a>
-            <a href="/vr-mode" class="nav-link auth-only {% if active_page == 'vr' %}active{% endif %}">Trải nghiệm nghề
+            <a href="/vr-mode" class="nav-link auth-only {% if active_page == 'vr' %}active{% endif %}" {% if active_page == 'vr' %}aria-current="page"{% endif %}>Trải nghiệm nghề
                 nghiệp</a>
-            <a href="/dashboard" class="nav-link admin-only {% if active_page == 'dashboard' %}active{% endif %}">Thống
+            <a href="/dashboard" class="nav-link admin-only {% if active_page == 'dashboard' %}active{% endif %}" {% if active_page == 'dashboard' %}aria-current="page"{% endif %}>Thống
                 kê</a>
-            <a href="/profile" class="nav-link auth-only {% if active_page == 'profile' %}active{% endif %}">Hồ sơ</a>
+            <a href="/profile" class="nav-link auth-only {% if active_page == 'profile' %}active{% endif %}" {% if active_page == 'profile' %}aria-current="page"{% endif %}>Hồ sơ</a>
             <span id="navAuth" class="nav-auth"></span>
         </nav>
     </header>
 
     <!-- MAIN CONTENT -->
-    <div class="wrapper">
+    <main id="mainContent" class="wrapper" role="main">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
     {% block modals %}{% endblock %}
 
@@ -64,7 +65,7 @@
     <script src="/static/js/test-results-dashboard.js?v=3.0"></script>
     <script src="/static/js/chat.js?v=3.0"></script>
     <script src="/static/js/vr.js?v=3.0"></script>
-    <script src="/static/js/community-profile.js?v=3.0"></script>
+    <script src="/static/js/community-profile.js?v=3.1"></script>
     <script src="/static/js/init.js?v=3.0"></script>
     {% block scripts %}{% endblock %}
 </body>

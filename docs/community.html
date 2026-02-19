@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Cộng đồng - CareerGo{% endblock %}
+
+{% block loading_text %}Đang tải...{% endblock %}
+
+{% block content %}
+<style>
+    /* Facebook-like Layout Styles */
+    .community-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 280px 1fr 300px; /* Left - Center - Right */
+        gap: 20px;
+        align-items: start;
+        padding-top: 20px;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 992px) {
+        .community-wrapper {
+            grid-template-columns: 1fr; /* Stack everything on mobile */
+        }
+        .comm-sidebar-left, .comm-sidebar-right {
+            display: none; /* Hide sidebars on mobile or move to bottom via JS if needed */
+        }
+        /* Optional: Show specific mobile nav if needed */
+    }
+
+    /* Sticky Sidebars */
+    .comm-sidebar-left, .comm-sidebar-right {
+        position: sticky;
+        top: 20px;
+    }
+
+    /* FB-style Composer */
+    .fb-composer-trigger {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .fb-composer-trigger:hover {
+        background-color: rgba(0,0,0,0.02);
+    }
+    .fb-avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #ddd; /* Placeholder color */
+        flex-shrink: 0;
+    }
+    .fb-input-fake {
+        background-color: #f0f2f5;
+        border-radius: 20px;
+        padding: 10px 16px;
+        flex-grow: 1;
+        color: #65676b;
+        font-size: 0.95rem;
+        user-select: none;
+    }
+    .fb-input-fake:hover {
+        background-color: #e4e6eb;
+    }
+
+    /* Filters Bar */
+    .fb-filters {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 16px;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        margin-bottom: 10px;
+    }
+
+    /* Sidebar Links */
+    .sidebar-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        border-radius: 8px;
+        color: inherit;
+        text-decoration: none;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    .sidebar-menu-item:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+    .sidebar-menu-item.active {
+        background-color: rgba(var(--primary-rgb, 0, 123, 255), 0.1);
+        color: var(--primary-color, #007bff);
+        font-weight: 600;
+    }
+    .sidebar-icon {
+        width: 24px;
+        text-align: center;
+        font-size: 1.2rem;
+    }
+</style>
+
+<section class="page active" id="community">
+    <!-- Top Bar: Journey Stepper (Like Stories/Header) -->
+    <div class="panel" style="margin-bottom: 20px; padding: 15px;">
+        <h1 class="section-title" style="margin-bottom: 10px; font-size: 1.5rem;">Cộng đồng CareerGo</h1>
+        <div class="journey-stepper" aria-label="Hành trình hướng nghiệp">
+            <div class="journey-step"><span class="step-dot">1</span><span>Trắc nghiệm</span></div>
+            <div class="journey-step"><span class="step-dot">2</span><span>Kết quả</span></div>
+            <div class="journey-step"><span class="step-dot">3</span><span>VR</span></div>
+            <div class="journey-step"><span class="step-dot">4</span><span>AI Chat</span></div>
+            <div class="journey-step active"><span class="step-dot">5</span><span>Cộng đồng</span></div>
+        </div>
+    </div>
+
+    <div class="community-wrapper">
+        
+        <!-- LEFT COLUMN: Navigation & Metrics -->
+        <aside class="comm-sidebar-left">
+            <!-- Navigation Menu -->
+            <div class="panel panel-soft" style="padding: 10px;">
+                <div class="sidebar-menu-item active" onclick="setCommunityExploreMode('discover')">
+                    <span class="sidebar-icon">📰</span>
+                    <span>Bảng tin</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="setCommunityExploreMode('rag')">
+                    <span class="sidebar-icon">🤖</span>
+                    <span>Hỏi AI Cộng đồng</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="goPage('chatbot')">
+                    <span class="sidebar-icon">💬</span>
+                    <span>AI Mentor</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="goPage('results')">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Hồ sơ của tôi</span>
+                </div>
+            </div>
+
+            <!-- Community Metrics -->
+            <div id="communityMetricsPanel" class="panel panel-soft" style="margin-top: 20px;">
+                <div class="community-metrics-head">
+                    <h3>Chỉ số sôi động</h3>
+                </div>
+                <div id="communityMetricsGrid" class="community-metrics-grid">
+                    <div class="muted">Đang tải chỉ số...</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER COLUMN: Feed & Composer -->
+        <main class="comm-feed">
+            
+            <!-- 1. The Composer (Facebook Style) -->
+            <div class="panel" style="padding: 0; margin-bottom: 20px;">
+                <div class="fb-composer-trigger" onclick="openCommunityComposerModal()">
+                    <div class="fb-avatar-circle"><!-- User Avatar Img here --></div>
+                    <div class="fb-input-fake">Bạn đang nghĩ gì về định hướng nghề nghiệp?</div>
+                </div>
+                <div style="display: flex; border-top: 1px solid #eee; padding: 8px;">
+                    <button class="btn btn-secondary" style="flex:1; border:none;" onclick="openCommunityComposerModal()">
+                        ❓ Đặt câu hỏi
+                    </button>
+                    <button class="btn btn-secondary" style="flex:1; border:none;" onclick="openCommunityComposerModal()">
+                        📝 Chia sẻ
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. RAG/Search Section (Hidden/Shown based on tab) -->
+            <div id="communityRagModePanel" class="panel panel-soft" role="region" aria-label="Chế độ hỏi đáp cộng đồng" hidden style="margin-bottom: 20px;">
+                <h3>Hỏi đáp RAG</h3>
+                <p class="helper-text">AI sẽ tìm câu trả lời từ các thảo luận cũ.</p>
+                <div class="community-rag-row">
+                    <input id="communityRagQuestion" class="community-input" type="text"
+                        placeholder="Ví dụ: Em lớp 12 nên ưu tiên kỹ năng nào để theo ngành CNTT?">
+                    <button class="btn btn-primary" onclick="askCommunityRag()">Hỏi</button>
+                </div>
+                <div id="communityRagStatus" class="status" role="status" aria-live="polite"></div>
+                <div id="communityRagAnswer" class="community-rag-answer muted">Chưa có câu trả lời.</div>
+            </div>
+
+            <!-- 3. Feed Filters & Controls -->
+            <div id="communityDiscoverModePanel" class="panel panel-soft" style="padding: 0; margin-bottom: 20px;">
+                <div class="fb-filters">
+                    <strong style="font-size: 1.1rem;">Bài viết</strong>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="communityCategoryFilter" class="community-input" style="padding: 5px;"
+                            onchange="changeCommunityCategoryFilter(this.value)">
+                            <option value="all">Tất cả chủ đề</option>
+                            <option value="general">Chung</option>
+                            <option value="major">Ngành học</option>
+                            <option value="skills">Kỹ năng</option>
+                            <option value="admissions">Tuyển sinh</option>
+                        </select>
+                        <select id="communitySort" class="community-input" style="padding: 5px;" onchange="changeCommunitySort(this.value)">
+                            <option value="newest">Mới nhất</option>
+                            <option value="most_commented">Nổi bật</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Search Bar hidden inside filter panel -->
+                <div style="padding: 0 16px 16px 16px;">
+                    <input id="communitySearch" class="community-input community-search-input" type="text"
+                    placeholder="🔍 Tìm kiếm bài viết..." oninput="changeCommunitySearch(this.value)">
+                </div>
+            </div>
+
+            <!-- 4. Posts Stream -->
+            <div id="postsContainer" class="posts-container" aria-live="polite" style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="spinner community-feed-spinner"></div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="communityPagination" class="panel panel-soft" aria-live="polite" style="margin-top: 20px; text-align: center;">
+                <div id="communityPaginationSummary" class="muted">Đang tải phân trang...</div>
+                <div class="community-pagination-actions" style="margin-top: 10px;">
+                    <button id="communityPrevPageBtn" class="btn btn-secondary" onclick="goCommunityPrevPage()">Trang trước</button>
+                    <button id="communityNextPageBtn" class="btn btn-secondary" onclick="goCommunityNextPage()">Trang sau</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT COLUMN: Widgets & Extras -->
+        <aside class="comm-sidebar-right">
+            <!-- Next Step Card -->
+            <div class="journey-next panel">
+                <strong>Bước tiếp theo</strong>
+                <p class="muted" style="font-size: 0.9rem;">Sau khi tham khảo cộng đồng, hãy quay lại AI để chốt kế hoạch.</p>
+                <button class="btn btn-primary w-100" style="margin-top: 10px;" onclick="goPage('chatbot')">Quay lại AI Chat</button>
+            </div>
+
+            <!-- Related Posts (Sticky-ish) -->
+            <div class="community-related-block panel panel-soft" style="margin-top: 20px;">
+                <h4>Có thể bạn quan tâm</h4>
+                <p id="communityViewingRelatedHint" class="helper-text">Chọn "Liên quan" trên một bài viết để xem.</p>
+                <div id="communityViewingRelated" class="community-suggest-grid">
+                    <div class="muted">Chưa chọn bài viết.</div>
+                </div>
+            </div>
+
+            <!-- Admin Panel (Only shows if admin) -->
+            <div id="communityAdminReports" class="admin-only panel panel-soft" style="margin-top: 20px; border-left: 4px solid red;">
+                <h4>🛡️ Admin Zone</h4>
+                <p class="helper-text">Báo cáo gần đây.</p>
+                <div id="communityAdminReportsStatus" class="status"></div>
+                <div id="communityAdminReportsList" class="community-reports-list muted">Chưa có dữ liệu.</div>
+            </div>
+            
+             <div class="footer-links muted" style="margin-top: 20px; font-size: 0.8rem; text-align: center;">
+                Privacy · Terms · CareerGo © 2026
+            </div>
+        </aside>
+
+    </div> <!-- End Grid Wrapper -->
+</section>
+{% endblock %}
+
+{% block modals %}
+<!-- Modals kept exactly same as original functionality -->
+<div id="communityReportModal" class="loading-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="communityReportTitle"
+    tabindex="-1">
+    <div class="loading-modal panel report-modal-card">
+        <h2 id="communityReportTitle" class="section-title report-modal-title">Báo cáo nội dung</h2>
+        <p id="communityReportTarget" class="muted report-modal-target"></p>
+        <div class="field">
+            <label for="communityReportReason">Lý do báo cáo</label>
+            <select id="communityReportReason" class="community-input">
+                <option value="spam">Spam / quảng cáo</option>
+                <option value="abuse">Ngôn từ xúc phạm</option>
+                <option value="misinformation">Thông tin sai lệch</option>
+                <option value="offtopic">Không liên quan chủ đề</option>
+                <option value="other">Khác</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="communityReportDetail">Mô tả thêm (tuỳ chọn)</label>
+            <textarea id="communityReportDetail" class="community-input" rows="3" maxlength="300"
+                placeholder="Mô tả ngắn để Admin xử lý nhanh hơn..."></textarea>
+        </div>
+        <div class="center-actions report-modal-actions">
+            <button class="btn btn-secondary" onclick="closeCommunityReportModal()">Hủy</button>
+            <button class="btn btn-primary" onclick="submitCommunityReport()">Gửi báo cáo</button>
+        </div>
+        <div id="communityReportStatus" class="status" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+<div id="communityComposerModal" class="loading-overlay" role="dialog" aria-modal="true" aria-hidden="true"
+    aria-labelledby="communityComposerTitle" tabindex="-1">
+    <div class="loading-modal panel community-compose-modal-card">
+        <div class="community-compose-head">
+            <h2 id="communityComposerTitle" class="section-title">Tạo bài viết mới</h2>
+            <button type="button" class="icon-btn" onclick="closeCommunityComposerModal()" aria-label="Đóng cửa sổ soạn bài">&times;</button>
+        </div>
+        <div class="community-write-guide">
+            <p class="helper-text">Gợi ý viết bài tốt: nêu rõ lớp/ngành quan tâm, vấn đề bạn đang gặp và mục tiêu bạn muốn đạt.</p>
+        </div>
+        <input type="text" id="postTitle" placeholder="Tiêu đề bài viết..." class="community-input" maxlength="100">
+        <p class="helper-text">Tiêu đề ngắn gọn, rõ vấn đề (ví dụ: “Nên chọn CNTT hay Thiết kế đồ họa?”).</p>
+        <select id="postCategory" class="community-input community-category-select">
+            <option value="general">Chung</option>
+            <option value="major">Ngành học</option>
+            <option value="skills">Kỹ năng</option>
+            <option value="admissions">Tuyển sinh</option>
+            <option value="study">Kinh nghiệm học tập</option>
+            <option value="mindset">Tâm lý</option>
+        </select>
+        <p class="helper-text">Chọn đúng chủ đề để bài viết dễ được phản hồi bởi đúng người.</p>
+        <input type="text" id="postAuthor" placeholder="Tên của bạn (hoặc nickname)..." class="community-input">
+        <p id="postAuthorHelp" class="helper-text"></p>
+        <textarea id="postContent" rows="4" placeholder="Bạn đang nghĩ gì? Hãy chia sẻ thắc mắc hoặc ý tưởng..."
+            class="community-input"></textarea>
+        <p class="helper-text">Mô tả cụ thể hoàn cảnh của bạn để cộng đồng đưa lời khuyên chính xác hơn.</p>
+        <p id="communityDraftSaveStatus" class="muted">Nháp bài viết chưa được lưu.</p>
+        <div class="community-related-block">
+            <h4>Bài viết liên quan khi bạn đang soạn</h4>
+            <div id="communityDraftRelated" class="community-suggest-grid">
+                <div class="muted">Nhập tiêu đề hoặc nội dung để xem gợi ý liên quan.</div>
+            </div>
+        </div>
+        <div class="center-actions report-modal-actions">
+            <button class="btn btn-secondary" onclick="closeCommunityComposerModal()">Hủy</button>
+            <button class="btn btn-primary" onclick="createPost()">Đăng bài</button>
+        </div>
+        <div id="communityStatus" class="status" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+<div id="communityPostDetailModal" class="loading-overlay" role="dialog" aria-modal="true" aria-hidden="true"
+    aria-labelledby="communityPostDetailTitle" tabindex="-1">
+    <div class="loading-modal panel community-post-detail-card">
+        <div class="community-compose-head">
+            <h2 id="communityPostDetailTitle" class="section-title">Chi tiết bài viết</h2>
+            <button type="button" class="icon-btn" onclick="closeCommunityPostDetailModal()" aria-label="Đóng chi tiết bài viết">&times;</button>
+        </div>
+        <div id="communityPostDetailBody" class="community-post-detail-body">
+            <div class="muted">Đang tải chi tiết bài viết...</div>
+        </div>
+        <div id="communityPostDetailStatus" class="status" role="status" aria-live="polite"></div>
+    </div>
+</div>
+{% endblock %}

@@ -1,7 +1,7 @@
 # UI/UX Pre-Coding To-Do Board
 
 Date: 2026-02-16
-Source: `UI_UX_DESIGN_MISSING_PLAN.md`
+Source: `docs/plans/UI_UX_DESIGN_MISSING_PLAN.md`
 Status legend: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`
 
 ## Sprint Goal

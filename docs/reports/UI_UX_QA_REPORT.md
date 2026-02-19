@@ -56,8 +56,8 @@ Result: PASS (smoke level)
 - Updated to `DONE`:
   - `UX-1003`, `UX-5001`, `UX-5002`
 - Files:
-  - `UI_UX_TASKS.md`
-  - `UI_UX_KANBAN.md`
+  - `docs/tasks/UI_UX_TASKS.md`
+  - `docs/kanban/UI_UX_KANBAN.md`
 
 ## 4) Residual Risk / Next Step
 

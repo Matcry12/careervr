@@ -41,10 +41,43 @@ function setFieldError(fieldId, message) {
 function setStatus(id, type, message) {
     const el = $(id);
     if (!el) return;
-    el.classList.remove('status-info', 'status-success', 'status-error');
+    el.classList.remove('status-info', 'status-success', 'status-warning', 'status-error');
     if (type) el.classList.add(`status-${type}`);
     el.textContent = message || '';
 }
+
+function normalizeErrorMessage(rawMessage, fallback = 'Có lỗi xảy ra. Vui lòng thử lại.') {
+    const text = String(rawMessage || '').trim();
+    if (!text) return fallback;
+    if (/^HTTP\s+\d+/i.test(text)) return 'Máy chủ đang bận. Vui lòng thử lại sau.';
+    return text;
+}
+
+async function getApiErrorMessage(response, fallback = 'Yêu cầu không thành công. Vui lòng thử lại.') {
+    try {
+        const payload = await response.json();
+        const detail = payload?.detail || payload?.message;
+        if (typeof detail === 'string' && detail.trim()) {
+            return normalizeErrorMessage(detail, fallback);
+        }
+        if (Array.isArray(detail) && detail.length) {
+            const first = detail[0];
+            if (typeof first === 'string') return normalizeErrorMessage(first, fallback);
+            if (first?.msg) return normalizeErrorMessage(first.msg, fallback);
+        }
+        if (Array.isArray(payload?.errors) && payload.errors.length) {
+            return normalizeErrorMessage(String(payload.errors[0]), fallback);
+        }
+    } catch (_) { }
+    return normalizeErrorMessage(`HTTP ${response.status}`, fallback);
+}
+
+function getExceptionMessage(error, fallback = 'Không thể kết nối máy chủ. Vui lòng thử lại.') {
+    return normalizeErrorMessage(error?.message || '', fallback);
+}
+
+window.getApiErrorMessage = getApiErrorMessage;
+window.getExceptionMessage = getExceptionMessage;
 
 function togglePasswordVisibility(inputId, buttonId) {
     const input = $(inputId);
@@ -78,6 +111,73 @@ function updateLandingCTA() {
     btn.textContent = 'Đăng nhập để bắt đầu';
     btn.onclick = () => goPage('login');
     hint.textContent = 'Đăng nhập để lưu kết quả và mở đầy đủ tính năng.';
+}
+
+function formatTimeAgoVi(timestamp) {
+    const d = new Date(timestamp || '');
+    if (isNaN(d)) return 'Mới đây';
+    const diffSec = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000));
+    if (diffSec < 60) return 'Vừa xong';
+    const mins = Math.floor(diffSec / 60);
+    if (mins < 60) return `${mins} phút trước`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    return `${days} ngày trước`;
+}
+
+function normalizeRoleForBadge(role) {
+    const r = String(role || '').toLowerCase();
+    if (r === 'admin' || r === 'mentor') return r;
+    return '';
+}
+
+async function loadCommunitySuggestions(targetId, riasecCode) {
+    const container = $(targetId);
+    if (!container) return;
+    container.innerHTML = Array.from({ length: 4 }).map(() => `
+        <div class="skeleton-card">
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line"></div>
+        </div>
+    `).join('');
+
+    try {
+        const params = new URLSearchParams();
+        if ((riasecCode || '').trim()) params.set('riasec', riasecCode.trim());
+        params.set('limit', '4');
+        const res = await fetch(`${API_BASE}/api/community/suggestions?${params.toString()}`);
+        if (!res.ok) throw new Error(await getApiErrorMessage(res, 'Không tải được gợi ý cộng đồng.'));
+        const items = await res.json();
+        if (!Array.isArray(items) || !items.length) {
+            container.innerHTML = '<div class="muted">Chưa có thảo luận phù hợp.</div>';
+            return;
+        }
+
+        container.innerHTML = items.map(item => {
+            const role = normalizeRoleForBadge(item.author_role);
+            const roleBadge = role ? `<span class="community-role-badge ${role}">${role === 'admin' ? 'Admin' : 'Mentor'}</span>` : '';
+            return `
+                <a class="community-suggest-card" href="/community#post-${encodeURIComponent(item.id || '')}">
+                    <div class="community-suggest-title-row">
+                        ${item.is_pinned ? '<span class="community-pinned-badge">Ghim</span>' : ''}
+                        <span class="community-category-badge">${escapeHtml(item.category || 'general')}</span>
+                    </div>
+                    <div class="community-suggest-title">${escapeHtml(item.title || 'Bài viết cộng đồng')}</div>
+                    <div class="community-suggest-meta">
+                        <span>${escapeHtml(item.author || 'Ẩn danh')} ${roleBadge}</span>
+                        <span>${formatTimeAgoVi(item.timestamp)}</span>
+                    </div>
+                    <div class="community-suggest-stats">
+                        👍 ${Number(item.likes_count || 0)} · 💬 ${Number(item.comments_count || 0)}
+                    </div>
+                </a>
+            `;
+        }).join('');
+    } catch (e) {
+        container.innerHTML = '<div class="status status-error">Không tải được gợi ý cộng đồng.</div>';
+    }
 }
 
 function initMobileNav() {
@@ -121,8 +221,8 @@ async function checkAuth() {
             currentUser = await res.json();
             if (navAuth) {
                 navAuth.innerHTML = `
-                    <span class="nav-user">Hi, ${escapeHtml(currentUser.username)}</span>
-                    <button onclick="logout()" class="btn btn-secondary nav-logout-btn">Logout</button>
+                    <span class="nav-user">Xin chào, ${escapeHtml(currentUser.username)}</span>
+                    <button onclick="logout()" class="btn btn-secondary nav-logout-btn">Đăng xuất</button>
                 `;
             }
             document.body.classList.add('is-logged-in');
@@ -279,7 +379,7 @@ async function fetchBackendRecommendations(scores) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scores })
     });
-    if (!res.ok) throw new Error(`Recommendation API failed: ${res.status}`);
+    if (!res.ok) throw new Error(await getApiErrorMessage(res, 'Không lấy được gợi ý nghề nghiệp.'));
     const data = await res.json();
     return data.recommendations;
 }

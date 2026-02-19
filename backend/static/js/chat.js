@@ -1,4 +1,34 @@
 // ===== CHATBOT =====
+let CHAT_SESSION_STATE = 'idle';
+
+function updateChatSessionState(state, hintText = '') {
+    CHAT_SESSION_STATE = state || 'idle';
+    const pill = $('chatStatePill');
+    const hint = $('chatSessionHint');
+    const consultBtn = $('consultBtn');
+    const input = $('chatInput');
+    const sendBtn = $('chatSendBtn');
+    const prompts = $('chatStarterPrompts');
+
+    if (pill) {
+        pill.classList.remove('idle', 'starting', 'active', 'sending', 'error');
+        let label = 'Chưa bắt đầu';
+        if (CHAT_SESSION_STATE === 'starting') label = 'Đang khởi tạo';
+        if (CHAT_SESSION_STATE === 'active') label = 'Đang hoạt động';
+        if (CHAT_SESSION_STATE === 'sending') label = 'Đang trả lời';
+        if (CHAT_SESSION_STATE === 'error') label = 'Có lỗi';
+        if (CHAT_SESSION_STATE === 'no_data') label = 'Thiếu dữ liệu';
+        pill.textContent = label;
+        if (CHAT_SESSION_STATE !== 'no_data') pill.classList.add(CHAT_SESSION_STATE);
+    }
+
+    if (hint && hintText) hint.textContent = hintText;
+    if (prompts) prompts.classList.toggle('disabled', CHAT_SESSION_STATE === 'starting' || CHAT_SESSION_STATE === 'sending');
+    if (consultBtn) consultBtn.disabled = CHAT_SESSION_STATE === 'starting' || CHAT_SESSION_STATE === 'sending';
+    if (input) input.readOnly = CHAT_SESSION_STATE === 'sending';
+    if (sendBtn) sendBtn.disabled = input?.disabled || CHAT_SESSION_STATE === 'starting' || CHAT_SESSION_STATE === 'sending';
+}
+
 function setChatInputEnabled(enabled) {
     const input = $('chatInput');
     const sendBtn = $('chatSendBtn');
@@ -9,6 +39,10 @@ function setChatInputEnabled(enabled) {
     input.placeholder = enabled
         ? 'Hỏi AI về hướng nghiệp của bạn...'
         : 'Nhấn "Yêu cầu tư vấn" để bắt đầu.';
+    if (CHAT_SESSION_STATE === 'sending') {
+        input.readOnly = true;
+        sendBtn.disabled = true;
+    }
 }
 
 function setChatSessionBanner(type, message) {
@@ -30,6 +64,66 @@ function addChatLoadingMessage(text) {
     return msg;
 }
 
+function getRiasecPromptTemplates(riasec = []) {
+    const lead = String((riasec || [])[0] || '').toUpperCase();
+    const map = {
+        R: [
+            'Em hợp nghề thực hành nào và cần chuẩn bị công cụ/kỹ năng gì?',
+            'Lộ trình 3 tháng để phát triển kỹ năng kỹ thuật cho em là gì?'
+        ],
+        I: [
+            'Em hợp các ngành phân tích nào và môn học nào nên ưu tiên?',
+            'Em nên bắt đầu dự án học tập nào để tăng tư duy nghiên cứu?'
+        ],
+        A: [
+            'Những ngành sáng tạo nào phù hợp với hồ sơ của em?',
+            'Em nên xây portfolio thế nào để thể hiện điểm mạnh sáng tạo?'
+        ],
+        S: [
+            'Em phù hợp công việc hỗ trợ con người nào và vì sao?',
+            'Kế hoạch luyện kỹ năng giao tiếp/tư vấn trong 4 tuần nên làm gì?'
+        ],
+        E: [
+            'Ngành kinh doanh/quản trị nào phù hợp nhất với em?',
+            'Em nên phát triển kỹ năng lãnh đạo và thuyết phục từ đâu?'
+        ],
+        C: [
+            'Em hợp các vai trò tổ chức/quy trình nào?',
+            'Em nên học công cụ nào để làm việc dữ liệu - vận hành tốt hơn?'
+        ]
+    };
+    return map[lead] || [
+        'Ngành nào phù hợp nhất với hồ sơ RIASEC của em?',
+        'Em nên bắt đầu học kỹ năng gì trong 30 ngày tới?'
+    ];
+}
+
+function renderChatStarterPrompts(current) {
+    const wrap = $('chatStarterPrompts');
+    if (!wrap) return;
+    const riasec = Array.isArray(current?.riasec) ? current.riasec : [];
+    const prompts = getRiasecPromptTemplates(riasec);
+    wrap.innerHTML = prompts.map(prompt => `
+        <button class="chat-prompt-btn" type="button"
+            onclick="applyChatStarterPrompt(this.dataset.prompt)"
+            data-prompt="${escapeHtml(prompt)}">${escapeHtml(prompt)}</button>
+    `).join('');
+}
+
+function applyChatStarterPrompt(prompt) {
+    const input = $('chatInput');
+    if (!input) return;
+    const text = String(prompt || '').trim();
+    if (!text) return;
+    input.value = text;
+    input.focus();
+    if (CHAT_SESSION_STATE === 'active') {
+        sendChatMessage();
+    } else {
+        setStatus('chatStatus', 'info', 'Đã điền gợi ý vào ô chat. Nhấn "Yêu cầu tư vấn" để bắt đầu phiên.');
+    }
+}
+
 async function updateChatContext() {
     let current = readCurrent();
 
@@ -47,21 +141,27 @@ async function updateChatContext() {
 
     if (!current) {
         ctx.innerHTML = 'Chưa có dữ liệu. Vui lòng <a href="/test" class="nav-link">làm trắc nghiệm</a> trước.';
+        const suggest = $('chatCommunitySuggestions');
+        if (suggest) suggest.innerHTML = '<div class="muted">Chưa có dữ liệu để gợi ý thảo luận.</div>';
+        renderChatStarterPrompts(null);
         setChatInputEnabled(false);
         setChatSessionBanner('info', 'Cần hoàn thành bài trắc nghiệm trước khi bắt đầu phiên tư vấn.');
-        $('consultBtn').disabled = false;
+        updateChatSessionState('no_data', 'Bạn cần hoàn thành bài trắc nghiệm trước khi mở phiên tư vấn.');
         return;
     }
 
+    renderChatStarterPrompts(current);
     const hasSession = !!sessionStorage.getItem('conversation_id');
     if (hasSession) {
         $('consultBtn').textContent = "🔄 Bắt đầu lại cuộc hội thoại";
         setChatInputEnabled(true);
         setChatSessionBanner('success', 'Phiên tư vấn đang hoạt động. Bạn có thể tiếp tục đặt câu hỏi.');
+        updateChatSessionState('active', 'Phiên đang hoạt động. Bạn có thể gửi câu hỏi hoặc chọn gợi ý.');
     } else {
         $('consultBtn').textContent = "✨ Bắt đầu tư vấn";
         setChatInputEnabled(false);
         setChatSessionBanner('info', 'Chưa bắt đầu phiên tư vấn. Nhấn "Yêu cầu tư vấn" để mở phiên.');
+        updateChatSessionState('idle', 'Bắt đầu phiên để gửi câu hỏi. Bạn có thể chọn sẵn một gợi ý bên dưới.');
     }
 
     ctx.innerHTML = `
@@ -80,7 +180,7 @@ async function updateChatContext() {
     </div>
   </div>
 `;
-    $('consultBtn').disabled = false;
+    await loadCommunitySuggestions('chatCommunitySuggestions', (current.riasec || []).join(''));
 }
 
 function escapeHtml(text) {
@@ -129,9 +229,9 @@ async function requestCounsel() {
     setStatus('chatStatus', null, '');
 
     const $consultBtn = $('consultBtn');
-    $consultBtn.disabled = true;
     setChatInputEnabled(false);
     setChatSessionBanner('info', 'Đang khởi tạo phiên tư vấn...');
+    updateChatSessionState('starting', 'Đang phân tích hồ sơ để tạo phiên tư vấn mới...');
     const loadingMsg = addChatLoadingMessage('Đang phân tích hồ sơ và khởi tạo phiên...');
 
     try {
@@ -173,7 +273,7 @@ async function requestCounsel() {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(await getApiErrorMessage(response, 'Không thể khởi tạo phiên tư vấn.'));
         }
 
         const data = await response.json();
@@ -190,15 +290,19 @@ async function requestCounsel() {
         setStatus('chatStatus', 'success', 'Đã bắt đầu cuộc hội thoại mới.');
         setChatSessionBanner('success', 'Phiên tư vấn đang hoạt động. Bạn có thể tiếp tục đặt câu hỏi.');
         setChatInputEnabled(true);
+        updateChatSessionState('active', 'Phiên đã sẵn sàng. Hãy hỏi sâu hơn về ngành học, kỹ năng hoặc lộ trình.');
     } catch (err) {
         console.error('❌ Fetch error:', err);
         if (loadingMsg) loadingMsg.remove();
         addChatMessage('ai', 'Xin lỗi, tôi chưa thể phản hồi lúc này. Vui lòng thử lại sau vài giây.');
-        setStatus('chatStatus', 'error', 'Không thể bắt đầu tư vấn. Vui lòng thử lại.');
+        setStatus('chatStatus', 'error', getExceptionMessage(err, 'Không thể bắt đầu tư vấn. Vui lòng thử lại.'));
         setChatSessionBanner('error', 'Không thể mở phiên tư vấn. Vui lòng thử lại.');
         setChatInputEnabled(false);
+        updateChatSessionState('error', 'Khởi tạo phiên thất bại. Bạn có thể thử lại sau vài giây.');
     } finally {
-        $consultBtn.disabled = false;
+        if (CHAT_SESSION_STATE !== 'active') {
+            updateChatSessionState(CHAT_SESSION_STATE, $('chatSessionHint')?.textContent || '');
+        }
     }
 }
 
@@ -216,6 +320,8 @@ async function sendChatMessage() {
 
     addChatMessage('user', text);
     input.value = '';
+    updateChatSessionState('sending', 'AI đang xử lý câu hỏi. Vui lòng chờ phản hồi...');
+    setChatSessionBanner('info', 'Đang gửi câu hỏi tới AI...');
     const loadingMsg = addChatLoadingMessage('Đang trả lời...');
 
     try {
@@ -232,7 +338,7 @@ async function sendChatMessage() {
             if (response.status === 404) {
                 throw new Error("Cuộc hội thoại đã hết hạn. Hãy bắt đầu lại.");
             }
-            throw new Error(`Máy chủ đang bận (${response.status}).`);
+            throw new Error(await getApiErrorMessage(response, 'Máy chủ đang bận. Vui lòng thử lại sau.'));
         }
 
         const data = await response.json();
@@ -240,10 +346,14 @@ async function sendChatMessage() {
         if (loadingMsg) loadingMsg.remove();
         addChatMessage('ai', aiResponse);
         setStatus('chatStatus', null, '');
+        setChatSessionBanner('success', 'Đã nhận phản hồi. Bạn có thể tiếp tục đặt câu hỏi.');
+        updateChatSessionState('active', 'Phiên vẫn đang hoạt động. Tiếp tục hỏi để đào sâu kế hoạch.');
     } catch (err) {
         console.error('❌ Chat error:', err);
         if (loadingMsg) loadingMsg.remove();
         addChatMessage('ai', 'Xin lỗi, tôi chưa xử lý được câu hỏi này. Bạn thử diễn đạt ngắn hơn hoặc gửi lại.');
-        setStatus('chatStatus', 'error', err.message);
+        setStatus('chatStatus', 'error', getExceptionMessage(err, 'Không thể gửi câu hỏi. Vui lòng thử lại.'));
+        setChatSessionBanner('error', 'Gửi câu hỏi thất bại. Bạn có thể thử lại ngay.');
+        updateChatSessionState('error', 'Không gửi được câu hỏi. Kiểm tra kết nối hoặc thử lại.');
     }
 }
