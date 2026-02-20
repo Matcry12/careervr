@@ -1,6 +1,7 @@
 // ===== INIT =====
 window.addEventListener('load', async () => {
     initMobileNav();
+    initJourneyStepperNavigation();
     await checkAuth();
 
     // Page specific inits

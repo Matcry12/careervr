@@ -93,18 +93,10 @@ function updateLandingCTA() {
     const hint = $('landingCtaHint');
     if (!btn || !hint) return;
 
-    const role = String(currentUser?.role || '').toLowerCase();
-    if (role === 'admin') {
+    if (token) {
         btn.textContent = 'Xem thống kê';
         btn.onclick = () => goPage('dashboard');
-        hint.textContent = 'Bạn đang ở vai trò Admin. Có thể mở trang thống kê.';
-        return;
-    }
-
-    if (token) {
-        btn.textContent = 'Tiếp tục làm trắc nghiệm';
-        btn.onclick = () => goPage('test');
-        hint.textContent = 'Tài khoản học sinh không có quyền truy cập trang thống kê Admin.';
+        hint.textContent = 'Mở nhanh trang thống kê tổng quan.';
         return;
     }
 

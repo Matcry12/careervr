@@ -17,14 +17,6 @@ function goPage(pageId) {
         if (!ok) return;
     }
 
-    if (pageId === 'dashboard') {
-        const role = String(currentUser?.role || '').toLowerCase();
-        if (role !== 'admin') {
-            window.location.href = token ? '/test' : '/login';
-            return;
-        }
-    }
-
     const routes = {
         landing: '/',
         home: '/',
@@ -40,6 +32,24 @@ function goPage(pageId) {
         signup: '/signup'
     };
     window.location.href = routes[pageId] || '/';
+}
+
+function initJourneyStepperNavigation() {
+    document.querySelectorAll('.journey-step[data-page]').forEach((step) => {
+        if (step.dataset.bound === '1') return;
+        step.dataset.bound = '1';
+        step.addEventListener('click', () => {
+            const page = step.dataset.page;
+            if (page) goPage(page);
+        });
+        step.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const page = step.dataset.page;
+                if (page) goPage(page);
+            }
+        });
+    });
 }
 
 // ===== INIT TEST PAGE =====
@@ -94,16 +104,16 @@ function showTestChunk(chunk) {
         item.style.display = itemChunk === CURRENT_TEST_CHUNK ? '' : 'none';
     });
 
-    const indicator = $('chunkIndicator');
-    if (indicator) indicator.textContent = `Phần ${CURRENT_TEST_CHUNK} / ${TEST_TOTAL_CHUNKS}`;
-
-    const prevBtn = $('btnChunkPrev');
-    const nextBtn = $('btnChunkNext');
-    if (prevBtn) prevBtn.disabled = CURRENT_TEST_CHUNK <= 1;
-    if (nextBtn) {
-        nextBtn.disabled = CURRENT_TEST_CHUNK >= TEST_TOTAL_CHUNKS;
-        nextBtn.textContent = CURRENT_TEST_CHUNK >= TEST_TOTAL_CHUNKS ? 'Đang ở phần cuối' : 'Phần tiếp theo';
-    }
+    document.querySelectorAll('[data-chunk-indicator]').forEach((indicator) => {
+        indicator.textContent = `Phần ${CURRENT_TEST_CHUNK} / ${TEST_TOTAL_CHUNKS}`;
+    });
+    document.querySelectorAll('[data-chunk-prev]').forEach((btn) => {
+        btn.disabled = CURRENT_TEST_CHUNK <= 1;
+    });
+    document.querySelectorAll('[data-chunk-next]').forEach((btn) => {
+        btn.disabled = CURRENT_TEST_CHUNK >= TEST_TOTAL_CHUNKS;
+        btn.textContent = CURRENT_TEST_CHUNK >= TEST_TOTAL_CHUNKS ? 'Đang ở phần cuối' : 'Phần tiếp theo';
+    });
 }
 
 function nextTestChunk() {
@@ -469,20 +479,11 @@ async function showDashboard() {
     $content.innerHTML = '<div class="empty-state">Đang tải dữ liệu...</div>';
 
     try {
-        const role = String(currentUser?.role || '').toLowerCase();
         if (!token) {
             $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">
                 <h3>Bạn chưa đăng nhập</h3>
-                <p>Vui lòng đăng nhập với tài khoản Admin để xem thống kê.</p>
+                <p>Vui lòng đăng nhập để xem thống kê.</p>
                 <button onclick="goPage('login')" class="btn btn-primary">Đăng nhập</button>
-            </div>`;
-            return;
-        }
-        if (role && role !== 'admin') {
-            $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">
-                <h3>Trang dành cho Admin</h3>
-                <p>Tài khoản hiện tại không có quyền xem dữ liệu thống kê.</p>
-                <button onclick="goPage('test')" class="btn btn-primary">Đi tới bài trắc nghiệm</button>
             </div>`;
             return;
         }
@@ -494,11 +495,19 @@ async function showDashboard() {
 
         const res = await fetch(`${API_BASE}/api/submissions`, { headers });
 
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
             $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">
-                <h3>Quyền truy cập bị từ chối</h3>
-                <p>Trang này chỉ dành cho Quản trị viên (Admin).</p>
-                <button onclick="goPage('landing')" class="btn btn-primary">Về trang chủ</button>
+                <h3>Phiên đăng nhập không hợp lệ</h3>
+                <p>Vui lòng đăng nhập lại để tiếp tục.</p>
+                <button onclick="goPage('login')" class="btn btn-primary">Đăng nhập</button>
+                </div>`;
+            return;
+        }
+        if (res.status === 403) {
+            $content.innerHTML = `<div class="empty-state" style="color: #ff4d4f;">
+                <h3>Chưa có quyền truy cập</h3>
+                <p>Tài khoản hiện tại chưa được cấp quyền xem dashboard.</p>
+                <button onclick="goPage('test')" class="btn btn-primary">Đi tới bài trắc nghiệm</button>
             </div>`;
             return;
         }

@@ -19,6 +19,12 @@ def create_or_promote_admin(username, password):
         print("❌ Username and password are required.")
         return
 
+    write_mode = "mongo" if db.is_mongo else ("local" if not os.getenv("VERCEL") else "disabled")
+    print(f"Write mode: {write_mode}")
+    print(f"DB name: {getattr(db, 'db_name', 'N/A')}")
+    if not db.is_mongo:
+        print("⚠️ MongoDB is NOT connected in this runtime. This command may write to local JSON only.")
+
     print(f"Checking user: {username}...")
     user = db.get_user(username)
     
@@ -26,10 +32,17 @@ def create_or_promote_admin(username, password):
     
     if user:
         print(f"User '{username}' exists. Promoting to ADMIN and updating password.")
-        db.update_user_profile(username, {
+        result = db.update_user_profile(username, {
             "role": "admin",
             "hashed_password": hashed_password
         })
+        if not isinstance(result, dict) or not result.get("ok"):
+            print(f"❌ Failed to promote admin. Result: {result}")
+            return
+        verify = db.get_user(username) or {}
+        if str(verify.get("role") or "").lower() != "admin":
+            print("❌ Promote reported success but verification failed (role is not admin).")
+            return
         print("✅ User promoted to Admin successfully.")
     else:
         print(f"User '{username}' does not exist. Creating new ADMIN account.")
@@ -40,7 +53,14 @@ def create_or_promote_admin(username, password):
             "hashed_password": hashed_password,
             "created_at": datetime.now().isoformat()
         }
-        db.create_user(new_user)
+        result = db.create_user(new_user)
+        if not isinstance(result, dict) or not result.get("ok"):
+            print(f"❌ Failed to create admin. Result: {result}")
+            return
+        verify = db.get_user(username) or {}
+        if str(verify.get("role") or "").lower() != "admin":
+            print("❌ Create reported success but verification failed (user/role not found).")
+            return
         print("✅ Admin account created successfully.")
 
 if __name__ == "__main__":

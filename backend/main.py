@@ -749,11 +749,89 @@ def build_recommendation_bundle(scores: Dict[str, int], jobs: Optional[List[Dict
     return get_recommendations_3_plus_1(scores=scores, all_jobs=jobs)
 
 
+def normalize_scores_payload(scores: Optional[Dict[str, Any]]) -> Optional[Dict[str, int]]:
+    if not isinstance(scores, dict):
+        return None
+    keys = ("R", "I", "A", "S", "E", "C")
+    normalized: Dict[str, int] = {}
+    for key in keys:
+        raw = scores.get(key)
+        if raw is None:
+            return None
+        try:
+            normalized[key] = int(raw)
+        except Exception:
+            return None
+    return normalized
+
+
+def derive_riasec_result_from_scores(scores: Dict[str, int]) -> Dict[str, Any]:
+    tie_break_order = ["R", "I", "A", "S", "E", "C"]
+    top_3_riasec = sorted(
+        tie_break_order,
+        key=lambda key: (-scores.get(key, 0), tie_break_order.index(key))
+    )[:3]
+    return {
+        "full_scores": scores,
+        "score_R": scores.get("R", 0),
+        "score_I": scores.get("I", 0),
+        "score_A": scores.get("A", 0),
+        "score_S": scores.get("S", 0),
+        "score_E": scores.get("E", 0),
+        "score_C": scores.get("C", 0),
+        "top_1_type": top_3_riasec[0],
+        "top_3_list": top_3_riasec
+    }
+
+
 def build_allowed_jobs_text(recommendations: Dict[str, Any]) -> str:
     allowed = recommendations.get("top_4", [])
     if not allowed:
         return "No allowed jobs available."
     return "; ".join(f"{item.get('title')} ({item.get('riasec_code')})" for item in allowed)
+
+
+def build_allowed_job_entries(recommendations: Dict[str, Any], key: str = "top_4") -> List[Dict[str, str]]:
+    entries: List[Dict[str, str]] = []
+    for item in recommendations.get(key, []) or []:
+        title = str(item.get("title") or "").strip()
+        if not title:
+            continue
+        entries.append({
+            "title": title,
+            "riasec_code": str(item.get("riasec_code") or "").strip().upper(),
+        })
+    return entries
+
+
+def build_allowed_job_constraints(recommendations: Dict[str, Any], jobs: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    allowed_entries = build_allowed_job_entries(recommendations, key="top_4")
+    priority_entries = build_allowed_job_entries(recommendations, key="priority")
+    backup_entries = build_allowed_job_entries(recommendations, key="backup")
+    allowed_titles = [item["title"] for item in allowed_entries]
+    all_titles = [str(job.get("title") or "").strip() for job in (jobs or get_normalized_vr_jobs())]
+    disallowed_titles = [title for title in all_titles if title and title not in allowed_titles]
+    return {
+        "allowed_entries": allowed_entries,
+        "priority_entries": priority_entries,
+        "backup_entries": backup_entries,
+        "allowed_titles": allowed_titles,
+        "disallowed_titles": disallowed_titles,
+        "allowed_jobs_text": build_allowed_jobs_text(recommendations),
+        "allowed_jobs_json": json.dumps(allowed_entries, ensure_ascii=False),
+        "priority_jobs_json": json.dumps(priority_entries, ensure_ascii=False),
+        "backup_jobs_json": json.dumps(backup_entries, ensure_ascii=False),
+    }
+
+
+def build_scoped_ai_query(user_query: str, allowed_jobs_text: str) -> str:
+    return (
+        f"{user_query}\n\n"
+        f"ALLOWED JOBS: {allowed_jobs_text}\n"
+        "Only recommend jobs from the allowed list above. "
+        "If the user asks about a different field, explain briefly and then redirect to only the allowed jobs. "
+        "Do not invent job titles."
+    )
 
 
 def trim_recommendation_for_response(recommendations: Dict[str, Any]) -> Dict[str, Any]:
@@ -966,8 +1044,28 @@ async def import_vr_jobs(file: UploadFile = File(...), current_user: dict = Depe
     }
 
 @app.get("/api/submissions", response_model=List[Submission])
-async def get_submissions(current_user: dict = Depends(get_admin_user)):
-    return db.get_submissions()
+async def get_submissions(current_user: dict = Depends(get_current_active_user)):
+    rows = db.get_submissions()
+    role = str(current_user.get("role") or "").strip().lower()
+    if role == "admin":
+        return rows
+
+    sanitized: List[Dict[str, Any]] = []
+    for row in rows:
+        riasec = row.get("riasec") or []
+        badge = "-".join(riasec[:2]) if isinstance(riasec, list) and riasec else "HS"
+        sanitized.append({
+            "name": f"Người dùng {badge}",
+            "class": "Ẩn lớp",
+            "school": "Ẩn trường",
+            "riasec": row.get("riasec") or [],
+            "scores": row.get("scores") or {},
+            "answers": row.get("answers") or [],
+            "time": row.get("time") or datetime.now(timezone.utc).isoformat(),
+            "suggestedMajors": row.get("suggestedMajors") or "",
+            "combinations": row.get("combinations") or "",
+        })
+    return sanitized
 
 
 @app.post("/api/submissions")
@@ -1445,6 +1543,9 @@ def call_dify_api(payload: Dict[str, Any]) -> Dict[str, Any]:
     }
     
     try:
+        print("\n=== DIFY PAYLOAD ===")
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        print("=== END PAYLOAD ===\n")
         response = requests.post(
             DIFY_CHAT_URL,
             json=payload,
@@ -1466,6 +1567,104 @@ def call_dify_api(payload: Dict[str, Any]) -> Dict[str, Any]:
         )
         
     return response.json()
+
+
+def normalize_title_for_match(raw: Any) -> str:
+    text = unicodedata.normalize("NFKD", str(raw or ""))
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = re.sub(r"[^a-z0-9]+", " ", text.lower())
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def detect_job_scope_violations(
+    ai_message: str,
+    allowed_titles: List[str],
+    disallowed_titles: List[str],
+) -> Dict[str, List[str]]:
+    normalized_text = f" {normalize_title_for_match(ai_message)} "
+    allowed_hits = []
+    disallowed_hits = []
+
+    for title in allowed_titles:
+        normalized_title = normalize_title_for_match(title)
+        if normalized_title and f" {normalized_title} " in normalized_text:
+            allowed_hits.append(title)
+
+    for title in disallowed_titles:
+        normalized_title = normalize_title_for_match(title)
+        if normalized_title and f" {normalized_title} " in normalized_text:
+            disallowed_hits.append(title)
+
+    unique_allowed = list(dict.fromkeys(allowed_hits))
+    unique_disallowed = list(dict.fromkeys(disallowed_hits))
+    violations = [title for title in unique_disallowed if title not in unique_allowed]
+
+    return {
+        "allowed_hits": unique_allowed,
+        "disallowed_hits": unique_disallowed,
+        "violations": violations,
+    }
+
+
+def build_hard_scoped_fallback_response(allowed_entries: List[Dict[str, str]]) -> str:
+    if not allowed_entries:
+        return (
+            "Hiện chưa có danh sách nghề hợp lệ để tư vấn. "
+            "Bạn hãy làm lại bài test để hệ thống tạo danh sách gợi ý chính xác hơn."
+        )
+    lines = [
+        "Mình sẽ bám đúng danh sách nghề được hệ thống cho phép.",
+        "Các hướng nghề phù hợp với hồ sơ của bạn:",
+    ]
+    for idx, entry in enumerate(allowed_entries[:4], start=1):
+        title = str(entry.get("title") or "").strip()
+        code = str(entry.get("riasec_code") or "").strip().upper()
+        if title:
+            suffix = f" ({code})" if code else ""
+            lines.append(f"{idx}. {title}{suffix}")
+    lines.append("Nếu bạn muốn, mình sẽ lập kế hoạch học tập chi tiết cho từng nghề trong danh sách này.")
+    return "\n".join(lines)
+
+
+def call_dify_with_scope_guard(
+    payload: Dict[str, Any],
+    allowed_titles: List[str],
+    disallowed_titles: List[str],
+    allowed_entries: Optional[List[Dict[str, str]]] = None,
+) -> Dict[str, Any]:
+    dify_result = call_dify_api(payload)
+    ai_message = dify_result.get("answer", "")
+    detection = detect_job_scope_violations(
+        ai_message=ai_message,
+        allowed_titles=allowed_titles,
+        disallowed_titles=disallowed_titles,
+    )
+    if not detection["violations"]:
+        return dify_result
+
+    logger.warning("AI out-of-scope jobs detected: %s", detection["violations"])
+    retry_payload = {
+        **payload,
+        "query": (
+            f"{payload.get('query', '')}\n\n"
+            f"Your previous answer mentioned out-of-scope jobs: {', '.join(detection['violations'])}.\n"
+            f"Rewrite the answer and only recommend from this list: {', '.join(allowed_titles)}.\n"
+            "Return a concise corrected answer with only allowed jobs."
+        ),
+    }
+    retry_result = call_dify_api(retry_payload)
+    retry_message = retry_result.get("answer", "")
+    retry_detection = detect_job_scope_violations(
+        ai_message=retry_message,
+        allowed_titles=allowed_titles,
+        disallowed_titles=disallowed_titles,
+    )
+    if not retry_detection["violations"]:
+        return retry_result
+
+    logger.warning("AI still out-of-scope after retry, forcing safe fallback: %s", retry_detection["violations"])
+    safe_text = build_hard_scoped_fallback_response(allowed_entries or [])
+    return {**retry_result, "answer": safe_text}
 
 def send_log_to_sheet(data: Dict[str, Any]):
     """Background task to send data to Google Sheet"""
@@ -1519,6 +1718,7 @@ class RIASECRequest(BaseModel):
 
 class StartConversationRequest(RIASECRequest):
     initial_question: str = "Hãy giới thiệu về các hướng nghiệp phù hợp cho tôi"
+    scores: Optional[Dict[str, int]] = None
 
 class ChatMessage(BaseModel):
     conversation_id: str
@@ -1579,14 +1779,19 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
     
     # Calculate RIASEC scores
     try:
-        riasec_result = calculate_riasec(json.dumps(data.answers_json))
+        provided_scores = normalize_scores_payload(data.scores)
+        if provided_scores:
+            riasec_result = derive_riasec_result_from_scores(provided_scores)
+        else:
+            riasec_result = calculate_riasec(json.dumps(data.answers_json))
         jobs = get_normalized_vr_jobs()
         recommendations = build_recommendation_bundle(riasec_result["full_scores"], jobs=jobs)
         recommended_job = ", ".join(item["title"] for item in recommendations.get("priority", []))
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Lỗi tính toán RIASEC: {str(e)}")
     
-    allowed_jobs_text = build_allowed_jobs_text(recommendations)
+    constraint_meta = build_allowed_job_constraints(recommendations, jobs=jobs)
+    allowed_jobs_text = constraint_meta["allowed_jobs_text"]
 
     # Prepare Dify payload with added RIASEC type
     scores_for_dify = riasec_result["full_scores"].copy()
@@ -1601,13 +1806,12 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
             "answer": json.dumps(scores_for_dify, ensure_ascii=False),
             "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
             "top_3_types": ",".join(riasec_result["top_3_list"]),
-            "allowed_jobs": allowed_jobs_text
+            "allowed_jobs": allowed_jobs_text,
+            "allowed_jobs_json": constraint_meta["allowed_jobs_json"],
+            "priority_jobs_json": constraint_meta["priority_jobs_json"],
+            "backup_jobs_json": constraint_meta["backup_jobs_json"],
         },
-        "query": (
-            f"{data.initial_question}\n\n"
-            f"ALLOWED JOBS: {allowed_jobs_text}\n"
-            "Only recommend jobs from the allowed list above. Do not invent job titles."
-        ),
+        "query": build_scoped_ai_query(data.initial_question, allowed_jobs_text),
         "response_mode": "blocking",
         "user": data.name.strip() or "student"
     }
@@ -1624,7 +1828,12 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
     background_tasks.add_task(send_log_to_sheet, log_data)
     
     try:
-        dify_result = call_dify_api(payload)
+        dify_result = call_dify_with_scope_guard(
+            payload=payload,
+            allowed_titles=constraint_meta["allowed_titles"],
+            disallowed_titles=constraint_meta["disallowed_titles"],
+            allowed_entries=constraint_meta["allowed_entries"],
+        )
     except Exception:
         # If Dify fails here, we shouldn't create the conversation
         raise
@@ -1643,6 +1852,11 @@ def start_conversation(data: StartConversationRequest, background_tasks: Backgro
         "top_1_type": riasec_result["top_1_type"],
         "recommendations": trim_recommendation_for_response(recommendations),
         "allowed_jobs_text": allowed_jobs_text,
+        "allowed_entries": constraint_meta["allowed_entries"],
+        "priority_entries": constraint_meta["priority_entries"],
+        "backup_entries": constraint_meta["backup_entries"],
+        "allowed_titles": constraint_meta["allowed_titles"],
+        "disallowed_titles": constraint_meta["disallowed_titles"],
         "answers_json": data.answers_json,
         "messages": [
             {"role": "user", "content": data.initial_question},
@@ -1682,19 +1896,26 @@ def chat(data: ChatMessage):
             "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
             "top_3_types": ",".join(conv["top_3_types"]),
             "answer": json.dumps(scores_for_dify, ensure_ascii=False),
-            "allowed_jobs": conv.get("allowed_jobs_text", "")
+            "allowed_jobs": conv.get("allowed_jobs_text", ""),
+            "allowed_jobs_json": json.dumps(
+                conv.get("allowed_entries", []),
+                ensure_ascii=False,
+            ),
+            "priority_jobs_json": json.dumps(conv.get("priority_entries", []), ensure_ascii=False),
+            "backup_jobs_json": json.dumps(conv.get("backup_entries", []), ensure_ascii=False),
         },
-        "query": (
-            f"{data.message}\n\n"
-            f"ALLOWED JOBS: {conv.get('allowed_jobs_text', '')}\n"
-            "Only recommend jobs from the allowed list above. Do not invent job titles."
-        ),
+        "query": build_scoped_ai_query(data.message, conv.get("allowed_jobs_text", "")),
         "response_mode": "blocking",
         "conversation_id": conv["dify_conversation_id"],
         "user": conv["name"].strip() or "student"
     }
     
-    dify_result = call_dify_api(payload)
+    dify_result = call_dify_with_scope_guard(
+        payload=payload,
+        allowed_titles=conv.get("allowed_titles", []),
+        disallowed_titles=conv.get("disallowed_titles", []),
+        allowed_entries=conv.get("allowed_entries", []),
+    )
     ai_message = dify_result.get("answer", "")
     
     # Store messages
@@ -1717,9 +1938,11 @@ def run_riasec(data: RIASECRequest):
     # Calculate RIASEC scores
     try:
         riasec_result = calculate_riasec(json.dumps(data.answers_json))
-        recommendations = build_recommendation_bundle(riasec_result["full_scores"])
+        jobs = get_normalized_vr_jobs()
+        recommendations = build_recommendation_bundle(riasec_result["full_scores"], jobs=jobs)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Lỗi tính toán RIASEC: {str(e)}")
+    constraint_meta = build_allowed_job_constraints(recommendations, jobs=jobs)
 
     # Prepare Dify payload with added RIASEC type
     scores_for_dify = riasec_result["full_scores"].copy()
@@ -1734,18 +1957,26 @@ def run_riasec(data: RIASECRequest):
             "answer": json.dumps(scores_for_dify, ensure_ascii=False),
             "riasec_scores": json.dumps(scores_for_dify, ensure_ascii=False),
             "top_3_types": ",".join(riasec_result["top_3_list"]),
-            "allowed_jobs": build_allowed_jobs_text(recommendations)
+            "allowed_jobs": constraint_meta["allowed_jobs_text"],
+            "allowed_jobs_json": constraint_meta["allowed_jobs_json"],
+            "priority_jobs_json": constraint_meta["priority_jobs_json"],
+            "backup_jobs_json": constraint_meta["backup_jobs_json"],
         },
-        "query": (
+        "query": build_scoped_ai_query((
             "Dựa trên thông tin học sinh và kết quả trắc nghiệm RIASEC, "
             "hãy phân tích và đưa ra bản tư vấn hướng nghiệp rõ ràng, "
             "phù hợp với học sinh THPT Việt Nam."
-        ),
+        ), constraint_meta["allowed_jobs_text"]),
         "response_mode": "blocking",
         "user": data.name.strip() or "student"
     }
 
-    dify_result = call_dify_api(payload)
+    dify_result = call_dify_with_scope_guard(
+        payload=payload,
+        allowed_titles=constraint_meta["allowed_titles"],
+        disallowed_titles=constraint_meta["disallowed_titles"],
+        allowed_entries=constraint_meta["allowed_entries"],
+    )
     text_output = dify_result.get("answer", "")
 
     # Standardized flat response (removes nested "data.outputs")

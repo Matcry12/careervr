@@ -124,6 +124,20 @@ function applyChatStarterPrompt(prompt) {
     }
 }
 
+function renderChatJobGuardrails(current) {
+    const wrap = $('chatJobGuardrails');
+    if (!wrap) return;
+    const topJobs = (current?.recommendations?.top_4 || [])
+        .map((job) => `${job?.title || ''}`.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+    if (!topJobs.length) {
+        wrap.textContent = 'Danh sách nghề gợi ý sẽ xuất hiện sau khi có dữ liệu kết quả.';
+        return;
+    }
+    wrap.innerHTML = `<strong>Phạm vi gợi ý AI:</strong> ${topJobs.map(escapeHtml).join(', ')}`;
+}
+
 async function updateChatContext() {
     let current = readCurrent();
 
@@ -143,6 +157,7 @@ async function updateChatContext() {
         ctx.innerHTML = 'Chưa có dữ liệu. Vui lòng <a href="/test" class="nav-link">làm trắc nghiệm</a> trước.';
         const suggest = $('chatCommunitySuggestions');
         if (suggest) suggest.innerHTML = '<div class="muted">Chưa có dữ liệu để gợi ý thảo luận.</div>';
+        renderChatJobGuardrails(null);
         renderChatStarterPrompts(null);
         setChatInputEnabled(false);
         setChatSessionBanner('info', 'Cần hoàn thành bài trắc nghiệm trước khi bắt đầu phiên tư vấn.');
@@ -151,6 +166,7 @@ async function updateChatContext() {
     }
 
     renderChatStarterPrompts(current);
+    renderChatJobGuardrails(current);
     const hasSession = !!sessionStorage.getItem('conversation_id');
     if (hasSession) {
         $('consultBtn').textContent = "🔄 Bắt đầu lại cuộc hội thoại";
@@ -268,6 +284,7 @@ async function requestCounsel() {
                 class: current.class || '-',
                 school: current.school || '-',
                 answer: answerArray,
+                scores: current.scores || null,
                 initial_question: initialPrompt
             })
         });

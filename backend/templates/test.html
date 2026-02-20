@@ -9,11 +9,11 @@
     <div class="test-container">
         <h1 class="section-title">Trắc nghiệm RIASEC</h1>
         <div class="journey-stepper" aria-label="Hành trình hướng nghiệp">
-            <div class="journey-step active"><span class="step-dot">1</span><span>Trắc nghiệm</span></div>
-            <div class="journey-step"><span class="step-dot">2</span><span>Kết quả</span></div>
-            <div class="journey-step"><span class="step-dot">3</span><span>VR</span></div>
-            <div class="journey-step"><span class="step-dot">4</span><span>AI Chat</span></div>
-            <div class="journey-step"><span class="step-dot">5</span><span>Cộng đồng</span></div>
+            <div class="journey-step active" aria-current="step"><span class="step-dot">1</span><span>Trắc nghiệm</span></div>
+            <div class="journey-step" data-page="results" role="button" tabindex="0"><span class="step-dot">2</span><span>Kết quả</span></div>
+            <div class="journey-step" data-page="vr-mode" role="button" tabindex="0"><span class="step-dot">3</span><span>VR</span></div>
+            <div class="journey-step" data-page="chatbot" role="button" tabindex="0"><span class="step-dot">4</span><span>AI Chat</span></div>
+            <div class="journey-step" data-page="community" role="button" tabindex="0"><span class="step-dot">5</span><span>Cộng đồng</span></div>
         </div>
         <div class="journey-next panel">
             <strong>Bước tiếp theo</strong>
@@ -65,12 +65,19 @@
         </div>
 
         <form id="testForm">
+            <div class="test-chunk-toolbar test-chunk-toolbar-top">
+                <div class="chunk-indicator muted" data-chunk-indicator role="status" aria-live="polite">Phần 1 / 5</div>
+                <div class="chunk-actions">
+                    <button type="button" class="btn btn-secondary" data-chunk-prev onclick="prevTestChunk()">Phần trước</button>
+                    <button type="button" class="btn btn-secondary" data-chunk-next onclick="nextTestChunk()">Phần tiếp theo</button>
+                </div>
+            </div>
             <div id="questionsContainer"></div>
             <div class="test-chunk-toolbar test-chunk-toolbar-bottom">
-                <div id="chunkIndicator" class="muted" role="status" aria-live="polite">Phần 1 / 5</div>
+                <div class="chunk-indicator muted" data-chunk-indicator role="status" aria-live="polite">Phần 1 / 5</div>
                 <div class="chunk-actions">
-                    <button type="button" id="btnChunkPrev" class="btn btn-secondary" onclick="prevTestChunk()">Phần trước</button>
-                    <button type="button" id="btnChunkNext" class="btn btn-secondary" onclick="nextTestChunk()">Phần tiếp theo</button>
+                    <button type="button" class="btn btn-secondary" data-chunk-prev onclick="prevTestChunk()">Phần trước</button>
+                    <button type="button" class="btn btn-secondary" data-chunk-next onclick="nextTestChunk()">Phần tiếp theo</button>
                 </div>
             </div>
             <div class="test-actions">
